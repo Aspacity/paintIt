@@ -12,6 +12,7 @@ import { useAlert } from "@/context/AlertContext";
 
 // Modular Dashboard Components
 import PaintPicker, { CustomColor } from "@/components/canvas/ClientPaintPicker";
+import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
 import { TEXTURE_PRESETS, TextureCategory, getMeshCategory } from "@/utils/generateFloorTextures";
@@ -948,24 +949,26 @@ export default function PublicProfileAndConceptPage() {
 
         {/* 3D Viewport View */}
         <div className="flex-1 w-full h-full relative z-10 pt-24">
-          <Canvas camera={{ position: cameraConfig.position || [-2.73, 3.28, -2.51], fov: 65 }}>
-            <Suspense fallback={null}>
-              <ClientInteractiveCanvas
-                modelUrl={sharedConcept.model_url || "/models/selfcon.glb"}
-                roomColors={roomColors}
-                onSurfaceSelect={setActiveSurface}
-                bulbs={bulbs}
-                cameraConfig={cameraConfig}
-                isNightMode={isNightMode}
-                activeFinish={activeFinish}
-                activeTextures={activeTextures}
-                onModelLoaded={(materials, meshes) => {
-                  setAvailableMaterials(materials);
-                  if (meshes) setMeshesWithOriginalMaterials(meshes);
-                }}
-              />
-            </Suspense>
-          </Canvas>
+          <CanvasErrorBoundary>
+            <Canvas camera={{ position: cameraConfig.position || [-2.73, 3.28, -2.51], fov: 65 }}>
+              <Suspense fallback={null}>
+                <ClientInteractiveCanvas
+                  modelUrl={sharedConcept.model_url || "/models/selfcon.glb"}
+                  roomColors={roomColors}
+                  onSurfaceSelect={setActiveSurface}
+                  bulbs={bulbs}
+                  cameraConfig={cameraConfig}
+                  isNightMode={isNightMode}
+                  activeFinish={activeFinish}
+                  activeTextures={activeTextures}
+                  onModelLoaded={(materials, meshes) => {
+                    setAvailableMaterials(materials);
+                    if (meshes) setMeshesWithOriginalMaterials(meshes);
+                  }}
+                />
+              </Suspense>
+            </Canvas>
+          </CanvasErrorBoundary>
         </div>
 
         {/* Floating Controls */}

@@ -8,6 +8,7 @@ import { useAlert } from "@/context/AlertContext";
 
 // Modular Canvas & Controls
 import WorkspaceCanvas from "@/components/canvas/WorkspaceCanvas";
+import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
 import PaintPicker, { CustomColor } from "@/components/canvas/PaintPicker";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
@@ -389,23 +390,25 @@ function WorkspaceContent() {
       </header>
 
       <section className="flex-1 w-full h-full relative z-10">
-        <Canvas camera={{ position: cameraConfig.position || [-2.73, 3.28, -2.51], fov: 65 }}>
-          <Suspense fallback={null}>
-            <WorkspaceCanvas
-              modelUrl={modelUrl}
-              roomColors={roomColors}
-              activeSurface={activeSurface}
-              onSurfaceSelect={setActiveSurface}
-              bulbs={bulbs}
-              cameraConfig={cameraConfig}
-              roomTextures={{}}
-              activeTextures={activeTextures}
-              materialSwaps={materialSwaps}
-              onModelLoaded={handleModelLoaded}
-              isNightMode={isNightMode}
-            />
-          </Suspense>
-        </Canvas>
+        <CanvasErrorBoundary>
+          <Canvas camera={{ position: cameraConfig.position || [-2.73, 3.28, -2.51], fov: 65 }}>
+            <Suspense fallback={null}>
+              <WorkspaceCanvas
+                modelUrl={modelUrl}
+                roomColors={roomColors}
+                activeSurface={activeSurface}
+                onSurfaceSelect={setActiveSurface}
+                bulbs={bulbs}
+                cameraConfig={cameraConfig}
+                roomTextures={{}}
+                activeTextures={activeTextures}
+                materialSwaps={materialSwaps}
+                onModelLoaded={handleModelLoaded}
+                isNightMode={isNightMode}
+              />
+            </Suspense>
+          </Canvas>
+        </CanvasErrorBoundary>
       </section>
 
       <div className="absolute right-4 bottom-75 z-20 flex flex-col gap-2">

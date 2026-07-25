@@ -12,6 +12,7 @@ import {
   PlaygroundLightsEngine
 } from '@/components/canvas/playground-core';
 import { FloatingAdminPanel } from '@/components/canvas/Admin-panel';
+import { CanvasErrorBoundary } from '@/components/canvas/CanvasErrorBoundary';
 import { DynamicLightInstance } from '@/types/index';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useAlert } from "@/context/AlertContext";
@@ -480,41 +481,43 @@ export default function DedicatedPlayground() {
       </div>
 
       <div className="absolute inset-0 w-full h-full z-10 bg-neutral-900">
-        <Canvas shadows camera={{ position: [0, 1.4, 2.2], fov: isLandscapeOverride ? 45 : 55 }}>
-          <PlaygroundLighting isNight={globalEnvironment.isNightMode} showHelpers={!cleanViewActive && !isLocked && isAdmin} />
+        <CanvasErrorBoundary>
+          <Canvas shadows camera={{ position: [0, 1.4, 2.2], fov: isLandscapeOverride ? 45 : 55 }}>
+            <PlaygroundLighting isNight={globalEnvironment.isNightMode} showHelpers={!cleanViewActive && !isLocked && isAdmin} />
 
-          <Suspense fallback={null}>
-            <StudioBlenderModelMesh
-              modelUrl={modelUrl}
-              surfaceStates={roomColors}
-              activeFinish={activeFinish}
-              activeTextures={activeTextures}
-              materialSwaps={materialSwaps}
-              onModelLoaded={(materials, meshes) => {
-                setAvailableMaterials(materials);
-                if (meshes) setMeshesWithOriginalMaterials(meshes);
-              }}
-              onTargetSelect={(meshName: string) => {
-                if (!cleanViewActive && isAdmin) setActiveSurface(meshName);
-              }}
+            <Suspense fallback={null}>
+              <StudioBlenderModelMesh
+                modelUrl={modelUrl}
+                surfaceStates={roomColors}
+                activeFinish={activeFinish}
+                activeTextures={activeTextures}
+                materialSwaps={materialSwaps}
+                onModelLoaded={(materials, meshes) => {
+                  setAvailableMaterials(materials);
+                  if (meshes) setMeshesWithOriginalMaterials(meshes);
+                }}
+                onTargetSelect={(meshName: string) => {
+                  if (!cleanViewActive && isAdmin) setActiveSurface(meshName);
+                }}
+              />
+            </Suspense>
+
+            <PlaygroundLightsEngine lights={sceneLights.filter((l) => l.visible !== false)} />
+
+            {activeLightData && activeLightData.visible !== false && !cleanViewActive && !isLocked && isAdmin && (
+              <AdminTransformGizmo activeLight={activeLightData} mode={gizmoMode} onTransformUpdate={updateActiveLightTransform} />
+            )}
+
+            <CameraStudioController
+              controlsRef={controlsRef}
+              isOrbitDisabled={false}
+              maxZoom={cameraConfig.maxZoomDistance}
+              minPolar={isAdmin ? cameraConfig.ceilingLimitAngle : 0}
+              maxPolar={isAdmin ? cameraConfig.floorLimitAngle : Math.PI / 2}
+              isLocked={!isAdmin || isLocked}
             />
-          </Suspense>
-
-          <PlaygroundLightsEngine lights={sceneLights.filter((l) => l.visible !== false)} />
-
-          {activeLightData && activeLightData.visible !== false && !cleanViewActive && !isLocked && isAdmin && (
-            <AdminTransformGizmo activeLight={activeLightData} mode={gizmoMode} onTransformUpdate={updateActiveLightTransform} />
-          )}
-
-          <CameraStudioController
-            controlsRef={controlsRef}
-            isOrbitDisabled={false}
-            maxZoom={cameraConfig.maxZoomDistance}
-            minPolar={isAdmin ? cameraConfig.ceilingLimitAngle : 0}
-            maxPolar={isAdmin ? cameraConfig.floorLimitAngle : Math.PI / 2}
-            isLocked={!isAdmin || isLocked}
-          />
-        </Canvas>
+          </Canvas>
+        </CanvasErrorBoundary>
       </div>
 
       <div className="absolute top-0 left-0 right-0 h-5 z-50 pointer-events-none bg-linear-to-b from-neutral-950/40 to-transparent" style={{ touchAction: 'auto' }} />
