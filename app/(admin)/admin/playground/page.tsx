@@ -63,8 +63,8 @@ export default function AdminPlaygroundCatalog() {
         const modelsList = data.models || [];
         setAvailableModels(modelsList);
         if (modelsList.length > 0) {
-          const hasLivingRoom = modelsList.includes('livingroom.glb');
-          setSelectedModel(hasLivingRoom ? 'livingroom.glb' : modelsList[0]);
+          const hasSelfCon = modelsList.includes('selfcon.glb');
+          setSelectedModel(hasSelfCon ? 'selfcon.glb' : modelsList[0]);
         }
       }
     } catch (err) {

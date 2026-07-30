@@ -20,6 +20,7 @@ export const startTrackingLifecycle = (onTriggerNudge: () => void) => {
 
   const sessionStartTime = Date.now();
   let nudgeFired = false;
+  const backend_connection = process.env.NEXT_PUBLIC_API_URL;
 
   // 2. Compute timeline update values and post statistics payload profiles to backend
   const sendHeartbeatUpdate = () => {
@@ -45,7 +46,7 @@ export const startTrackingLifecycle = (onTriggerNudge: () => void) => {
     });
 
     // Use a native fetch call with keepalive: true so the ping completes even if the tab closes
-    fetch("http://localhost:5000/api/analytics/heartbeat", {
+    fetch(`${backend_connection}/api/analytics/heartbeat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: payload,
