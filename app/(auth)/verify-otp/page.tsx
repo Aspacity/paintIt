@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
+import { useAuth } from "@/context/AuthContext";
 
 function VerifyOTPForm() {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
@@ -15,6 +16,7 @@ function VerifyOTPForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useAlert();
+  const { login } = useAuth();
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -57,14 +59,24 @@ function VerifyOTPForm() {
         throw new Error(data.error || "Invalid verification token submission.");
       }
 
-      showToast({ message: "Code verified successfully!", severity: "success" });
+      showToast({ message: "Account activated successfully!", severity: "success" });
 
       if (isRecoveryFlow) {
         sessionStorage.removeItem("paintit_verification_email");
         router.push(`/reset-password?email=${encodeURIComponent(verificationEmail)}&token=${completeCode}`);
       } else {
         sessionStorage.removeItem("paintit_verification_email");
-        router.push("/login");
+        if (data.accessToken && data.refreshToken && data.user) {
+          login(data.accessToken, data.refreshToken, {
+            id: data.user.id,
+            email: data.user.email,
+            fullName: data.user.fullName || data.user.full_name || "User Account",
+            role: data.user.role
+          });
+          window.location.href = data.user.role === "ADMIN" ? "/admin/playground" : "/workspace";
+        } else {
+          router.push("/login");
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred during verification.";

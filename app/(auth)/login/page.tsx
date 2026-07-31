@@ -38,9 +38,10 @@ function LoginContent() {
 
       const data = await response.json();
 
-      if (response.status === 403 && data.error?.includes("verify")) {
-        sessionStorage.setItem("paintit_verification_email", email.toLowerCase().trim());
-        showToast({ message: "Account unverified. Redirecting to OTP activation grid.", severity: "info" });
+      if (response.status === 403 && (data.error?.includes("verify") || data.requiresVerification)) {
+        const targetEmail = data.email || email.toLowerCase().trim();
+        sessionStorage.setItem("paintit_verification_email", targetEmail);
+        showToast({ message: "Account unverified. A new verification code was sent to your email inbox!", severity: "info" });
         window.location.href = "/verify-otp";
         return;
       }
