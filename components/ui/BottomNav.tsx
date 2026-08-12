@@ -1,7 +1,7 @@
 // components/shared/BottomNav.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -19,10 +19,70 @@ interface NavigationProps {
 export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const targetName = user?.fullName || user?.full_name || "";
+  const displayFirstName = targetName.trim() ? targetName.trim().split(" ")[0] : "Painter";
   const nameInitialLetter = targetName.trim() ? targetName.trim().charAt(0).toUpperCase() : "P";
   const userAvatarImageSrc = user?.avatarUrl || user?.avatar_url || null;
+
+  // Complete list of all painter navigation links for the drawer
+  const fullDrawerNavItems = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+        </svg>
+      ),
+    },
+    {
+      label: "3D Studio",
+      href: "/designs",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+    },
+    {
+      label: "Leads & Inbox",
+      href: "/gigs",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Analytics",
+      href: "/insights",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Portfolio",
+      href: "/portfolio",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      label: "Profile Settings",
+      href: "/profile",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -44,7 +104,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
               Workspace Panels
             </div>
 
-            {items.map((item) => {
+            {fullDrawerNavItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -110,29 +170,122 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
       </aside>
 
       {/* ========================================================== */}
-      {/* 📱 MOBILE UNCLUTTERED FLOATING BOTTOM DOCK LAYOUT           */}
+      {/* 📱 MOBILE TOP HEADER WITH HAMBURGER DRAWER TRIGGER          */}
       {/* ========================================================== */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-neutral-950/98 border-t border-neutral-900 z-[100] px-1 flex items-center justify-around backdrop-blur-2xl shadow-2xl select-none">
-        {items.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-center transition-all active:scale-95 ${
-                isActive ? "text-emerald-400 font-black" : "text-neutral-400 hover:text-white"
-              }`}
+      <header className="md:hidden sticky top-0 left-0 right-0 h-14 bg-neutral-950/90 border-b border-neutral-900/90 z-40 px-4 flex items-center justify-between backdrop-blur-xl select-none">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 hover:text-white transition-all active:scale-95 cursor-pointer"
+            aria-label="Open Navigation Menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="text-sm font-black text-white uppercase tracking-wider">
+            PaintIt <span className="text-emerald-400">Studio</span>
+          </span>
+        </div>
+
+        <Link href="/profile" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-black uppercase text-emerald-400 overflow-hidden shadow-inner">
+            {userAvatarImageSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span>{nameInitialLetter}</span>
+            )}
+          </div>
+        </Link>
+      </header>
+
+      {/* ========================================================== */}
+      {/* 📱 MOBILE SLIDE-OUT LEFT DRAWER OVERLAY                    */}
+      {/* ========================================================== */}
+      {mobileDrawerOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[110] transition-opacity duration-300 animate-fade-in"
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`md:hidden fixed top-0 bottom-0 left-0 w-72 bg-neutral-950 border-r border-neutral-850 z-[120] flex flex-col justify-between p-5 transition-transform duration-300 ease-out font-sans shadow-2xl ${
+          mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="w-full space-y-6">
+          {/* Drawer Header with Close Button */}
+          <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
+            <span className="text-sm font-black uppercase tracking-wider text-emerald-400">
+              Navigation Menu
+            </span>
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(false)}
+              className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white"
             >
-              <div className={`transition-transform ${isActive ? "text-emerald-400 scale-110" : "text-neutral-400"}`}>
-                {item.icon}
-              </div>
-              <span className="text-[9px] uppercase font-bold tracking-tighter mt-0.5 truncate max-w-[68px]">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+              ✕
+            </button>
+          </div>
+
+          {/* User Profile Card Header */}
+          <div className="p-3 bg-neutral-900/60 border border-neutral-850 rounded-2xl flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-center text-sm font-black uppercase text-emerald-400 overflow-hidden shadow-inner shrink-0">
+              {userAvatarImageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span>{nameInitialLetter}</span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs font-black text-white truncate">{targetName || "Painter Account"}</h4>
+              <span className="text-[10px] text-emerald-400 font-mono">● Active Workspace</span>
+            </div>
+          </div>
+
+          {/* Drawer Navigation List */}
+          <nav className="space-y-1">
+            {fullDrawerNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                    isActive
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                      : "text-neutral-400 hover:text-white border border-transparent hover:bg-neutral-900/40"
+                  }`}
+                >
+                  <div className={isActive ? "text-emerald-400" : "text-neutral-500"}>
+                    {item.icon}
+                  </div>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Drawer Footer Log Out */}
+        <div className="border-t border-neutral-900 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              setMobileDrawerOpen(false);
+              logout();
+            }}
+            className="w-full py-3 bg-neutral-900 hover:bg-red-950/30 border border-neutral-800 hover:border-red-900/40 text-red-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+          >
+            🚪 Log Out
+          </button>
+        </div>
+      </aside>
     </>
   );
 };

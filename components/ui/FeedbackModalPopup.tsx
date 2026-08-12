@@ -112,7 +112,7 @@ export function FeedbackModalPopup() {
       {/* Global Floating Feedback Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-30 px-3.5 py-2 bg-neutral-900/90 hover:bg-neutral-850 text-emerald-400 font-black text-[11px] uppercase tracking-wider rounded-full shadow-2xl border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1.5 group backdrop-blur-xl animate-fade-in cursor-pointer active:scale-95 select-none"
+        className="fixed bottom-6 right-6 z-40 px-3.5 py-2.5 bg-neutral-900/90 hover:bg-neutral-850 text-emerald-400 font-black text-xs uppercase tracking-wider rounded-full shadow-2xl border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center gap-1.5 group backdrop-blur-xl animate-fade-in cursor-pointer active:scale-95 select-none"
       >
         <span className="text-xs group-hover:rotate-12 transition-transform">💬</span>
         <span>Feedback</span>
