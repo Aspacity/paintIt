@@ -73,7 +73,7 @@ function WorkspaceContent() {
   const [templateId, setTemplateId] = useState<string>(urlTemplateId);
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
 
-  // Default Fallback Colors (if DB is empty)
+  // Default Fallback Colors & Paint Finishes
   const [roomColors, setRoomColors] = useState<Record<string, string>>({
     floor: "#f2f0ea",
     ceiling: "#ffffff",
@@ -82,6 +82,13 @@ function WorkspaceContent() {
     wallLeft: "#C4B199",
     wallRight: "#C4B199",
     toilet: "#C4B199"
+  });
+
+  const [roomFinishes, setRoomFinishes] = useState<Record<string, string>>({
+    wallFront: "EMULSION",
+    wallBack: "EMULSION",
+    wallLeft: "EMULSION",
+    wallRight: "EMULSION"
   });
 
   const [bulbs, setBulbs] = useState<BulbState[]>([]);
@@ -396,6 +403,7 @@ function WorkspaceContent() {
               <WorkspaceCanvas
                 modelUrl={modelUrl}
                 roomColors={roomColors}
+                roomFinishes={roomFinishes}
                 activeSurface={activeSurface}
                 onSurfaceSelect={setActiveSurface}
                 bulbs={bulbs}
@@ -426,7 +434,7 @@ function WorkspaceContent() {
               ? "bg-emerald-500 border-emerald-400 text-neutral-950"
               : "bg-neutral-900/90 border-neutral-800 text-white"
           }`}
-          title="Paint Picker"
+          title="Paint Color & Finishes"
         >
           🎨
         </button>
@@ -478,6 +486,8 @@ function WorkspaceContent() {
               activeSurface={activeSurface}
               roomColors={roomColors}
               setRoomColors={setRoomColors}
+              roomFinishes={roomFinishes}
+              setRoomFinishes={setRoomFinishes}
               customColors={customColors}
               setCustomColors={setCustomColors}
               detectedMeshes={detectedMeshes}

@@ -2,17 +2,18 @@
 
 import React, { useEffect, useRef, useMemo } from 'react';
 import { useFrame, ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Environment, Sky } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { GLTF, OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { BulbState } from '@/components/canvas/LightControls';
 import { DBCameraConfig } from '@/app/(public)/workspace/page';
 import { generateWallNormalMap } from '@/utils/generateWallNormalMaps';
-import { TEXTURE_PRESETS, TextureCategory, getMeshCategory } from '@/utils/generateFloorTextures';
+import { TEXTURE_PRESETS, getMeshCategory } from '@/utils/generateFloorTextures';
 
 interface CanvasProps {
   modelUrl: string;
   roomColors: Record<string, string>;
+  roomFinishes?: Record<string, string>;
   activeSurface: string;
   onSurfaceSelect: (meshName: string) => void;
   bulbs: BulbState[];
@@ -40,6 +41,7 @@ const WALL_MAPPING: Record<string, string> = {
 export default function WorkspaceCanvas({
   modelUrl,
   roomColors,
+  roomFinishes,
   activeSurface,
   onSurfaceSelect,
   bulbs,
@@ -55,12 +57,10 @@ export default function WorkspaceCanvas({
     const clone = scene.clone();
     const hasInnerWalls = !!clone.getObjectByName('wallLeft');
     if (hasInnerWalls) {
-      console.log("🛠️ [Workspace Canvas] Preparing scene: interior walls detected. Hiding structural exterior walls.");
       clone.traverse((node) => {
         if (node instanceof THREE.Mesh) {
           if (WALL_MAPPING[node.name]) {
             node.visible = false;
-            console.log(`🚫 [Workspace Canvas] Hid duplicate exterior wall: ${node.name}`);
           }
         }
       });
@@ -86,7 +86,6 @@ export default function WorkspaceCanvas({
           });
         }
 
-        // Enable Blender imported punctual lights
         if (node instanceof THREE.Light) {
           node.castShadow = true;
           if (node.intensity > 0 && node.intensity < 5.0) {
@@ -96,7 +95,6 @@ export default function WorkspaceCanvas({
       });
 
       const materialNames = Array.from(allMaterialSet);
-      console.log(`📦 [Workspace Canvas] Model Loaded: ${meshList.length} meshes, ${materialNames.length} total materials detected.`);
       onModelLoaded(materialNames, meshList);
       hasNotifiedRef.current = true;
     }
@@ -106,12 +104,10 @@ export default function WorkspaceCanvas({
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const initialCamSet = useRef<boolean>(false);
 
-  // Memoize active bulb filtering to prevent unnecessary array recreations per frame
   const activeBulbs = useMemo(() => {
     return bulbs.filter((b) => (b.visible !== undefined ? b.visible : b.enabled));
   }, [bulbs]);
 
-  // Set initial camera positions once on load
   useEffect(() => {
     if (controlsRef.current && cameraConfig && !initialCamSet.current) {
       if (cameraConfig.target) {
@@ -125,7 +121,6 @@ export default function WorkspaceCanvas({
     }
   }, [cameraConfig]);
 
-  // 2. DYNAMIC AUTO-PANNING CAMERA TARGET GLIDING LERP LOOP
   useFrame(() => {
     if (!controlsRef.current) return;
 
@@ -133,7 +128,6 @@ export default function WorkspaceCanvas({
     const targetY = cameraConfig.target ? cameraConfig.target[1] : 2.7;
     let targetZ = cameraConfig.target ? cameraConfig.target[2] : 0.05;
 
-    // Smoothly pan camera viewpoint focus target based on active surface selection
     if (activeSurface === 'wallLeft') {
       targetX = -2.5;
     } else if (activeSurface === 'wallRight') {
@@ -149,14 +143,14 @@ export default function WorkspaceCanvas({
     controlsRef.current.update();
   });
 
-  // ⚡ OPTIMIZED MESH TRAVERSAL: Update materials for walls, textures, & material swaps dynamically
+  // ⚡ DYNAMIC PAINT & FINISH MATERIAL TRAVERSAL LOOP
   useEffect(() => {
     if (!clonedScene) return;
 
     clonedScene.traverse((node: THREE.Object3D) => {
       if (node instanceof THREE.Mesh) {
         const meshName = node.name;
-        if (!node.visible) return; // Skip hidden duplicate exterior walls
+        if (!node.visible) return;
 
         node.receiveShadow = true;
         node.castShadow = true;
@@ -164,10 +158,7 @@ export default function WorkspaceCanvas({
         const targetKey = WALL_MAPPING[meshName] || meshName;
         const category = getMeshCategory(meshName);
         
-        // 1. Resolve dynamic texture mapping (custom mesh ID specific or category fallback)
         const activeTextureId = activeTextures?.[meshName] || activeTextures?.[category];
-        
-        // 2. Resolve material swap mapping
         const swapMaterialName = materialSwaps?.[meshName];
 
         if (activeTextureId && activeTextureId !== "original") {
@@ -184,12 +175,10 @@ export default function WorkspaceCanvas({
             node.material.needsUpdate = true;
           }
         } else if (swapMaterialName && materials[swapMaterialName]) {
-          // Dynamic native material swapping
           node.material = materials[swapMaterialName].clone();
           node.material.side = THREE.DoubleSide;
           node.material.needsUpdate = true;
         } else {
-          // Check paint color for walls or custom painted objects
           const activeColor = roomColors[meshName] || roomColors[targetKey];
           const isWallSurface = category === 'WALL';
 
@@ -199,9 +188,35 @@ export default function WorkspaceCanvas({
             node.material.color.set(activeColor);
 
             if (isWallSurface || meshName.startsWith('wall')) {
+              // 🎨 DYNAMIC PAINT FINISH ROUGHNESS & REFLECTIVITY MAPPING
+              const finishType = (roomFinishes?.[meshName] || roomFinishes?.[targetKey] || "EMULSION").toUpperCase();
+
+              let roughness = 0.85;
+              let metalness = 0.0;
+              let bumpScale = 0.015;
+
+              if (finishType === "SATIN" || finishType === "SILK") {
+                roughness = 0.35;
+                metalness = 0.04;
+                bumpScale = 0.008;
+              } else if (finishType === "GLOSS") {
+                roughness = 0.15;
+                metalness = 0.12;
+                bumpScale = 0.003;
+              } else if (finishType === "EGGSHELL") {
+                roughness = 0.55;
+                metalness = 0.02;
+                bumpScale = 0.012;
+              } else if (finishType === "TEXTURED") {
+                roughness = 0.95;
+                metalness = 0.0;
+                bumpScale = 0.035;
+              }
+
               node.material.bumpMap = wallNormalMap;
-              node.material.bumpScale = 0.015;
-              node.material.roughness = 0.85;
+              node.material.bumpScale = bumpScale;
+              node.material.roughness = roughness;
+              node.material.metalness = metalness;
 
               node.material.polygonOffset = true;
               node.material.polygonOffsetFactor = -1;
@@ -212,7 +227,7 @@ export default function WorkspaceCanvas({
         }
       }
     });
-  }, [clonedScene, roomColors, wallNormalMap, activeTextures, materialSwaps, materials]);
+  }, [clonedScene, roomColors, roomFinishes, wallNormalMap, activeTextures, materialSwaps, materials]);
 
   return (
     <>
@@ -235,7 +250,6 @@ export default function WorkspaceCanvas({
         />
       )}
 
-      {/* Dynamic Light Fixtures (Shadows turned off on point lights to save GPU VRAM) */}
       {activeBulbs.map((bulb) => (
         <group key={bulb.id} position={bulb.position}>
           <pointLight
@@ -243,7 +257,7 @@ export default function WorkspaceCanvas({
             color={bulb.color}
             distance={bulb.distance || 15}
             decay={1.2}
-            castShadow={false} // Prevents multi-light shadow depth map memory overflow
+            castShadow={false}
           />
         </group>
       ))}
@@ -255,7 +269,6 @@ export default function WorkspaceCanvas({
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name || e.object.uuid;
             const targetName = WALL_MAPPING[rawName] || rawName;
-            console.log("🎯 [Workspace Canvas] Clicked Mesh:", rawName, "-> mapped to:", targetName);
             onSurfaceSelect(targetName);
           }
         }}

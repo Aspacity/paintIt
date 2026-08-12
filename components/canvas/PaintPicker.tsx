@@ -10,10 +10,25 @@ export interface CustomColor {
   id?: string;
 }
 
+export interface PaintFinishPreset {
+  id: string;
+  name: string;
+  desc: string;
+  icon: string;
+}
+
+export const PAINT_FINISH_PRESETS: PaintFinishPreset[] = [
+  { id: "EMULSION", name: "Emulsion", desc: "Soft Matte Finish", icon: "🛋️" },
+  { id: "GLOSS", name: "Gloss", desc: "High Sheen Reflective", icon: "💎" },
+  { id: "SATIN", name: "Satin", desc: "Subtle Silk Sheen", icon: "✨" },
+];
+
 interface PaintPickerProps {
   activeSurface: string;
   roomColors: Record<string, string>;
   setRoomColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  roomFinishes?: Record<string, string>;
+  setRoomFinishes?: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   customColors: CustomColor[];
   setCustomColors: React.Dispatch<React.SetStateAction<CustomColor[]>>;
   detectedMeshes?: string[];
@@ -25,6 +40,8 @@ export default function PaintPicker({
   activeSurface,
   roomColors,
   setRoomColors,
+  roomFinishes = {},
+  setRoomFinishes,
   customColors,
   setCustomColors,
   detectedMeshes = [],
@@ -35,13 +52,20 @@ export default function PaintPicker({
   const [newColorHex, setNewColorHex] = useState("#10B981");
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // 🚀 Combine architectural real-world paint catalog with user's custom mixed entries
   const combinedPaintDeck = [
     ...REAL_PAINTS_CATALOG.map(p => ({ name: p.name, hex: p.code, brand: p.brand })),
     ...customColors.map(c => ({ name: c.name, hex: c.hex, brand: c.brand || "Custom Mix" }))
   ];
+
+  const currentFinishId = roomFinishes[activeSurface] || "EMULSION";
+
+  const handleFinishChange = (finishId: string) => {
+    if (setRoomFinishes) {
+      setRoomFinishes(prev => ({ ...prev, [activeSurface]: finishId }));
+    }
+  };
 
   const handleAddCustomColor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,13 +88,11 @@ export default function PaintPicker({
       brand: "Custom Mix"
     };
 
-    // 1. Optimistic layout state adjustments for smooth client rendering
     setCustomColors((prev) => [...prev, newColor]);
     setRoomColors((prev) => ({ ...prev, [activeSurface]: formattedHex }));
     setNewColorName("");
     setNewColorHex("#10B981");
 
-    // 2. Dispatch data synchronization link payload directly down to user_profiles[cite: 1]
     if (typeof window !== "undefined") {
       const activeToken = localStorage.getItem("paintit_access_token") ||
         localStorage.getItem("token") ||
@@ -79,7 +101,7 @@ export default function PaintPicker({
       if (activeToken) {
         setIsSyncing(true);
         try {
-          const response = await fetch(`${BACKEND_API_URL}/api/profile/custom-paints`, {
+          await fetch(`${BACKEND_API_URL}/api/profile/custom-paints`, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${activeToken}`,
@@ -91,10 +113,6 @@ export default function PaintPicker({
               brand: newColor.brand
             })
           });
-
-          if (!response.ok) {
-            console.warn("⚠️ Remote profile synchronization responded with an error boundary.");
-          }
         } catch (err) {
           console.error("❌ Profile canvas sync exception:", err);
         } finally {
@@ -109,7 +127,7 @@ export default function PaintPicker({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans text-white">
       {/* 🎯 ACTIVE SURFACE TARGET HUD */}
       <div className="bg-neutral-900 border border-neutral-800/80 rounded-xl p-3 flex items-center justify-between">
         <div>
@@ -136,7 +154,7 @@ export default function PaintPicker({
           <select
             value={activeSurface}
             onChange={(e) => onSurfaceSelect(e.target.value)}
-            className="w-full bg-neutral-900 border border-neutral-800 hover:border-neutral-700 px-3 py-2.5 rounded-xl text-xs text-neutral-200 font-bold focus:outline-none transition-all cursor-pointer font-sans"
+            className="w-full bg-neutral-900 border border-neutral-800 hover:border-neutral-700 px-3 py-2.5 rounded-xl text-xs text-neutral-200 font-bold focus:outline-none transition-all cursor-pointer"
           >
             {detectedMeshes.map((mesh) => (
               <option key={mesh} value={mesh}>
@@ -146,6 +164,40 @@ export default function PaintPicker({
           </select>
         </div>
       )}
+
+      {/* ✨ PAINT FINISH SHEEN SELECTOR */}
+      <div className="space-y-1.5 bg-neutral-950 p-3 border border-neutral-850 rounded-2xl">
+        <div className="flex items-center justify-between">
+          <span className="text-[9px] uppercase font-black tracking-widest text-neutral-400">
+            Paint Finish & Sheen Type
+          </span>
+          <span className="text-[9px] font-mono text-emerald-400 font-bold">
+            {PAINT_FINISH_PRESETS.find(f => f.id === currentFinishId)?.name || "Emulsion"}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {PAINT_FINISH_PRESETS.map((finish) => {
+            const isSelected = currentFinishId === finish.id;
+            return (
+              <button
+                key={finish.id}
+                type="button"
+                onClick={() => handleFinishChange(finish.id)}
+                className={`py-2 px-1 rounded-xl border text-[8px] font-black uppercase tracking-wider transition-all text-center flex flex-col items-center justify-center gap-0.5 ${
+                  isSelected
+                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md"
+                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
+                }`}
+                title={finish.desc}
+              >
+                <span className="text-xs">{finish.icon}</span>
+                <span className="truncate w-full">{finish.name.split(" ")[0]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Unified Paint Deck Selection Row */}
       <div className="space-y-2">
@@ -158,8 +210,9 @@ export default function PaintPicker({
                 key={`${paint.hex}-${index}`}
                 type="button"
                 onClick={() => setRoomColors((prev) => ({ ...prev, [activeSurface]: paint.hex }))}
-                className={`snap-center shrink-0 w-28 p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all ${isSelected ? "bg-white border-white text-neutral-950" : "bg-neutral-900 border-neutral-850 text-white"
-                  }`}
+                className={`snap-center shrink-0 w-28 p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                  isSelected ? "bg-white border-white text-neutral-950" : "bg-neutral-900 border-neutral-850 text-white"
+                }`}
               >
                 <div className="w-5 h-5 rounded-full border border-neutral-800/20" style={{ backgroundColor: paint.hex }} />
                 <div className="mt-2">
@@ -178,51 +231,41 @@ export default function PaintPicker({
         <div className="border-t border-neutral-900 pt-3">
           <form onSubmit={handleAddCustomColor} className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase font-black tracking-widest text-neutral-500 block">Mix Custom Color</span>
-              {isSyncing && (
-                <span className="text-[8px] uppercase tracking-widest font-mono text-cyan-400 font-bold animate-pulse">
-                  Syncing to profile...
-                </span>
-              )}
+              <span className="text-[9px] font-black uppercase text-neutral-400">Custom Color Mixer</span>
+              {isSyncing && <span className="text-[8px] font-mono text-emerald-400 animate-pulse">Syncing...</span>}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Color Name (e.g. Workspace Amber)"
-                  value={newColorName}
-                  onChange={(e) => setNewColorName(e.target.value)}
-                  className="flex-1 bg-neutral-900 border border-neutral-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-white"
-                />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={newColorName}
+                onChange={(e) => setNewColorName(e.target.value)}
+                placeholder="Paint Name (e.g. Royal Cream)"
+                className="bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none placeholder:text-neutral-600"
+              />
+              <div className="flex items-center gap-1.5">
                 <input
                   type="color"
                   value={newColorHex}
                   onChange={(e) => setNewColorHex(e.target.value)}
-                  className="w-10 h-9 bg-transparent border border-neutral-850 rounded-xl cursor-pointer"
+                  className="w-8 h-8 rounded-lg border border-neutral-800 bg-neutral-900 cursor-pointer p-0"
+                />
+                <input
+                  type="text"
+                  value={newColorHex}
+                  onChange={(e) => setNewColorHex(e.target.value)}
+                  placeholder="#10B981"
+                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none"
                 />
               </div>
-
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 font-mono">#</span>
-                  <input
-                    type="text"
-                    placeholder="HEX Code (e.g. FFBF00)"
-                    value={newColorHex.replace("#", "")}
-                    onChange={(e) => setNewColorHex(`#${e.target.value}`)}
-                    maxLength={6}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-6 pr-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-white font-mono uppercase tracking-wider"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-5 bg-emerald-500 text-neutral-950 font-black rounded-xl text-[10px] uppercase tracking-wider transition-all active:scale-95"
-                >
-                  Add & Sync
-                </button>
-              </div>
             </div>
+
+            <button
+              type="submit"
+              className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95"
+            >
+              + Add Custom Paint Color
+            </button>
           </form>
         </div>
       )}
