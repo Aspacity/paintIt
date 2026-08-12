@@ -188,7 +188,7 @@ export function StudioBlenderModelMesh({
           }
         }
 
-        const activeColor = surfaceStates[mappedName] || surfaceStates[meshName] || surfaceStates.wallFront;
+        const activeColor = surfaceStates[mappedName] || surfaceStates[meshName];
 
         if (node.material instanceof THREE.MeshStandardMaterial) {
           node.material = node.material.clone();

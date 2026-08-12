@@ -43,13 +43,24 @@ export function ModularAssetInstance({
           const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
           mat.side = THREE.DoubleSide;
 
-          // If GLB model has an embedded texture map, set base color to white so texture renders at 100% full brightness!
+          // If GLB model has embedded texture maps from Blender, preserve all PBR channels!
           if (mat.map) {
             mat.color.set("#ffffff");
             mat.map.colorSpace = THREE.SRGBColorSpace;
             mat.map.needsUpdate = true;
             mat.roughness = Math.min(mat.roughness, 0.7);
-          } else if (mat.color && mat.color.r < 0.05 && mat.color.g < 0.05 && mat.color.b < 0.05) {
+          }
+          if (mat.normalMap) {
+            mat.normalMap.needsUpdate = true;
+          }
+          if (mat.roughnessMap) {
+            mat.roughnessMap.needsUpdate = true;
+          }
+          if (mat.metalnessMap) {
+            mat.metalnessMap.needsUpdate = true;
+          }
+
+          if (!mat.map && mat.color && mat.color.r < 0.05 && mat.color.g < 0.05 && mat.color.b < 0.05) {
             // If no texture map and color is pitch black, auto-set to clean warm neutral
             const defaultColor = objectData.category === "decor" ? "#EAE6DF" : "#D4CFB9";
             mat.color.set(defaultColor);

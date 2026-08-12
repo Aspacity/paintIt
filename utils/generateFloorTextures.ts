@@ -184,6 +184,7 @@ function createPlankTexture(baseHex: string, grainHex: string, dir: "HORIZONTAL"
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(4, 4);
