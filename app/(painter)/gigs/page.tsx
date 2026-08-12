@@ -1,141 +1,225 @@
-// app/(painter)/dashboard/gigs/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useAlert } from "@/context/AlertContext";
+import { ClientInquiryCard } from "@/components/ui/ClientInquiryCard";
 
-interface FeatureBlueprint {
-  icon: string;
-  title: string;
-  description: string;
-  metric: string;
+interface InboundLead {
+  id: number;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  project_description: string;
+  conversion_source: string;
+  created_at: string;
+  isLocked?: boolean;
+  roomColors?: Record<string, string> | null;
+  finish?: string | null;
 }
 
-export default function UpcomingGigsBoardHub() {
-  const [hasSubscribed, setHasSubscribed] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
+interface RawBackendLead {
+  id: number;
+  email: string;
+  conversion_source: string;
+  meta_tracking_data?: string | Record<string, unknown> | null;
+  project_description?: string;
+  created_at: string;
+  isLocked?: boolean;
+}
 
-  const futureBlueprints: FeatureBlueprint[] = [
-    {
-      icon: "🎯",
-      title: "Smart Location Matching",
-      description: "Get real-time workspace radar alerts immediately when clients in Ibadan post finishing specs near you.",
-      metric: "Proximity Alerts"
-    },
-    {
-      icon: "⚡",
-      title: "Direct Proposal Engine",
-      description: "Pitch custom texture estimates, screeding timelines, and structural cost breakdowns straight to open boards.",
-      metric: "1-Click Bidding"
-    },
-    {
-      icon: "💬",
-      title: "Real-time Studio Chat",
-      description: "Secure cross-side communication layers to negotiate swatches and details before locking down contracts.",
-      metric: "Instant Messaging"
-    }
-  ];
+export default function PainterLeadsAndGigsPage() {
+  const { accessToken } = useAuth();
+  const { showToast } = useAlert();
 
-  const triggerNotificationSimulation = () => {
-    setIsSimulating(true);
-    setTimeout(() => {
-      setHasSubscribed(true);
-      setIsSimulating(false);
-    }, 900);
-  };
+  const [leads, setLeads] = useState<InboundLead[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [filterSource, setFilterSource] = useState<string>("ALL");
+
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      if (!accessToken) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_API_URL}/api/leads/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const rawLeads: RawBackendLead[] = data.pipelineLeads || data.leads || [];
+
+          const formattedLeads: InboundLead[] = rawLeads.map((item) => {
+            let meta: Record<string, unknown> = {};
+            if (typeof item.meta_tracking_data === "string") {
+              try {
+                meta = JSON.parse(item.meta_tracking_data);
+              } catch {
+                meta = {};
+              }
+            } else if (item.meta_tracking_data && typeof item.meta_tracking_data === "object") {
+              meta = item.meta_tracking_data as Record<string, unknown>;
+            }
+
+            const rawEmail =
+              (item as unknown as { client_email?: string }).client_email ||
+              item.email ||
+              (meta.email as string) ||
+              (meta.clientEmail as string) ||
+              (meta.client_email as string);
+            const resolvedEmail = rawEmail && rawEmail.trim() ? rawEmail.trim() : "client@paintit.app";
+
+            const rawName =
+              (item as unknown as { client_name?: string }).client_name ||
+              (meta.clientName as string) ||
+              (meta.client_name as string);
+            const resolvedName =
+              rawName && rawName.trim()
+                ? rawName.trim()
+                : resolvedEmail.includes("@")
+                ? resolvedEmail.split("@")[0]
+                : "Interested Client";
+
+            const rawPhone =
+              (item as unknown as { client_phone?: string }).client_phone ||
+              (meta.phone as string) ||
+              (meta.clientPhone as string) ||
+              null;
+
+            return {
+              id: item.id,
+              client_name: resolvedName,
+              client_email: resolvedEmail,
+              client_phone: rawPhone,
+              project_description:
+                item.project_description ||
+                (meta.message as string) ||
+                "Interested in custom painting services.",
+              conversion_source: item.conversion_source || "Business Profile",
+              created_at: item.created_at,
+              isLocked: false,
+              roomColors: (meta.roomColors as Record<string, string>) || null,
+              finish: (meta.finish as string) || null,
+            };
+          });
+
+          setLeads(formattedLeads);
+        }
+      } catch (err) {
+        console.error("Error fetching leads:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, [accessToken, BACKEND_API_URL]);
+
+  const filteredLeads = leads.filter((lead) => {
+    if (filterSource === "ALL") return true;
+    return lead.conversion_source.toLowerCase().includes(filterSource.toLowerCase());
+  });
 
   return (
-    <div className="w-full text-white space-y-8 selection:bg-emerald-500 selection:text-black animate-fade-in pb-12">
-
-      {/* 🏷️ SECTION 1: HEADER CONTROLS ZONE */}
-      <div className="border-b border-neutral-900 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="w-full text-white space-y-6 animate-fade-in pb-12">
+      {/* Header Section */}
+      <div className="border-b border-neutral-900 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100">Open Gigs Marketplace</h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Preview the blueprint for PaintIt&apos;s upcoming open-bidding contractor request ecosystem.
+          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
+            <span>📩 Customer Inquiries & Job Leads</span>
+          </h1>
+          <p className="text-xs text-neutral-500 mt-0.5 font-medium">
+            Manage incoming messages, project specs, and 3D color choices from clients.
           </p>
         </div>
-        <span className="w-fit text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-black uppercase tracking-widest animate-pulse select-none">
-          🚀 Next Major Release Pipeline
-        </span>
-      </div>
-
-      {/* 💳 SECTION 2: THE MAIN INTERACTIVE HERO BANNER */}
-      <div className="relative border border-neutral-900 rounded-3xl p-6 md:p-8 bg-gradient-to-br from-neutral-950 via-neutral-950 to-emerald-950/20 shadow-2xl overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/15 transition-all duration-500" />
-        <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-neutral-900 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-xl space-y-4 relative z-10">
-          <div className="w-9 h-9 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-sm shadow-inner select-none">
-            🛠️
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-base font-black uppercase tracking-wide text-neutral-100">
-              Upwork-Style Job Feed is Materializing
-            </h2>
-            <p className="text-xs text-neutral-400 leading-relaxed font-medium">
-              We are architecting a collaborative open pool where clients can publish architectural room profiles, wall texture preferences, and raw budget parameters. Any verified painter can analyze the request data frames and fire off custom proposals.
-            </p>
-          </div>
-
-          <div className="pt-2">
-            {hasSubscribed ? (
-              <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold animate-fade-in bg-emerald-950/20 border border-emerald-500/20 w-fit px-4 py-2 rounded-xl">
-                <span>✓</span> Early Access Lock Activated. We will alert your workspace node on release day!
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={triggerNotificationSimulation}
-                disabled={isSimulating}
-                className="text-[10px] bg-neutral-100 hover:bg-white text-black font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-lg active:scale-[99%] disabled:opacity-50"
-              >
-                {isSimulating ? "Synchronizing Beta Manifest..." : "Notify Me When Feed Goes Live ➔"}
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider">
+            {leads.length} Total Leads
+          </span>
         </div>
       </div>
 
-      {/* 📦 SECTION 3: THE SPECIFICATIONS BLUEPRINT MATRIX */}
-      <div className="space-y-4">
-        <h3 className="text-xs font-black uppercase tracking-wider text-neutral-500 pl-1">
-          Marketplace Operational Blueprints
-        </h3>
+      {/* Leads Summary Statistics Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
+          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Total Inquiries</span>
+          <span className="text-xl font-black text-white block mt-0.5">{leads.length}</span>
+        </div>
+        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
+          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">WhatsApp Direct</span>
+          <span className="text-xl font-black text-emerald-400 block mt-0.5">
+            {leads.filter((l) => !!l.client_phone).length}
+          </span>
+        </div>
+        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
+          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">3D Color Picks</span>
+          <span className="text-xl font-black text-cyan-400 block mt-0.5">
+            {leads.filter((l) => !!l.roomColors).length}
+          </span>
+        </div>
+        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
+          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Response Rate</span>
+          <span className="text-xl font-black text-white block mt-0.5">100%</span>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {futureBlueprints.map((blueprint, idx) => (
-            <div
-              key={idx}
-              className="bg-neutral-950 border border-neutral-900 rounded-2xl p-5 flex flex-col justify-between shadow-xl hover:border-neutral-850 transition-colors"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-850 flex items-center justify-center text-sm select-none">
-                    {blueprint.icon}
-                  </div>
-                  <span className="text-[9px] font-mono text-neutral-600 font-bold uppercase tracking-wider">
-                    {blueprint.metric}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-wide text-neutral-200">
-                    {blueprint.title}
-                  </h4>
-                  <p className="text-[11px] text-neutral-500 mt-1 leading-relaxed font-medium">
-                    {blueprint.description}
-                  </p>
-                </div>
-              </div>
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-neutral-900 pb-3">
+        {["ALL", "Profile", "3D Studio", "Direct"].map((source) => (
+          <button
+            key={source}
+            onClick={() => setFilterSource(source)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              filterSource === source
+                ? "bg-emerald-500 text-neutral-950 font-black shadow-md"
+                : "bg-neutral-950 border border-neutral-850 text-neutral-400 hover:text-white"
+            }`}
+          >
+            {source === "ALL" ? "All Messages" : source}
+          </button>
+        ))}
+      </div>
 
-              <div className="pt-4 mt-3 border-t border-neutral-900/60 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-500/40 select-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-neutral-800" />
-                Under Construction
-              </div>
-            </div>
+      {/* Main Inbox Feed */}
+      {loading ? (
+        <div className="py-16 text-center">
+          <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-xs text-neutral-500">Loading your client inquiries...</p>
+        </div>
+      ) : filteredLeads.length === 0 ? (
+        <div className="py-16 bg-neutral-950 border border-neutral-900 rounded-3xl text-center space-y-3">
+          <span className="text-3xl block">📩</span>
+          <h3 className="text-xs font-black uppercase text-neutral-300">No Inquiries Found</h3>
+          <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+            Share your business link with potential clients on WhatsApp to start receiving direct job requests!
+          </p>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/profile`;
+              navigator.clipboard.writeText(link);
+              showToast({ message: "Profile link copied to clipboard!", severity: "success" });
+            }}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase rounded-xl shadow-md transition-all"
+          >
+            🔗 Copy Profile Link
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredLeads.map((lead) => (
+            <ClientInquiryCard key={lead.id} lead={lead} isPlanQualified={true} />
           ))}
         </div>
-      </div>
-
+      )}
     </div>
   );
 }

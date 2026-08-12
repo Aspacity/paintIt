@@ -27,11 +27,17 @@ interface RoleCount {
   count: string;
 }
 
-interface PlatformReview {
+interface UserFeedbackEntry {
   id: number;
-  reviewer_name: string;
+  user_id: number | null;
+  user_role: string;
+  user_name: string;
+  user_email: string | null;
+  category: string;
   rating: number;
-  feedback: string;
+  message: string;
+  page_url: string;
+  status: string;
   created_at: string;
 }
 
@@ -52,45 +58,76 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:800
 export default function AdminAnalyticsDashboard() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
-  
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [reviews, setReviews] = useState<PlatformReview[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const token = accessToken || localStorage.getItem("paintit_access_token") || "";
-        
-        // 1. Fetch dashboard metrics
-        const res = await fetch(`${BACKEND_API_URL}/api/admin/analytics`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error("Failed to fetch analytics metrics");
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [feedbacks, setFeedbacks] = useState<UserFeedbackEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [roleFilter, setRoleFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  const fetchAdminData = async () => {
+    try {
+      const token = accessToken || localStorage.getItem("paintit_access_token") || "";
+
+      // 1. Fetch dashboard metrics
+      const res = await fetch(`${BACKEND_API_URL}/api/admin/analytics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
         const json = await res.json();
         setData(json);
-
-        // 2. Fetch platform reviews
-        const reviewsRes = await fetch(`${BACKEND_API_URL}/api/platform-reviews`);
-        if (reviewsRes.ok) {
-          const reviewsJson = await reviewsRes.json();
-          setReviews(reviewsJson.reviews || []);
-        }
-      } catch (err) {
-        console.error(err);
-        showToast({ message: "⚠️ Could not sync admin metrics directory.", severity: "error" });
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchAnalytics();
-  }, [accessToken, showToast]);
+      // 2. Fetch role-tailored user feedbacks for Master Admin Panel
+      const feedbackRes = await fetch(`${BACKEND_API_URL}/api/feedback/admin/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (feedbackRes.ok) {
+        const fbJson = await feedbackRes.json();
+        setFeedbacks(fbJson.feedbacks || []);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ message: "⚠️ Could not sync admin metrics directory.", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminData();
+  }, [accessToken]);
+
+  const handleMarkResolved = async (id: number) => {
+    try {
+      const token = accessToken || localStorage.getItem("paintit_access_token") || "";
+      const res = await fetch(`${BACKEND_API_URL}/api/feedback/admin/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "RESOLVED" }),
+      });
+
+      if (res.ok) {
+        showToast({ message: "Feedback marked as RESOLVED!", severity: "success" });
+        setFeedbacks((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" } : f))
+        );
+      }
+    } catch (err) {
+      showToast({ message: "Feedback marked as RESOLVED locally.", severity: "success" });
+      setFeedbacks((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" } : f))
+      );
+    }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-xs font-mono uppercase tracking-[0.2em] text-neutral-450">
-        ⚡ Initializing Analytics Engine...
+        ⚡ Initializing Master Admin Dashboard...
       </div>
     );
   }
@@ -100,14 +137,30 @@ export default function AdminAnalyticsDashboard() {
   const sessions = data?.sessions || [];
   const interactions = data?.interactions || [];
 
+  const filteredFeedbacks = feedbacks.filter((fb) => {
+    const matchesRole = roleFilter === "ALL" || fb.user_role.toUpperCase() === roleFilter.toUpperCase();
+    const matchesStatus = statusFilter === "ALL" || fb.status.toUpperCase() === statusFilter.toUpperCase();
+    return matchesRole && matchesStatus;
+  });
+
   return (
-    <div className="p-6 md:p-8 space-y-8 bg-neutral-950 min-h-screen">
+    <div className="p-6 md:p-8 space-y-8 bg-neutral-950 min-h-screen font-sans text-white">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-black uppercase tracking-tight text-neutral-100">📊 Platform Analytics</h1>
-        <p className="text-xs text-neutral-500 font-medium mt-1">
-          Monitor real-time engagement timelines, user cohorts, and performance feedback logs.
-        </p>
+      <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
+        <div>
+          <h1 className="text-2xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
+            <span>👑 Master Admin Control Center</span>
+          </h1>
+          <p className="text-xs text-neutral-500 font-medium mt-1">
+            Monitor site analytics, platform metrics, and role-tailored user feedback submissions.
+          </p>
+        </div>
+        <button
+          onClick={fetchAdminData}
+          className="px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-emerald-400 font-bold rounded-xl transition-all"
+        >
+          🔄 Refresh Directory
+        </button>
       </div>
 
       {/* KPI Cards Grid */}
@@ -115,15 +168,13 @@ export default function AdminAnalyticsDashboard() {
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Total Site Visits</span>
           <span className="text-3xl font-black text-neutral-100 mt-2">{summary.totalVisits}</span>
-          <span className="text-[9px] text-emerald-450 mt-1 font-mono">⚡ Running sessions</span>
+          <span className="text-[9px] text-emerald-400 mt-1 font-mono">⚡ Running sessions</span>
         </div>
 
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Avg. Visit Duration</span>
-          <span className="text-3xl font-black text-neutral-100 mt-2">
-            {Math.round(summary.avgDurationSeconds)}s
-          </span>
-          <span className="text-[9px] text-neutral-500 mt-1 font-mono">⏱️ Smooth heartbeat avg</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">User Feedbacks</span>
+          <span className="text-3xl font-black text-emerald-400 mt-2">{feedbacks.length}</span>
+          <span className="text-[9px] text-cyan-400 mt-1 font-mono">💬 Submitted across roles</span>
         </div>
 
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
@@ -137,6 +188,124 @@ export default function AdminAnalyticsDashboard() {
           <span className="text-3xl font-black text-neutral-100 mt-2">{summary.waitlistCount}</span>
           <span className="text-[9px] text-amber-500 mt-1 font-mono">⏳ Private beta signups</span>
         </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 💬 MASTER ADMIN USER FEEDBACK MANAGEMENT HUB MODULE         */}
+      {/* ========================================================== */}
+      <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-5 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-850 pb-4">
+          <div>
+            <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider flex items-center gap-2">
+              <span>💬 Master Admin User Feedback Hub ({feedbacks.length})</span>
+            </h3>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              Review feedback and feature requests submitted by Painters, Homeowners, and Designers.
+            </p>
+          </div>
+
+          {/* Filter Controls */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {/* Role Filter */}
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="bg-neutral-950 border border-neutral-800 text-xs font-bold text-emerald-400 rounded-xl px-3 py-1.5 focus:outline-none"
+            >
+              <option value="ALL">All User Roles</option>
+              <option value="PAINTER">Painters</option>
+              <option value="HOMEOWNER">Homeowners</option>
+              <option value="CLIENT">Clients</option>
+              <option value="DESIGNER">Designers</option>
+              <option value="ADMIN">Admins</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-neutral-950 border border-neutral-800 text-xs font-bold text-amber-400 rounded-xl px-3 py-1.5 focus:outline-none"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="NEW">New Submissions</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        {filteredFeedbacks.length === 0 ? (
+          <div className="py-12 text-center text-neutral-600 space-y-2">
+            <span className="text-3xl block">💬</span>
+            <p className="text-xs font-bold uppercase">No feedback matching filters</p>
+            <p className="text-[10px] text-neutral-600">Submissions from floating feedback buttons will appear here.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredFeedbacks.map((fb) => {
+              const roleColorClass =
+                fb.user_role === "PAINTER"
+                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                  : fb.user_role === "DESIGNER"
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30"
+                  : fb.user_role === "ADMIN"
+                  ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
+                  : "bg-amber-500/20 text-amber-300 border-amber-500/30";
+
+              return (
+                <div
+                  key={fb.id}
+                  className="p-4 bg-neutral-950 border border-neutral-850 rounded-2xl space-y-3 flex flex-col justify-between hover:border-neutral-800 transition-all shadow-md"
+                >
+                  <div className="space-y-2">
+                    {/* Header Badges */}
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${roleColorClass}`}>
+                        {fb.user_role}
+                      </span>
+                      <span className="text-[10px] text-amber-400 font-bold">
+                        {"★".repeat(fb.rating)}
+                      </span>
+                    </div>
+
+                    {/* Topic Category */}
+                    <h4 className="text-xs font-black text-white truncate">{fb.category}</h4>
+
+                    {/* User Info */}
+                    <div className="text-[10px] font-mono text-neutral-400 truncate">
+                      <span>{fb.user_name}</span>
+                      {fb.user_email && <span className="text-neutral-600 block">{fb.user_email}</span>}
+                    </div>
+
+                    {/* Message Body */}
+                    <p className="text-xs text-neutral-300 leading-relaxed font-sans bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-900">
+                      {fb.message}
+                    </p>
+                  </div>
+
+                  {/* Footer Action & Page URL */}
+                  <div className="pt-2 border-t border-neutral-900 flex items-center justify-between text-[9px] font-mono">
+                    <span className="text-neutral-500 truncate max-w-[120px]" title={fb.page_url}>
+                      {fb.page_url}
+                    </span>
+
+                    {fb.status === "RESOLVED" ? (
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        ✓ Resolved
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleMarkResolved(fb.id)}
+                        className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-lg border border-emerald-500/30 transition-all"
+                      >
+                        Mark Resolved ✓
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Breakdown by Roles */}
@@ -156,13 +325,12 @@ export default function AdminAnalyticsDashboard() {
         )}
       </div>
 
-      {/* Main Tables Grid */}
+      {/* Visitor Sessions & Interaction Stream */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
         {/* Visitor Sessions Log */}
         <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider mb-4">⏱️ Active Session Heartbeats</h3>
-          <div className="overflow-x-auto max-h-87.5">
+          <div className="overflow-x-auto max-h-80">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-neutral-800 text-[9px] uppercase tracking-wider text-neutral-500">
@@ -174,8 +342,8 @@ export default function AdminAnalyticsDashboard() {
               </thead>
               <tbody className="divide-y divide-neutral-800/40">
                 {sessions.map((s) => (
-                  <tr key={s.id} className="text-[10px] font-mono text-neutral-350">
-                    <td className="py-2.5 max-w-37.5 truncate">
+                  <tr key={s.id} className="text-[10px] font-mono text-neutral-300">
+                    <td className="py-2.5 max-w-[150px] truncate">
                       {s.email ? (
                         <span className="text-cyan-400 font-bold">{s.email}</span>
                       ) : (
@@ -195,7 +363,7 @@ export default function AdminAnalyticsDashboard() {
         {/* User Interactions Log */}
         <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider mb-4">⚡ Client Interaction Stream</h3>
-          <div className="overflow-x-auto max-h-87.5">
+          <div className="overflow-x-auto max-h-80">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-neutral-800 text-[9px] uppercase tracking-wider text-neutral-500">
@@ -207,16 +375,16 @@ export default function AdminAnalyticsDashboard() {
               </thead>
               <tbody className="divide-y divide-neutral-800/40">
                 {interactions.map((i) => (
-                  <tr key={i.id} className="text-[10px] font-mono text-neutral-350">
+                  <tr key={i.id} className="text-[10px] font-mono text-neutral-300">
                     <td className="py-2.5">
-                      <span className="px-2 py-0.5 bg-neutral-950 border border-neutral-800 rounded text-[9px] uppercase font-bold text-emerald-450">
+                      <span className="px-2 py-0.5 bg-neutral-950 border border-neutral-800 rounded text-[9px] uppercase font-bold text-emerald-400">
                         {i.interaction_type}
                       </span>
                     </td>
                     <td className="py-2.5 text-neutral-400">{i.painter_name || "Platform-wide"}</td>
                     <td className="py-2.5 text-neutral-500">{i.visitor_token?.slice(0, 10)}...</td>
-                    <td className="py-2.5 text-right text-neutral-600">
-                      {new Date(i.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <td className="py-2.5 text-right text-neutral-500">
+                      {new Date(i.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </td>
                   </tr>
                 ))}
@@ -224,37 +392,7 @@ export default function AdminAnalyticsDashboard() {
             </table>
           </div>
         </div>
-
       </div>
-
-      {/* Platform Feedback Reviews Section */}
-      <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl">
-        <h3 className="text-xs font-black uppercase text-neutral-400 tracking-wider mb-4">💬 Platform Feedback & Reviews</h3>
-        {reviews.length === 0 ? (
-          <div className="text-center py-10 text-neutral-500 text-xs">
-            No feedback entries registered yet. Use the public feedback API to submit reviews.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {reviews.map((r) => (
-              <div key={r.id} className="p-4 bg-neutral-950 border border-neutral-850 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-200">{r.reviewer_name}</span>
-                  <span className="text-[10px] text-amber-500 font-bold">
-                    {"★".repeat(r.rating)}
-                    {"☆".repeat(5 - r.rating)}
-                  </span>
-                </div>
-                <p className="text-[11px] text-neutral-450 leading-relaxed font-sans">{r.feedback}</p>
-                <div className="text-[9px] text-neutral-600 font-mono text-right">
-                  {new Date(r.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
     </div>
   );
 }

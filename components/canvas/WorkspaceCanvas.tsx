@@ -68,9 +68,11 @@ export default function WorkspaceCanvas({
     return clone;
   }, [scene]);
 
+  const hasNotifiedRef = useRef<boolean>(false);
+
   // Extract all meshes and materials to notify parent component & configure Blender lights
   useEffect(() => {
-    if (scene && materials && onModelLoaded) {
+    if (scene && materials && onModelLoaded && !hasNotifiedRef.current) {
       const allMaterialSet = new Set<string>(Object.keys(materials));
       const meshList: { name: string; originalMaterial: string }[] = [];
 
@@ -90,13 +92,13 @@ export default function WorkspaceCanvas({
           if (node.intensity > 0 && node.intensity < 5.0) {
             node.intensity = node.intensity * 10;
           }
-          console.log(`💡 [Workspace Canvas] Enabled Blender Light: ${node.name} (${node.type}), intensity: ${node.intensity}`);
         }
       });
 
       const materialNames = Array.from(allMaterialSet);
       console.log(`📦 [Workspace Canvas] Model Loaded: ${meshList.length} meshes, ${materialNames.length} total materials detected.`);
       onModelLoaded(materialNames, meshList);
+      hasNotifiedRef.current = true;
     }
   }, [scene, materials, onModelLoaded]);
 
@@ -214,24 +216,22 @@ export default function WorkspaceCanvas({
 
   return (
     <>
-      <color attach="background" args={[isNightMode ? "#040406" : "#0c0c0e"]} />
+      <color attach="background" args={[isNightMode ? "#040406" : "#d1d5db"]} />
 
-      {/* Optimized Ambient Environment */}
       <ambientLight
-        intensity={isNightMode ? 0.05 : 0.55}
-        color={isNightMode ? "#0c1220" : "#ffffff"}
+        intensity={isNightMode ? 0.02 : 0.55}
+        color={isNightMode ? "#0a0f1d" : "#ffffff"}
       />
 
-      {/* Key Directional Sunlight with optimized shadow map size */}
       {!isNightMode && (
         <directionalLight
           position={[4, 8, 4]}
           intensity={0.85}
           color="#ffffff"
           castShadow
-          shadow-mapSize-width={512}
-          shadow-mapSize-height={512}
-          shadow-bias={-0.0005}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-bias={-0.0001}
         />
       )}
 

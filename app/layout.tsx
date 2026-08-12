@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AlertProvider } from "@/context/AlertContext";
 import { TrafficTracker } from "@/components/analytics/TrafficTracker";
 import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine"; // Rendered below
+import { FeedbackModalPopup } from "@/components/ui/FeedbackModalPopup";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -94,6 +95,7 @@ export default function RootLayout({
           <AuthProvider>
             <TrafficTracker />
             {children}
+            <FeedbackModalPopup />
           </AuthProvider>
         </AlertProvider>
       </body>

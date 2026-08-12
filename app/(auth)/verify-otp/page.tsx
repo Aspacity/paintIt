@@ -73,7 +73,7 @@ function VerifyOTPForm() {
             fullName: data.user.fullName || data.user.full_name || "User Account",
             role: data.user.role
           });
-          window.location.href = data.user.role === "ADMIN" ? "/admin/playground" : "/workspace";
+          window.location.href = data.user.role === "ADMIN" ? "/admin/playground" : "/dashboard";
         } else {
           router.push("/login");
         }

@@ -139,12 +139,20 @@ export default function AdminPlaygroundCatalog() {
             <h1 className="text-2xl font-black tracking-tight uppercase">🎨 3D Studio Workspace Catalog</h1>
             <p className="text-xs text-neutral-400 mt-1 font-medium">Select an architectural mesh blueprint configuration layer to begin live modifications.</p>
           </div>
-          <button
-            onClick={handleOpenCreateModal}
-            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
-          >
-            ➕ Create New Model Frame
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/admin/modular-sandbox')}
+              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+            >
+              <span>🧱 3D Room Assembling Studio</span>
+            </button>
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all"
+            >
+              ➕ Create New Model Frame
+            </button>
+          </div>
         </div>
 
         {/* Directory Matrix Grid */}

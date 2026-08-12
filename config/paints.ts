@@ -112,10 +112,10 @@ export const REAL_PAINTS_CATALOG: RealPaint[] = [
     code: "#F5F0E8",
   },
   {
-    id: "p-sw-06",
+    id: "p-sw-19",
     brand: "Benjamin Moore",
     name: "Deep Charcoal Grey",
-    code: "#3483C",
+    code: "#34383C",
   },
 ];
 

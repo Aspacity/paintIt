@@ -394,12 +394,20 @@ export default function DedicatedPlayground() {
 
   return (
     <div className="fixed inset-0 bg-neutral-950 w-screen h-screen overflow-hidden select-none z-50 font-sans">
-      <button
-        onClick={() => window.location.href = '/admin/playground'}
-        className="pointer-events-auto absolute top-3 left-4 z-50 bg-neutral-900/90 border border-neutral-800 p-2.5 px-3.5 rounded-xl text-[11px] font-black text-neutral-400 hover:text-white uppercase tracking-wider backdrop-blur-md shadow-xl"
-      >
-        📁 Back to Catalog
-      </button>
+      <div className="pointer-events-auto absolute top-3 left-4 z-50 flex items-center gap-2">
+        <button
+          onClick={() => window.location.href = '/admin/playground'}
+          className="bg-neutral-900/90 border border-neutral-800 p-2.5 px-3.5 rounded-xl text-[11px] font-black text-neutral-400 hover:text-white uppercase tracking-wider backdrop-blur-md shadow-xl"
+        >
+          📁 Catalog
+        </button>
+        <button
+          onClick={() => window.location.href = '/admin/modular-sandbox'}
+          className="bg-emerald-500 hover:bg-emerald-400 text-neutral-950 p-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1"
+        >
+          🧱 Assembling Studio
+        </button>
+      </div>
 
       {!cleanViewActive && (
         <div className="pointer-events-auto absolute top-3 left-36 right-4 z-50 max-w-xl mx-auto bg-neutral-900/90 border border-neutral-800 backdrop-blur-md p-1.5 rounded-xl flex items-center justify-between gap-3 shadow-xl">

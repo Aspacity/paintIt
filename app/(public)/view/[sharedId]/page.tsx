@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, useGLTF, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import Image from "next/image";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -257,14 +257,31 @@ function ClientInteractiveCanvas({
 
   return (
     <>
-      <color attach="background" args={[isNightMode ? "#040406" : "#d1d5db"]} />
+      <color attach="background" args={[isNightMode ? "#040406" : "#1a1a20"]} />
 
-      <ambientLight intensity={isNightMode ? 0.02 : 0.55} color={isNightMode ? "#0a0f1d" : "#ffffff"} />
+      <hemisphereLight
+        args={[
+          isNightMode ? "#0c1220" : "#ffffff",
+          isNightMode ? "#020204" : "#777777",
+          isNightMode ? 0.15 : 1.35,
+        ]}
+      />
+
+      <ambientLight intensity={isNightMode ? 0.05 : 0.85} color={isNightMode ? "#0a0f1d" : "#ffffff"} />
+
+      {!isNightMode && (
+        <Environment
+          preset="apartment"
+          path="https://unpkg.com/@react-three/drei@latest/assets/hdri/"
+          environmentIntensity={0.7}
+        />
+      )}
+
       {!isNightMode && (
         <directionalLight
-          position={[4, 8, 4]}
-          intensity={0.85}
-          color="#ffffff"
+          position={[0, 2.5, 3]}
+          intensity={1.2}
+          color="#fffdf5"
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
