@@ -112,21 +112,21 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
       {/* ========================================================== */}
       {/* 📱 MOBILE UNCLUTTERED FLOATING BOTTOM DOCK LAYOUT           */}
       {/* ========================================================== */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-neutral-950/95 border-t border-neutral-900/90 z-40 px-2 flex items-center justify-around backdrop-blur-xl shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-neutral-950/98 border-t border-neutral-900 z-[100] px-1 flex items-center justify-around backdrop-blur-2xl shadow-2xl select-none">
         {items.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 transition-all ${
-                isActive ? "text-emerald-400 font-black" : "text-neutral-500 hover:text-neutral-300"
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-center transition-all active:scale-95 ${
+                isActive ? "text-emerald-400 font-black" : "text-neutral-400 hover:text-white"
               }`}
             >
-              <div className={isActive ? "text-emerald-400 scale-110" : "text-neutral-500"}>
+              <div className={`transition-transform ${isActive ? "text-emerald-400 scale-110" : "text-neutral-400"}`}>
                 {item.icon}
               </div>
-              <span className="text-[8px] uppercase font-bold tracking-tight mt-0.5 truncate max-w-[65px]">
+              <span className="text-[9px] uppercase font-bold tracking-tighter mt-0.5 truncate max-w-[68px]">
                 {item.label}
               </span>
             </Link>
