@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { triggerGlobalFeedbackModal } from "@/components/ui/FeedbackModalPopup";
 
 export interface NavItem {
   label: string;
@@ -22,7 +23,6 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const targetName = user?.fullName || user?.full_name || "";
-  const displayFirstName = targetName.trim() ? targetName.trim().split(" ")[0] : "Painter";
   const nameInitialLetter = targetName.trim() ? targetName.trim().charAt(0).toUpperCase() : "P";
   const userAvatarImageSrc = user?.avatarUrl || user?.avatar_url || null;
 
@@ -126,8 +126,17 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           </nav>
         </div>
 
-        {/* 👤 Desktop Sidebar Profile Footer Section */}
+        {/* 💬 DESKTOP FEEDBACK BUTTON & PROFILE FOOTER SECTION */}
         <div className="border-t border-neutral-900 pt-4 space-y-3">
+          {/* 💬 FEEDBACK BUTTON DIRECTLY IN SIDEBAR (RIGHT ABOVE PROFILE) */}
+          <button
+            type="button"
+            onClick={triggerGlobalFeedbackModal}
+            className="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>💬 Drop Feedback</span>
+          </button>
+
           <Link
             href="/profile"
             className={`flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
@@ -216,9 +225,9 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-5 overflow-y-auto">
           {/* Drawer Header with Close Button */}
-          <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
+          <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
             <span className="text-sm font-black uppercase tracking-wider text-emerald-400">
               Navigation Menu
             </span>
@@ -272,15 +281,27 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           </nav>
         </div>
 
-        {/* Drawer Footer Log Out */}
-        <div className="border-t border-neutral-900 pt-4">
+        {/* Drawer Footer with FEEDBACK BUTTON & Log Out */}
+        <div className="border-t border-neutral-900 pt-3 space-y-2">
+          {/* 💬 FEEDBACK BUTTON INSIDE DRAWER (RIGHT ABOVE LOGOUT & PROFILE) */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileDrawerOpen(false);
+              triggerGlobalFeedbackModal();
+            }}
+            className="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+          >
+            <span>💬 Drop Feedback</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
               setMobileDrawerOpen(false);
               logout();
             }}
-            className="w-full py-3 bg-neutral-900 hover:bg-red-950/30 border border-neutral-800 hover:border-red-900/40 text-red-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+            className="w-full py-2.5 bg-neutral-900 hover:bg-red-950/30 border border-neutral-800 hover:border-red-900/40 text-red-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
           >
             🚪 Log Out
           </button>
