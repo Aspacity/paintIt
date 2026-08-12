@@ -317,51 +317,6 @@ export default function PainterDashboardPage() {
             </a>
           </div>
 
-          {/* 🎨 PRE-LOADED 3D COLOR PRESETS FOR CLIENT SHARING */}
-          <div className="p-5 bg-neutral-950 border border-neutral-850 rounded-3xl space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
-              <div>
-                <h3 className="text-xs font-black uppercase text-neutral-100 flex items-center gap-2">
-                  <span>🎨 Ready-to-Share 3D Color Schemes</span>
-                </h3>
-                <p className="text-[10px] text-neutral-500 mt-0.5">
-                  Send these pre-built 3D room color schemes to clients on WhatsApp to help them choose paint.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {preloadedPresets.map((preset) => (
-                <div
-                  key={preset.id}
-                  className="p-3 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2 flex flex-col justify-between hover:border-emerald-500/40 transition-all group"
-                >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="w-5 h-5 rounded-lg border border-white/20 shadow-md"
-                        style={{ backgroundColor: preset.hex }}
-                      />
-                      <span className="text-[8px] font-mono uppercase bg-neutral-950 text-emerald-400 px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">
-                        {preset.badge}
-                      </span>
-                    </div>
-                    <h4 className="text-[11px] font-bold text-neutral-200 group-hover:text-white truncate">
-                      {preset.name}
-                    </h4>
-                  </div>
-
-                  <button
-                    onClick={() => handleShareToWhatsAppStatus(preset.name)}
-                    className="w-full py-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-neutral-950 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all border border-emerald-500/30"
-                  >
-                    💬 Share Theme
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Profile Completeness Notice */}
           {pendingOnboardingTasks.length > 0 && (
             <div className="p-5 border border-amber-500/10 bg-gradient-to-br from-amber-500/5 via-neutral-950 to-neutral-950 rounded-2xl space-y-4 shadow-xl">
