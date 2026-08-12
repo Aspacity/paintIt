@@ -26,8 +26,8 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
   const nameInitialLetter = targetName.trim() ? targetName.trim().charAt(0).toUpperCase() : "P";
   const userAvatarImageSrc = user?.avatarUrl || user?.avatar_url || null;
 
-  // Complete list of all painter navigation links for the drawer
-  const fullDrawerNavItems = [
+  // Primary workspace navigation list (Profile is managed via dedicated profile card at bottom)
+  const mainWorkspaceNavItems = [
     {
       label: "Dashboard",
       href: "/dashboard",
@@ -73,15 +73,6 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
         </svg>
       ),
     },
-    {
-      label: "Profile Settings",
-      href: "/profile",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-    },
   ];
 
   return (
@@ -99,21 +90,21 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
             </Link>
           </div>
 
-          <nav className="space-y-1.5">
+          <nav className="space-y-2">
             <div className="text-[10px] text-neutral-600 uppercase font-black tracking-widest px-2 mb-3">
               Workspace Panels
             </div>
 
-            {fullDrawerNavItems.map((item) => {
+            {mainWorkspaceNavItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 ${
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 ${
                     isActive
                       ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
-                      : "text-neutral-500 hover:text-neutral-300 border border-transparent"
+                      : "text-neutral-500 hover:text-neutral-300 border border-transparent hover:bg-neutral-900/40"
                   }`}
                 >
                   <div className={isActive ? "text-emerald-400" : "text-neutral-600"}>
@@ -128,7 +119,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
 
         {/* 💬 DESKTOP FEEDBACK BUTTON & PROFILE FOOTER SECTION */}
         <div className="border-t border-neutral-900 pt-4 space-y-3">
-          {/* 💬 FEEDBACK BUTTON DIRECTLY IN SIDEBAR (RIGHT ABOVE PROFILE) */}
+          {/* 💬 FEEDBACK BUTTON DIRECTLY IN SIDEBAR (RIGHT ABOVE PROFILE CARD) */}
           <button
             type="button"
             onClick={triggerGlobalFeedbackModal}
@@ -137,6 +128,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
             <span>💬 Drop Feedback</span>
           </button>
 
+          {/* DEDICATED PROFILE CARD AT BOTTOM */}
           <Link
             href="/profile"
             className={`flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
@@ -163,7 +155,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
                 {targetName || "Active Painter"}
               </h4>
               <span className="text-[9px] text-neutral-500 font-bold tracking-wider uppercase truncate block mt-0.5">
-                View Profile Settings
+                Profile & Settings
               </span>
             </div>
           </Link>
@@ -225,7 +217,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="w-full space-y-5 overflow-y-auto">
+        <div className="w-full space-y-6 overflow-y-auto">
           {/* Drawer Header with Close Button */}
           <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
             <span className="text-sm font-black uppercase tracking-wider text-emerald-400">
@@ -240,32 +232,16 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
             </button>
           </div>
 
-          {/* User Profile Card Header */}
-          <div className="p-3 bg-neutral-900/60 border border-neutral-850 rounded-2xl flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-center text-sm font-black uppercase text-emerald-400 overflow-hidden shadow-inner shrink-0">
-              {userAvatarImageSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span>{nameInitialLetter}</span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-white truncate">{targetName || "Painter Account"}</h4>
-              <span className="text-[10px] text-emerald-400 font-mono">● Active Workspace</span>
-            </div>
-          </div>
-
-          {/* Drawer Navigation List */}
-          <nav className="space-y-1">
-            {fullDrawerNavItems.map((item) => {
+          {/* Drawer Navigation List with Spacious Padding */}
+          <nav className="space-y-2">
+            {mainWorkspaceNavItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                     isActive
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
                       : "text-neutral-400 hover:text-white border border-transparent hover:bg-neutral-900/40"
@@ -281,9 +257,9 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           </nav>
         </div>
 
-        {/* Drawer Footer with FEEDBACK BUTTON & Log Out */}
-        <div className="border-t border-neutral-900 pt-3 space-y-2">
-          {/* 💬 FEEDBACK BUTTON INSIDE DRAWER (RIGHT ABOVE LOGOUT & PROFILE) */}
+        {/* Drawer Footer with FEEDBACK BUTTON & DEDICATED PROFILE CARD */}
+        <div className="border-t border-neutral-900 pt-4 space-y-3">
+          {/* 💬 FEEDBACK BUTTON DIRECTLY INSIDE DRAWER (ABOVE PROFILE CARD) */}
           <button
             type="button"
             onClick={() => {
@@ -295,13 +271,35 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
             <span>💬 Drop Feedback</span>
           </button>
 
+          {/* MOBILE PROFILE CARD IN DRAWER FOOTER */}
+          <Link
+            href="/profile"
+            onClick={() => setMobileDrawerOpen(false)}
+            className={`flex items-center gap-3 p-3 bg-neutral-900/70 border border-neutral-850 rounded-2xl transition-all ${
+              pathname === "/profile" ? "border-emerald-500/40" : ""
+            }`}
+          >
+            <div className="w-9 h-9 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-center text-xs font-black uppercase text-emerald-400 overflow-hidden shadow-inner shrink-0">
+              {userAvatarImageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span>{nameInitialLetter}</span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs font-black text-white truncate">{targetName || "Painter Account"}</h4>
+              <span className="text-[10px] text-emerald-400 font-mono">Profile & Settings ➔</span>
+            </div>
+          </Link>
+
           <button
             type="button"
             onClick={() => {
               setMobileDrawerOpen(false);
               logout();
             }}
-            className="w-full py-2.5 bg-neutral-900 hover:bg-red-950/30 border border-neutral-800 hover:border-red-900/40 text-red-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+            className="w-full py-2 bg-neutral-950 hover:bg-red-950/30 border border-neutral-900 hover:border-red-900/40 text-neutral-500 hover:text-red-400 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
           >
             🚪 Log Out
           </button>
