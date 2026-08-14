@@ -105,28 +105,7 @@ npm run server
 
 ---
 
-## 🔒 Security & Environment Variables
 
-Make sure to configure `.env` files in both `frontend` and `backend` directories:
-
-### Backend `.env`
-```env
-PORT=8000
-DATABASE_URL=postgresql://neondb_owner:npg_gVRED8ZOG6Yo@ep-jolly-frog-api580d7.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
-JWT_SECRET=pa2in0t2i6ts3cure
-JWT_REFRESH_SECRET=pa2in0t2i6ts3cure_refresh
-FRONTEND_URL=https://paint-it-six.vercel.app
-CLOUDINARY_CLOUD_NAME=dgpdap1fy
-CLOUDINARY_API_KEY=153542955178322
-CLOUDINARY_API_SECRET=nW2YPv9q1UTXh3SruNFtciF5mcU
-```
-
-### Frontend `.env.local`
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
----
 
 ## 📄 License & Intellectual Property
 
