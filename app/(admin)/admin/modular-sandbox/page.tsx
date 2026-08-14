@@ -29,7 +29,7 @@ type WorkspaceLightInstance = DynamicLightInstance & {
 
 export default function ModularStudioSandboxPage() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
-  const [shellModelUrl, setShellModelUrl] = useState<string>("/models/shells/livingroom-shell(window).glb");
+  const [shellModelUrl, setShellModelUrl] = useState<string>("/models/shells/spacious-lux.glb");
   const [roomShellScale, setRoomShellScale] = useState<number>(1.25);
   const [placedObjects, setPlacedObjects] = useState<PlacedObject[]>([]);
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null);

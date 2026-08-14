@@ -119,7 +119,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
     newFiles.forEach((item) => formData.append("files", item.file));
 
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const response = await fetch(`${BACKEND_URL}/api/portfolio/projects/${project.id}`, {
         method: "PUT",
         headers: {

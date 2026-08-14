@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { StepOnboarding } from "@/components/ui/StepOnboarding";
 import { OnboardingStep } from "@/types/index";
+import { MicroVideoCarousel } from "@/components/ui/MicroVideoCarousel";
 
 interface DashboardStats {
   profileViews: number;
@@ -266,6 +267,44 @@ export default function PainterDashboardPage() {
         </div>
       </div>
 
+      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE */}
+      <MicroVideoCarousel
+        title="⚡ 15-Second Painter Success Guide"
+        subtitle="Swipe to watch how to use PaintIt Studio to win painting clients."
+        steps={[
+          {
+            id: "dash_step_1",
+            stepNumber: 1,
+            title: "1. Share Page on WhatsApp",
+            subtitle: "Post your 3D visualizer business link directly to your WhatsApp Status in 1 tap.",
+            videoUrl: "/videos/painter_share_whatsapp.mp4",
+            badge: "Fast Sales",
+            actionText: "Try Sharing Now",
+            onActionClick: () => handleShareToWhatsAppStatus(),
+          },
+          {
+            id: "dash_step_2",
+            stepNumber: 2,
+            title: "2. Build Your 3D Portfolio",
+            subtitle: "Open 3D Studio to pick rooms, paint wall colors, and test Satin/Emulsion finishes.",
+            videoUrl: "/videos/painter_3d_studio.mp4",
+            badge: "3D Studio",
+            actionText: "Open 3D Studio",
+            onActionClick: () => { window.location.href = "/designs"; },
+          },
+          {
+            id: "dash_step_3",
+            stepNumber: 3,
+            title: "3. Manage Client Leads",
+            subtitle: "Check customer color choices and reply instantly on WhatsApp.",
+            videoUrl: "/videos/painter_leads.mp4",
+            badge: "Client Inbox",
+            actionText: "View Leads & Inbox",
+            onActionClick: () => { window.location.href = "/gigs"; },
+          },
+        ]}
+      />
+
       {isBrandNewAccount ? (
         <div className="py-4 flex items-center justify-center">
           <StepOnboarding
@@ -316,6 +355,8 @@ export default function PainterDashboardPage() {
               </div>
             </a>
           </div>
+
+          
 
           {/* Profile Completeness Notice */}
           {pendingOnboardingTasks.length > 0 && (

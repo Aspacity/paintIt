@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import ConfirmModal from "@/components/modals/ConfirmModal";
+import { MicroVideoCarousel } from "@/components/ui/MicroVideoCarousel";
 
 interface MasterTemplate {
   id: string;
@@ -196,6 +197,48 @@ export default function Painter3DStudioDashboardHub() {
         </p>
       </div>
 
+      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE FOR 3D STUDIO */}
+      <MicroVideoCarousel
+        title="⚡ 15-Second 3D Studio Quick Guide"
+        subtitle="Swipe to watch how to paint 3D walls, pick finishes, and send visual links to clients."
+        steps={[
+          {
+            id: "studio_step_1",
+            stepNumber: 1,
+            title: "1. Paint Wall Surfaces",
+            subtitle: "Tap any 3D room wall and pick your color from real paint brand catalogs.",
+            videoUrl: "/videos/paint_wall_demo.mp4",
+            badge: "3D Wall Paint",
+            actionText: "Open 3D Visualizer",
+            onActionClick: () => { window.location.href = "/workspace?template=tmpl_living_lux"; },
+          },
+          {
+            id: "studio_step_2",
+            stepNumber: 2,
+            title: "2. Choose Paint Finishes",
+            subtitle: "Toggle wall finishes between Emulsion (Matte), Gloss, and Satin Sheen.",
+            videoUrl: "/videos/paint_finishes_demo.mp4",
+            badge: "Material Sheen",
+          },
+          {
+            id: "studio_step_3",
+            stepNumber: 3,
+            title: "3. Day & Night Studio Lighting",
+            subtitle: "Switch to night mode or adjust point lights to inspect shadow depth.",
+            videoUrl: "/videos/studio_lighting_demo.mp4",
+            badge: "Lighting Rig",
+          },
+          {
+            id: "studio_step_4",
+            stepNumber: 4,
+            title: "4. Send 3D Link to Client",
+            subtitle: "Generate a 3D visual link to send to clients on WhatsApp to close quotes.",
+            videoUrl: "/videos/client_share_demo.mp4",
+            badge: "WhatsApp Lead",
+          },
+        ]}
+      />
+
       {/* ZONE 1: PAINTER'S SAVED WORKSPACES */}
       <div className="space-y-4">
         <div className="flex items-center justify-between pl-1">
@@ -273,6 +316,8 @@ export default function Painter3DStudioDashboardHub() {
           </div>
         )}
       </div>
+
+      
 
       {/* ZONE 2: MASTER BLENDER SCENE CATALOG */}
       <div id="catalog-section-scroller" className="space-y-4 pt-4 border-t border-neutral-900/40">
