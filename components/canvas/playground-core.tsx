@@ -1,10 +1,8 @@
-'use client';
-
-import React, { useEffect, useMemo, useRef } from 'react';
-import { ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Sky, TransformControls, useHelper, Environment } from '@react-three/drei';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, Sky, TransformControls, useHelper } from '@react-three/drei';
 import * as THREE from 'three';
-import { GLTF, OrbitControls as OrbitControlsImpl, TransformControls as TransformControlsImpl } from 'three-stdlib';
+import { GLTF, OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { DynamicLightInstance } from '@/types/index';
 import { generateWallNormalMap } from '@/utils/generateWallNormalMaps';
 import { PAINT_FINISH_PRESETS, PaintFinishId } from '@/config/paintFinishes';
@@ -17,11 +15,13 @@ interface GizmoProps {
 }
 
 export function AdminTransformGizmo({ activeLight, mode, onTransformUpdate }: GizmoProps) {
-  const transformRef = useRef<any>(null);
-  const groupRef = useRef<THREE.Group>(null);
+  const transformRef = useRef<THREE.Object3D | null>(null);
+  const groupRef = useRef<THREE.Group | null>(null);
+  const [targetObject, setTargetObject] = useState<THREE.Group | null>(null);
 
   useEffect(() => {
     if (groupRef.current) {
+      setTargetObject(groupRef.current);
       groupRef.current.position.set(...activeLight.position);
       if (activeLight.rotation) groupRef.current.rotation.set(...activeLight.rotation);
       if (activeLight.scale) groupRef.current.scale.set(...activeLight.scale);
@@ -60,10 +60,10 @@ export function AdminTransformGizmo({ activeLight, mode, onTransformUpdate }: Gi
           <meshStandardMaterial color={activeLight.color || '#06b6d4'} emissive={activeLight.color || '#06b6d4'} emissiveIntensity={2.5} />
         </mesh>
       </group>
-      {groupRef.current && (
+      {targetObject && (
         <TransformControls
-          ref={transformRef}
-          object={groupRef.current}
+          ref={transformRef as unknown as React.Ref<any>}
+          object={targetObject}
           mode={mode}
           onObjectChange={handleObjectChange}
         />
@@ -88,7 +88,7 @@ export function PlaygroundLighting({ isNight, showHelpers }: BaseLightingProps) 
       ) : (
         <>
           {/* Studio Balanced Ambient Daylight Rig (Zero Distortion Shadows) */}
-          <ambientLight intensity={1.1} color="#ffffff" />
+          {/* <ambientLight intensity={1.1} color="#ffffff" /> */}
           <hemisphereLight args={['#ffffff', '#888888', 0.6]} />
           <directionalLight
             ref={sunRef}
@@ -213,6 +213,56 @@ export function StudioBlenderModelMesh({
     });
   }, [clonedScene, surfaceStates, activeFinish, activeTextures, materialSwaps, wallNormalMap]);
 
+  // Smart Auto-Cutaway Walls (Foyr Neo Style)
+  // Automatically hides walls and ceilings that block the camera view when orbiting outside
+  useFrame(({ camera }) => {
+    clonedScene.traverse((node) => {
+      if (node instanceof THREE.Mesh) {
+        const meshName = node.name.toLowerCase();
+        const isWallOrCeiling = meshName.includes("wall") || meshName.includes("ceiling") || meshName.includes("roof");
+
+        if (isWallOrCeiling) {
+          // Calculate normal vector of the wall mesh in world space
+          const worldPosition = new THREE.Vector3();
+          node.getWorldPosition(worldPosition);
+
+          const cameraToMesh = new THREE.Vector3().subVectors(camera.position, worldPosition).normalize();
+          
+          // Vector from center of room [0, 1, 0] to mesh
+          const roomCenterToMesh = new THREE.Vector3().subVectors(worldPosition, new THREE.Vector3(0, 1.0, 0)).normalize();
+
+          // Dot product: If mesh lies directly between camera and room center, fade it!
+          const dot = cameraToMesh.dot(roomCenterToMesh);
+
+          // Hide top ceiling if camera is high angle (top-down view)
+          if (meshName.includes("ceiling") || meshName.includes("roof")) {
+            if (camera.position.y > 4.5) {
+              node.visible = false;
+              return;
+            } else {
+              node.visible = true;
+            }
+          }
+
+          // Auto-cutaway wall if it blocks the camera view
+          if (dot > 0.45) {
+            if (node.material instanceof THREE.Material) {
+              node.material.transparent = true;
+              node.material.opacity = 0.15;
+              node.material.depthWrite = false;
+            }
+          } else {
+            if (node.material instanceof THREE.Material) {
+              node.material.transparent = false;
+              node.material.opacity = 1.0;
+              node.material.depthWrite = true;
+            }
+          }
+        }
+      }
+    });
+  });
+
   return (
     <primitive
       object={clonedScene}
@@ -244,7 +294,7 @@ export function PlaygroundLightsEngine({ lights }: LightsEngineProps) {
               rotation={light.rotation}
               intensity={light.intensity * 2}
               color={light.color}
-              angle={(light as any).angle || Math.PI / 4}
+              angle={(light as DynamicLightInstance & { angle?: number }).angle || Math.PI / 4}
               penumbra={0.5}
               castShadow={false}
             />
