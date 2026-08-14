@@ -82,7 +82,7 @@ export function PlaygroundLighting({ isNight, showHelpers }: BaseLightingProps) 
       <Sky distance={450000} sunPosition={isNight ? [0, -10, -10] : [8, 6, 5]} mieCoefficient={0.005} mieDirectionalG={0.07} rayleigh={isNight ? 0.3 : 1.8} turbidity={isNight ? 20 : 8} />
       {isNight ? (
         <>
-          <ambientLight intensity={0.12} color="#0b0f19" />
+          {/* <ambientLight intensity={0.12} color="#0b0f19" /> */}
           <hemisphereLight args={['#141a29', '#05050a', 0.2]} />
         </>
       ) : (
