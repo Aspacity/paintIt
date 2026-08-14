@@ -1,38 +1,77 @@
-// src/components/WhyHomeowners.tsx
 "use client";
+
+import React from "react";
 import { motion } from "framer-motion";
 
-const clientBenefits = [
-  { title: "Confidence before spending money", desc: "Know exactly how your building modification looks before buying heavy buckets or paying a professional crew." },
-  { title: "Test colour combinations freely", desc: "Mix bold main options or try horizontal split-wall tones on your screen first without any real mess." },
-  { title: "See the whole room before painting starts", desc: "Preview how your individual walls match up together in realistic room layouts instead of holding up tiny cards." },
-  { title: "Avoid expensive mistakes", desc: "Repainting a completed wall because you hate the final dried color shade is a massive waste of time and budget." }
-];
-
-export default function WhyHomeowners() {
+export default function WhyHomeOwners() {
   return (
-    <section className="px-4 max-w-5xl mx-auto">
-      <div className="text-center max-w-2xl mx-auto mb-16">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">For Property Owners</h2>
-        <p className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-100">
-          Why Homeowners Want This
-        </p>
-      </div>
+    <section id="homeowners" className="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-6 space-y-5">
+          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+            FOR HOMEOWNERS & DESIGNERS
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+            Don&apos;t Guess What Your Space Will Look Like. <br />
+            <span className="text-emerald-400">See It First.</span>
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+            Tiny paper swatches don&apos;t tell you how a color will feel in your actual room. PaintIT lets you test real paint colors on full 3D walls under daylight—so you make the right choice the first time.
+          </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {clientBenefits.map((benefit, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: idx * 0.05 }}
-            className="p-6 border border-neutral-900 rounded-xl bg-neutral-950 flex flex-col gap-2"
-          >
-            <h3 className="text-base font-bold text-emerald-400">{benefit.title}</h3>
-            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">{benefit.desc}</p>
-          </motion.div>
-        ))}
+          <div className="space-y-3 pt-2">
+            {[
+              "Try real colors from Dulux, Sherwin-Williams, and Benjamin Moore",
+              "See how matte (emulsion), satin, and high-gloss finishes reflect light",
+              "Share 3D room renders with family, friends, or your painter",
+              "Save time and money by avoiding wrong paint colors",
+            ].map((benefit, idx) => (
+              <div key={idx} className="flex items-center gap-3 text-xs text-neutral-300 font-medium">
+                <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-[10px] shrink-0">
+                  ✓
+                </div>
+                <span>{benefit}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-6 p-8 rounded-3xl bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-950 border border-neutral-850 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
+            <span className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider">
+              Homeowner Experience
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
+              Simple & Fast
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center gap-4">
+              <span className="text-2xl">💡</span>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wide">&quot;I want to repaint my room&quot;</h4>
+                <p className="text-[11px] text-neutral-400">Test color ideas instantly in 3D</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center gap-4">
+              <span className="text-2xl">🎯</span>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wide">Pick Exact Colors & Finishes</h4>
+                <p className="text-[11px] text-neutral-400">Select real paint codes that you can buy at stores</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center gap-4">
+              <span className="text-2xl">🛠️</span>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wide">Hand Off To Your Painter</h4>
+                <p className="text-[11px] text-neutral-400">Give your painter exact specs so they paint with zero confusion</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -2,152 +2,98 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useAlert } from "@/context/AlertContext";
-import { identifyUserSession } from "@/utils/tracker"; // 🔒 Injected tracking identity helper
+import { identifyUserSession } from "@/utils/tracker";
 
 export default function EarlyAccessForm() {
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "Painter" });
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"homeowner" | "painter" | "designer">("homeowner");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { showToast } = useAlert();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
+    if (!email.trim()) return;
 
+    setIsSubmitting(true);
     try {
-      // 1. Send a flat, clean schema layout matching the backend Zod validator fields
-      const response = await fetch("/api/early-access", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          role: formData.role,
-        }),
-      });
-
-      // 🔒 FIX: Only try to parse JSON if the server actually sent back content (not a 204)
-      let data = null;
-      if (response.status !== 204) {
-        data = await response.json();
-      }
-
-      if (!response.ok) {
-        showToast({ message: "Registration failed. Check your parameters.", severity: "error" });
-        return;
-      }
-
-      // Connect current session timeline data to this email identity inside the tracker storage layer[cite: 1]
-      await identifyUserSession(formData.email);
-
-      showToast({ message: "Welcome to the PaintIt waitlist!", severity: "success" });
+      await identifyUserSession(email.toLowerCase().trim());
       setSubmitted(true);
     } catch (err) {
-      console.error("Network communication exception context:", err);
-      setErrorMessage("Unable to connect to registration servers. Please check your network context connection.");
+      console.error("Early access registration error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <section id="early-access" className="px-4 max-w-3xl mx-auto scroll-mt-24">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="border border-neutral-800 rounded-2xl bg-neutral-900/40 p-6 sm:p-10 backdrop-blur-md relative overflow-hidden"
-      >
-        {/* 🎨 FIX: Cleaned up structural class identifiers matching canonical Tailwind standards */}
-        <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-emerald-500 via-transparent to-transparent" />
+    <section id="early-access" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-950 border border-neutral-800 shadow-2xl text-center space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-emerald-500/10 blur-3xl pointer-events-none" />
 
-        <div className="text-center sm:text-left max-w-xl mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-neutral-100">Help shape the future of PaintIt Studio</h2>
-          <p className="mt-2 text-xs sm:text-sm text-neutral-400 font-normal">
-            Join the Founder&apos;s Circle. Early access members lock in priority pricing updates, direct input into the product engineering queue, and priority customer support.
+        <div className="relative z-10 space-y-3">
+          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+            EARLY ACCESS PROGRAM
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+            Experience PaintIT Studio First.
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl mx-auto font-normal leading-relaxed">
+            Join property owners, professional painters, and interior designers who are transforming how physical spaces are visualized and built.
           </p>
         </div>
 
-        {errorMessage && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg text-center">
-            {errorMessage}
-          </div>
-        )}
-
-        {submitted ? (
-          <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center text-emerald-400">
-            <h3 className="font-bold text-base mb-1">Welcome to the Waitlist!</h3>
-            <p className="text-xs text-neutral-400">We will notify you immediately when your early access slot opens up.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1.5">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g., Samuel Idowu"
-                  className="w-full h-11 px-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/60 transition"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1.5">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="samuel@example.com"
-                  className="w-full h-11 px-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/60 transition"
-                  value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
+        {!submitted ? (
+          <form onSubmit={handleSubmit} className="relative z-10 max-w-md mx-auto space-y-4">
+            <div className="grid grid-cols-3 gap-2 p-1 bg-neutral-900 border border-neutral-800 rounded-xl">
+              {(["homeowner", "painter", "designer"] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                    role === r ? "bg-emerald-500 text-neutral-950 font-black shadow-md" : "text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1.5">Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="e.g., +2348012345678"
-                  className="w-full h-11 px-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/60 transition"
-                  value={formData.phone}
-                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1.5">Your Core Role</label>
-                <div className="relative">
-                  <select
-                    className="w-full h-11 px-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-neutral-300 focus:outline-none focus:border-emerald-500/60 transition appearance-none cursor-pointer"
-                    value={formData.role}
-                    onChange={e => setFormData({ ...formData, role: e.target.value })}
-                  >
-                    <option value="Painter">Professional Painter</option>
-                    <option value="Homeowner">Homeowner / Renter</option>
-                    <option value="Designer">Interior Designer</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-500">
-                    ▼
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                required
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+                className="flex-1 h-12 px-4 bg-neutral-950 border border-neutral-800 rounded-xl text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500 transition"
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-12 px-6 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/15 active:scale-95 transition-all shrink-0 flex items-center justify-center"
+              >
+                {isSubmitting ? "Securing Access..." : "Request Early Access"}
+              </button>
             </div>
 
-            <button
-              type="submit"
-              className="w-full h-12 mt-2 bg-neutral-50 hover:bg-neutral-200 active:scale-[0.99] transition text-neutral-950 font-bold rounded-lg text-sm flex items-center justify-center shadow-lg min-h-[48px]"
-            >
-              Secure My Priority Access Slot
-            </button>
+            <p className="text-[10px] text-neutral-400 font-mono">
+              🔒 Zero spam. We notify you when new spatial features roll out.
+            </p>
           </form>
+        ) : (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 space-y-3">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 flex items-center justify-center mx-auto text-xl font-bold">
+              ✓
+            </div>
+            <h3 className="text-xl font-bold text-white">You&apos;re On The Early Access List</h3>
+            <p className="text-xs text-neutral-400">
+              Thank you for registering as a <strong className="text-emerald-400 uppercase">{role}</strong>. We&apos;ll notify you directly as new spatial modules launch.
+            </p>
+          </motion.div>
         )}
-      </motion.div>
+      </div>
     </section>
   );
 }

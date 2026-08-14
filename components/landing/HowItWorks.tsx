@@ -1,42 +1,87 @@
 "use client";
+
+import React from "react";
 import { motion } from "framer-motion";
 
-const steps = [
-  { step: "01", title: "Open PaintIt Mobile", desc: "Access the lightweight interface right on your phone at the job site with zero heavy downloads." },
-  { step: "02", title: "Select Target Colors", desc: "Pick from curated commercial color charts or specify custom hex inputs dynamically." },
-  { step: "03", title: "Configure The Walls", desc: "Toggle standard or split-wall modes to customize the room template to match the job site." },
-  { step: "04", title: "Export Web Share Link", desc: "Generate a secure, compressed visualization link ready to text to your client over WhatsApp." },
-  { step: "05", title: "Get Secure Approval", desc: "Lock in color choices before buying materials, protecting you from mid-project changes." }
+interface Step {
+  number: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: string;
+}
+
+const STEPS: Step[] = [
+  {
+    number: "01",
+    title: "Pick Your Room Layout",
+    subtitle: "Select a 3D room",
+    description: "Choose a 3D room template or upload your space dimensions.",
+    icon: "🏠",
+  },
+  {
+    number: "02",
+    title: "Choose Real Paint Brands",
+    subtitle: "Real paint catalog",
+    description: "Browse actual paint colors from Dulux, Sherwin-Williams, and Benjamin Moore.",
+    icon: "🎨",
+  },
+  {
+    number: "03",
+    title: "Tap to Paint in 3D",
+    subtitle: "Instant 3D transformation",
+    description: "Tap any wall to see how colors look under realistic daylight and test matte, satin, or gloss shine.",
+    icon: "✨",
+  },
+  {
+    number: "04",
+    title: "Share & Start Painting",
+    subtitle: "Zero color confusion",
+    description: "Send your 3D design to your painter, client, or family so everyone agrees before painting starts.",
+    icon: "🤝",
+  },
 ];
 
 export default function HowItWorks() {
   return (
-    <section className="px-4 max-w-5xl mx-auto">
-      <div className="text-center max-w-2xl mx-auto mb-16">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">Workflow Workflow</h2>
-        <p className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-100">
-          Five Steps To Complete Protection
+    <section id="how-it-works" className="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+          HOW IT WORKS
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+          Four Simple Steps to Perfect Room Colors
+        </h2>
+        <p className="text-xs sm:text-sm text-neutral-400 font-normal">
+          No complicated CAD software. Just pick, tap, preview, and paint.
         </p>
       </div>
 
-      <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        {steps.map((item, idx) => (
+      {/* 4-Step Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {STEPS.map((step, index) => (
           <motion.div
-            key={idx}
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            key={step.number}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: idx * 0.08 }}
-            className="relative flex flex-col justify-between"
+            transition={{ duration: 0.5, delay: index * 0.08 }}
+            className="p-6 rounded-2xl bg-neutral-900/70 border border-neutral-850 hover:border-neutral-750 transition-all space-y-4 group"
           >
-            <div>
-              <div className="text-xs font-mono font-bold text-emerald-500 mb-2">{item.step}</div>
-              <h3 className="text-sm font-bold text-neutral-200 mb-1">{item.title}</h3>
-              <p className="text-xs text-neutral-400 leading-relaxed font-normal">{item.desc}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-3xl">{step.icon}</span>
+              <span className="text-xs font-mono font-bold text-neutral-400 group-hover:text-emerald-400 transition-colors">
+                {step.number}
+              </span>
             </div>
-            {idx < 4 && (
-              <div className="hidden lg:block absolute top-2 right-[-12px] w-[24px] h-[1px] bg-neutral-800" />
-            )}
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white tracking-tight">{step.title}</h3>
+              <p className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider">{step.subtitle}</p>
+            </div>
+
+            <p className="text-xs text-neutral-400 leading-relaxed font-normal">{step.description}</p>
           </motion.div>
         ))}
       </div>

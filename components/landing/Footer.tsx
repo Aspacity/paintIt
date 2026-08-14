@@ -1,34 +1,33 @@
 "use client";
 
+import React from "react";
+import Link from "next/link";
+
 export default function Footer() {
   return (
-    <footer className="px-4 max-w-5xl mx-auto pt-16 border-t border-neutral-900">
-      {/* Final Action Box */}
-      <div className="p-8 border border-neutral-900 rounded-2xl bg-gradient-to-r from-neutral-950 via-neutral-900/50 to-neutral-950 text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-100 mb-4">
-          Join Early Access
-        </h2>
-        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto mb-6 leading-relaxed font-normal">
-          Be among the first painters and homeowners helping shape PaintIt Studio. Lock in early access utilities and help us build the perfect visual tool for yourj
-        </p>
-        <a
-          href="#early-access"
-          className="inline-flex px-6 py-3 bg-emerald-500 text-neutral-950 font-bold text-sm rounded-md hover:bg-emerald-400 transition shadow-md min-h-[48px] items-center"
-        >
-          Join Early Access
-        </a>
-      </div>
+    <footer className="border-t border-neutral-900 bg-neutral-950 py-12 px-4 sm:px-6 lg:px-8 text-neutral-400">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white font-black text-xs">
+            P<span className="text-emerald-400">IT</span>
+          </div>
+          <div>
+            <span className="text-xs font-black uppercase tracking-wider text-white block">PaintIT Studio</span>
+            <span className="text-[9px] font-mono text-neutral-400">Spatial Intelligence Platform</span>
+          </div>
+        </div>
 
-      {/* Meta Footer Elements */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-600 font-medium">
-        <div>
-          © {new Date().getFullYear()} PaintIt Studio. All rights reserved.
-        </div>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-neutral-400 transition">Privacy Policy</a>
-          <a href="#" className="hover:text-neutral-400 transition">Terms of Service</a>
-          <a href="/login" className="hover:text-neutral-400 transition">Contact Infrastructure</a>
-        </div>
+        <nav className="flex flex-wrap items-center justify-center gap-6 text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
+          <a href="#experience" className="hover:text-white transition-colors">Experience</a>
+          <a href="#showcase-3d" className="hover:text-white transition-colors">Interactive 3D</a>
+          <a href="#realism" className="hover:text-white transition-colors">Realism Engine</a>
+          <Link href="/admin/realism-test" className="hover:text-emerald-400 transition-colors">Studio Demo</Link>
+        </nav>
+
+        <p className="text-[10px] font-mono text-neutral-400">
+          © {new Date().getFullYear()} PaintIT Studio. All rights reserved.
+        </p>
       </div>
     </footer>
   );

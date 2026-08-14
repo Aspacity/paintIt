@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, Sky, ContactShadows, SoftShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { generateWallNormalMap } from "@/utils/generateWallNormalMaps";
 import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
+import PaintItMasterCanvas from "@/components/canvas/PaintItMasterCanvas";
 
 // Realism Testbench Configuration Interface
 interface RealismConfig {
@@ -145,42 +146,63 @@ function TestbenchRoomMesh({ config }: { config: RealismConfig }) {
 }
 
 export default function RealismTestStudioPage() {
-  const [config, setConfig] = useState<RealismConfig>(DEFAULT_REALISM_CONFIG);
   const [activeTab, setActiveTab] = useState<"lighting" | "walls" | "floors" | "models">("lighting");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [panelWidth, setPanelWidth] = useState<number>(380);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const isResizingRef = useRef<boolean>(false);
+
+  const [config, setConfig] = useState<RealismConfig>(DEFAULT_REALISM_CONFIG);
+
+  const handleMouseDownResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const newWidth = window.innerWidth - moveEvent.clientX;
+      if (newWidth >= 260 && newWidth <= 600) {
+        setPanelWidth(newWidth);
+      }
+    };
+
+    const onMouseUp = () => {
+      isResizingRef.current = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, []);
 
   // 📸 1-Click High-Res 4K Snapshot Render Capture
   const handleCaptureSnapshot = () => {
     const canvas = document.querySelector("canvas");
     if (!canvas) return;
 
-    const dataUrl = canvas.toDataURL("image/png");
+    const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
-    link.download = `PaintIt_Realism_Render_${Date.now()}.png`;
-    link.href = dataUrl;
+    link.href = image;
+    link.download = `paintit-master-render-${Date.now()}.png`;
     link.click();
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
-      {/* Top Studio Control Header */}
-      <header className="h-16 border-b border-neutral-900 bg-neutral-950/90 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-30">
+    <div className="flex flex-col h-screen bg-neutral-950 text-white select-none overflow-hidden font-sans">
+      {/* 📱 TOP HEADER RESPONSIVE BAR */}
+      <header className="h-14 bg-neutral-950 border-b border-neutral-900 px-4 lg:px-6 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-xl">📸</span>
-          <div>
-            <h1 className="text-sm font-black uppercase tracking-wider text-emerald-400">
-              PaintIt Realism Test Studio (Foyr-Grade Engine)
-            </h1>
-            <p className="text-[10px] text-neutral-500 font-mono">
-              Test HDRI light probes, sRGB PBR finishes, and contact shadow density in real time.
-            </p>
-          </div>
+          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+          <h1 className="text-sm font-black uppercase tracking-wider text-white">PaintIt Studio 2.0 Realism</h1>
+          <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase bg-neutral-900 border border-neutral-800 text-neutral-400">
+            Engine v2.4
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={handleCaptureSnapshot}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2"
+            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
           >
             <span>📸 Capture 4K Photo Render</span>
           </button>
@@ -189,48 +211,62 @@ export default function RealismTestStudioPage() {
 
       {/* Main Realism Test Surface Layout */}
       <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
-        {/* 3D Realtime WebGL Viewport */}
-        <div className="flex-1 h-[65vh] lg:h-auto relative bg-neutral-950">
-          <Canvas
-            ref={canvasRef}
-            gl={{ preserveDrawingBuffer: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: config.exposure }}
-            camera={{ position: [-2.73, 3.28, -2.51], fov: 60 }}
-          >
-            <color attach="background" args={[config.isNightMode ? "#040406" : "#1a1a1e"]} />
-
-            {/* HDRI Environment Probe */}
-            <Suspense fallback={null}>
-              <Environment preset={config.hdriPreset} background={false} environmentIntensity={config.hdriIntensity} />
-            </Suspense>
-
-            {/* Sun & Ambient Lighting Rig */}
-            <ambientLight intensity={config.isNightMode ? 0.05 : 0.4} color={config.isNightMode ? "#0a0f1d" : "#ffffff"} />
-            {!config.isNightMode && (
-              <directionalLight
-                position={[4, 8, 4]}
-                intensity={1.1}
-                color="#fffdf5"
-                castShadow
-                shadow-mapSize-width={2048}
-                shadow-mapSize-height={2048}
-                shadow-bias={-0.0001}
-              />
-            )}
-
-            {/* Soft Contact Shadow Ground Plane */}
-            <ContactShadows position={[0, -0.01, 0]} opacity={config.shadowOpacity} scale={15} blur={config.shadowBlur} far={4} />
-
-            {/* 3D Room Mesh */}
-            <Suspense fallback={null}>
-              <TestbenchRoomMesh config={config} />
-            </Suspense>
-
-            <OrbitControls makeDefault enableDamping dampingFactor={0.05} minDistance={0.5} maxDistance={15} maxPolarAngle={Math.PI / 2.02} />
-          </Canvas>
+        {/* 3D Realtime WebGL Viewport powered by PaintItMasterCanvas */}
+        <div className="flex-1 h-[60vh] lg:h-auto relative bg-neutral-950">
+          <PaintItMasterCanvas
+            config={{
+              mode: "admin",
+              modelUrl: config.modelUrl,
+              timeOfDay: config.isNightMode ? "night" : "day",
+              activeWallColor: config.wallColor,
+              activeWallFinish: config.wallFinish,
+              activeCeilingType: config.ceilingType,
+              activeFloorTextureId: config.floorTextureId,
+              wallSurfaceStates: (config as any).wallSurfaceStates,
+              bumpScale: config.bumpScale,
+              shadowOpacity: config.shadowOpacity,
+              enableAutoCutaway: true,
+            }}
+            onConfigChange={(newCfg) => {
+              setConfig((prev) => ({
+                ...prev,
+                ...(newCfg.wallSurfaceStates && { wallSurfaceStates: newCfg.wallSurfaceStates }),
+                ...(newCfg.activeWallColor && { wallColor: newCfg.activeWallColor }),
+                ...(newCfg.activeWallFinish && { wallFinish: newCfg.activeWallFinish }),
+                ...(newCfg.timeOfDay && {
+                  isNightMode: newCfg.timeOfDay === "night",
+                }),
+              }));
+            }}
+            onSurfaceSelect={(meshName, category, point) => {
+              console.log("🎯 1-Tap Surface Select:", meshName, category, point);
+            }}
+          />
         </div>
 
-        {/* Realism Control Testbench Drawer Sidebar */}
-        <div className="w-full lg:w-96 bg-neutral-950 border-t lg:border-t-0 lg:border-l border-neutral-900 p-6 space-y-6 overflow-y-auto max-h-[85vh] lg:max-h-none">
+        {/* 📱 DESKTOP RESIZE DRAG HANDLE */}
+        <div
+          onMouseDown={handleMouseDownResize}
+          className="hidden lg:block w-1.5 hover:w-2 hover:bg-emerald-500/50 cursor-col-resize transition-all shrink-0 bg-neutral-900 border-l border-neutral-850"
+          title="Drag to resize panel width"
+        />
+
+        {/* 📱 RESIZABLE & COLLAPSIBLE RIGHT-SIDE PANEL (Desktop & Mobile First Sheet) */}
+        <div
+          className={`relative bg-neutral-950 border-t lg:border-t-0 border-neutral-900 p-4 lg:p-6 space-y-5 overflow-y-auto max-h-[45vh] lg:max-h-none shrink-0 transition-all duration-200 ${
+            isCollapsed ? "hidden lg:block lg:!w-0 lg:p-0 lg:overflow-hidden" : ""
+          }`}
+          style={{ width: typeof window !== "undefined" && window.innerWidth >= 1024 ? (isCollapsed ? 0 : panelWidth) : "100%" }}
+        >
+          {/* FLOATING COLLAPSE TOGGLE BUTTON */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex absolute top-4 -left-4 w-8 h-8 rounded-full bg-neutral-900 border border-neutral-700 text-white items-center justify-center shadow-2xl hover:border-emerald-500 z-30 transition-all text-xs"
+            title={isCollapsed ? "Expand Panel" : "Collapse Panel"}
+          >
+            {isCollapsed ? "◀" : "▶"}
+          </button>
+
           {/* Tab Selection Row */}
           <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-900 border border-neutral-850 rounded-2xl">
             {(["lighting", "walls", "floors", "models"] as const).map((tab) => (

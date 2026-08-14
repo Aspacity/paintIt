@@ -62,7 +62,8 @@ export function AdminTransformGizmo({ activeLight, mode, onTransformUpdate }: Gi
       </group>
       {targetObject && (
         <TransformControls
-          ref={transformRef as unknown as React.Ref<any>}
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+          ref={transformRef as any}
           object={targetObject}
           mode={mode}
           onObjectChange={handleObjectChange}

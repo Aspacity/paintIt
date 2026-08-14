@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { StudioProvider } from "@/context/StudioContext";
+import { AlertProvider } from "@/context/AlertContext";
+import LandingNavbar from "@/components/landing/LandingNavbar";
 import Hero from "@/components/landing/Hero";
-import Problem from "@/components/landing/Problem";
-import Solution from "@/components/landing/Solution";
-import Validation from "@/components/landing/Validation";
-import Features from "@/components/landing/Features";
+import EcosystemCarousel from "@/components/landing/EcosystemCarousel";
 import HowItWorks from "@/components/landing/HowItWorks";
+import RealismComparison from "@/components/landing/RealismComparison";
+import WhyPainters from "@/components/landing/WhyPainters";
+import WhyHomeOwners from "@/components/landing/WhyHomeOwners";
+import FutureVision from "@/components/landing/FutureVision";
 import EarlyAccessForm from "@/components/landing/EarlyAccessForm";
 import Footer from "@/components/landing/Footer";
-import { AlertProvider } from "@/context/AlertContext";
 import { startTrackingLifecycle, identifyUserSession } from "@/utils/tracker";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,13 +22,12 @@ export default function Home() {
   const [nudgeSubmitted, setNudgeSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 1. Initialize our custom session tracking loop when the page mounts
+  // Initialize session tracking metrics
   useEffect(() => {
     const cleanUpTracker = startTrackingLifecycle(() => {
       setShowPopupNudge(true);
     });
 
-    // 🔒 FIX: Only invoke the cleanup function if it actually exists
     return () => {
       if (typeof cleanUpTracker === "function") {
         cleanUpTracker();
@@ -34,7 +35,6 @@ export default function Home() {
     };
   }, []);
 
-  // 2. Handle immediate identity updates when they fill out the quick nudge box
   const handleNudgeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nudgeEmail.trim()) return;
@@ -57,25 +57,31 @@ export default function Home() {
   return (
     <AlertProvider>
       <StudioProvider>
-        <main className="relative min-h-screen bg-neutral-950 selection:bg-emerald-500/30 selection:text-emerald-300 overflow-x-hidden">
+        <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-emerald-500/30 selection:text-emerald-300 relative overflow-x-hidden">
+          {/* Top Architectural Sticky Header */}
+          <LandingNavbar />
 
-          {/* Subtle Ambient Background Glows */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-150 bg-[radial-gradient(circle_at_top,var(--tw-gradient-stops))] from-emerald-950/20 via-transparent to-transparent pointer-events-none z-0" />
-          <div className="absolute top-[30%] right-0 w-75 h-75 bg-emerald-900/5 blur-[120px] pointer-events-none rounded-full" />
-          <div className="absolute bottom-[20%] left-0 w-75 h-75 bg-emerald-900/5 blur-[120px] pointer-events-none rounded-full" />
+          {/* Subtle Ambient Spatial Glows */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-950/25 via-transparent to-transparent pointer-events-none z-0" />
+          <div className="absolute top-[25%] right-0 w-96 h-96 bg-emerald-900/5 blur-[140px] pointer-events-none rounded-full" />
+          <div className="absolute top-[60%] left-0 w-96 h-96 bg-emerald-900/5 blur-[140px] pointer-events-none rounded-full" />
 
-          <div className="relative z-10 space-y-24 md:space-y-36 pb-16">
+          {/* MAIN EDITORIAL LANDING SECTIONS */}
+          <main className="relative z-10 space-y-10 sm:space-y-16 pb-16">
             <Hero />
-            <Problem />
-            <Solution />
-            <Validation />
-            <Features />
             <HowItWorks />
+            <WhyPainters />
+            <WhyHomeOwners />
+            <RealismComparison />
+            <EcosystemCarousel />
+            <FutureVision />
             <EarlyAccessForm />
-            <Footer />
-          </div>
+          </main>
 
-          {/* 3. High-Converting Premium Identity Nudge Popup Overlay */}
+          {/* Footer */}
+          <Footer />
+
+          {/* Visitor Nudge Popup Overlay */}
           <AnimatePresence>
             {showPopupNudge && (
               <motion.div
@@ -84,16 +90,15 @@ export default function Home() {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 p-5 sm:p-6 bg-neutral-900/95 border border-neutral-800 rounded-2xl shadow-2xl backdrop-blur-md max-w-sm w-auto mx-auto sm:mx-0"
               >
-                {/* 🎨 FIX: Simplified canonical Tailwind utility classes below */}
-                <div className="absolute top-0 left-0 w-full h-0.5 bg-linear-to-r from-emerald-500 via-transparent to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-500 via-transparent to-transparent" />
 
                 {!nudgeSubmitted ? (
                   <>
                     <h4 className="font-bold text-sm sm:text-base text-neutral-100 tracking-tight">
-                      Want to save your room layouts?
+                      Save Your Custom 3D Room Designs
                     </h4>
                     <p className="text-xs text-neutral-400 mt-1 leading-normal font-normal">
-                      Drop your email to secure your custom colors and room combinations automatically[cite: 1].
+                      Drop your email to lock in your custom room color combinations automatically.
                     </p>
 
                     <form onSubmit={handleNudgeSubmit} className="mt-4 space-y-2">
@@ -106,7 +111,6 @@ export default function Home() {
                         onChange={(e) => setNudgeEmail(e.target.value)}
                         disabled={isSubmitting}
                       />
-                      {/* 🎨 FIX: Cleaned up min-h property token tag */}
                       <button
                         type="submit"
                         disabled={isSubmitting}
@@ -125,23 +129,18 @@ export default function Home() {
                     </button>
                   </>
                 ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="py-4 text-center"
-                  >
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-4 text-center">
                     <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto mb-2 font-bold text-sm">
                       ✓
                     </div>
-                    <h5 className="font-bold text-neutral-200 text-sm">Identity Linked Successfully</h5>
+                    <h5 className="font-bold text-neutral-200 text-sm">Designs Saved Successfully</h5>
                     <p className="text-[11px] text-neutral-500 mt-0.5 font-normal">Your browsing timeline metrics are locked in.</p>
                   </motion.div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
-
-        </main>
+        </div>
       </StudioProvider>
     </AlertProvider>
   );
