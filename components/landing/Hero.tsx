@@ -75,7 +75,7 @@ export default function Hero() {
               </span>
             </div>
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 sm:px-2.5 py-0.5 rounded border border-emerald-500/20">
-              Tap Wall To Change Paint
+              Double Tap Wall To Change Paint
             </span>
           </div>
 

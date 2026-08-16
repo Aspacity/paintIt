@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ThreeEvent } from '@react-three/fiber';
 import { useStudio } from '@/context/StudioContext';
 import { SelectedSurface } from '@/types/index';
 
 export default function Room() {
-  const { roomColors, setActiveSurface, activeSurface } = useStudio();
+  const { roomColors, setActiveSurface } = useStudio();
   
   const width = 14;
   const height = 8;

@@ -105,7 +105,9 @@ See you inside!`);
   };
 
   useEffect(() => {
-    fetchCampaignStats();
+    queueMicrotask(() => {
+      fetchCampaignStats();
+    });
   }, [accessToken]);
 
   // Insert markdown shortcuts

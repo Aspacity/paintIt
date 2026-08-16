@@ -121,8 +121,9 @@ export function FeedbackModalPopup() {
         const errData = await res.json().catch(() => ({}));
         showToast({ message: errData.error || "Could not save feedback to database.", severity: "error" });
       }
-    } catch (err: any) {
-      showToast({ message: "Error connecting to server: " + (err.message || "Unknown error"), severity: "error" });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      showToast({ message: "Error connecting to server: " + errorMsg, severity: "error" });
     } finally {
       setIsSubmitting(false);
     }

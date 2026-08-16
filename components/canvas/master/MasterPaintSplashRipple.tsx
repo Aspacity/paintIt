@@ -52,10 +52,13 @@ export default function MasterPaintSplashRipple({
   const droplets = useMemo(() => {
     const arr: { angle: number; speed: number; radius: number }[] = [];
     for (let i = 0; i < 10; i++) {
+      const pseudoRand1 = ((i * 17 + 7) % 23) / 23;
+      const pseudoRand2 = ((i * 31 + 13) % 29) / 29;
+      const pseudoRand3 = ((i * 13 + 3) % 19) / 19;
       arr.push({
-        angle: (i * Math.PI) / 5 + (Math.random() * 0.2 - 0.1),
-        speed: 0.22 + Math.random() * 0.18,
-        radius: 0.02 + Math.random() * 0.02,
+        angle: (i * Math.PI) / 5 + (pseudoRand1 * 0.2 - 0.1),
+        speed: 0.22 + pseudoRand2 * 0.18,
+        radius: 0.02 + pseudoRand3 * 0.02,
       });
     }
     return arr;

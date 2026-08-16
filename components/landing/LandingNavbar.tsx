@@ -63,12 +63,12 @@ export default function LandingNavbar() {
 
         {/* Action CTAs */}
         <div className="flex items-center gap-3">
-          <Link
+          {/* <Link
             href="/admin/realism-test"
             className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800 text-neutral-300 font-bold text-xs uppercase tracking-wider transition-all"
           >
             Launch Studio Demo
-          </Link>
+          </Link> */}
           <a
             href="#early-access"
             className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/15 active:scale-95 transition-all"

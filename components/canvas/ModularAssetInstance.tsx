@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useGLTF, TransformControls } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
@@ -28,7 +28,7 @@ export function ModularAssetInstance({
 }: ModularAssetInstanceProps) {
   const { scene } = useGLTF(objectData.model_url);
   const meshRef = useRef<THREE.Group>(null);
-  const transformRef = useRef<any>(null);
+  const transformRef = useRef(null);
 
   // Clone scene & Preserve/Fix Embedded GLB Model Textures & Colors
   const clonedScene = useMemo(() => {
@@ -212,10 +212,15 @@ export function ModularAssetInstance({
     if (onSelect) onSelect();
   };
 
+  const [meshGroup, setMeshGroup] = useState<THREE.Group | null>(null);
+
   return (
     <>
       <group
-        ref={meshRef}
+        ref={(el) => {
+          meshRef.current = el;
+          setMeshGroup(el);
+        }}
         position={objectData.transform.position}
         rotation={objectData.transform.rotation}
         scale={effectiveScale}
@@ -239,10 +244,10 @@ export function ModularAssetInstance({
       </group>
 
       {/* 3D Gizmo Controls when selected */}
-      {isSelected && isEditable && meshRef.current && (
+      {isSelected && isEditable && meshGroup && (
         <TransformControls
           ref={transformRef}
-          object={meshRef.current}
+          object={meshGroup}
           mode={transformMode}
           onMouseUp={handleTransformEnd}
         />

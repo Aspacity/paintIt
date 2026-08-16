@@ -35,7 +35,9 @@ export default function ClientTexturePicker({
     if (!activeSurface) return;
     const resolvedCategory = getMeshCategory(activeSurface);
     if (resolvedCategory === "FLOOR" || resolvedCategory === "WARDROBE" || resolvedCategory === "DOOR") {
-      setActiveTab(resolvedCategory);
+      queueMicrotask(() => {
+        setActiveTab(resolvedCategory);
+      });
     }
   }, [activeSurface]);
 

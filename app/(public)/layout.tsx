@@ -39,7 +39,7 @@ export default function PublicMarketplaceLayout({
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href={user?.role === 'PAINTER' ? '/dashboard' : '/hub'}
+                  href={user?.role === 'PAINTER' ? '/designs' : '/hub'}
                   className="text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-200 font-bold px-3.5 py-2 rounded-xl transition-all border border-neutral-800"
                 >
                   Workspace

@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import PaintItMasterCanvas, { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 
 export default function SpatialShowcase3D() {
   const [wallColor, setWallColor] = useState<string>("#C4B199"); // Desert Sand
   const [wallFinish, setWallFinish] = useState<WallFinishType>("EMULSION");
-  const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const [wallStates, setWallStates] = useState<Record<string, { color: string; finish: WallFinishType }>>({
     wall_back: { color: "#C4B199", finish: "EMULSION" },
     wall_left: { color: "#F2F1E9", finish: "EMULSION" },
@@ -77,9 +75,6 @@ export default function SpatialShowcase3D() {
               }
               if (newCfg.activeWallFinish) {
                 setWallFinish(newCfg.activeWallFinish);
-              }
-              if (newCfg.timeOfDay) {
-                setIsNightMode(newCfg.timeOfDay === "night");
               }
             }}
           />

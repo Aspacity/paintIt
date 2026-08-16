@@ -95,7 +95,9 @@ export default function AdminAnalyticsDashboard() {
   };
 
   useEffect(() => {
-    fetchAdminData();
+    queueMicrotask(() => {
+      fetchAdminData();
+    });
   }, [accessToken]);
 
   const handleMarkResolved = async (id: number) => {

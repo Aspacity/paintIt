@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Canvas } from "@react-three/fiber";
 import { useAuth } from "@/context/AuthContext";
@@ -10,9 +10,8 @@ import { useAlert } from "@/context/AlertContext";
 import WorkspaceCanvas from "@/components/canvas/WorkspaceCanvas";
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
 import PaintPicker, { CustomColor } from "@/components/canvas/PaintPicker";
-import LightControls, { BulbState } from "@/components/canvas/LightControls";
+import { BulbState } from "@/components/canvas/LightControls";
 import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
-import { TextureCategory } from "@/utils/generateFloorTextures";
 
 export interface DBCameraConfig {
   position?: [number, number, number];
@@ -142,7 +141,7 @@ function WorkspaceContent() {
             if (templateData.default_room_data) {
               activeColors = { ...templateData.default_room_data };
               if (activeColors._materialSwaps) {
-                activeSwaps = { ...(activeColors._materialSwaps as any) };
+                activeSwaps = { ...(activeColors._materialSwaps as unknown as Record<string, string>) };
                 delete activeColors._materialSwaps;
               }
             }
@@ -180,7 +179,7 @@ function WorkspaceContent() {
               const rawColors = visData.visualization.room_data || visData.visualization.roomData || activeColors;
               activeColors = { ...rawColors };
               if (activeColors._materialSwaps) {
-                activeSwaps = { ...(activeColors._materialSwaps as any) };
+                activeSwaps = { ...(activeColors._materialSwaps as unknown as Record<string, string>) };
                 delete activeColors._materialSwaps;
               }
 
@@ -450,17 +449,6 @@ function WorkspaceContent() {
           🪵
         </button>
         <button
-          onClick={() => handleTabFABClick("lighting")}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-2xl transition-all ${
-            activeTab === "lighting" && !isPanelCollapsed
-              ? "bg-emerald-500 border-emerald-400 text-neutral-950"
-              : "bg-neutral-900/90 border-neutral-800 text-white"
-          }`}
-          title="Bulb Switches"
-        >
-          💡
-        </button>
-        <button
           onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
           className="w-10 h-10 rounded-full bg-neutral-950/90 border border-neutral-850 text-neutral-400 flex items-center justify-center shadow-2xl font-bold"
         >
@@ -513,14 +501,6 @@ function WorkspaceContent() {
                 });
               }}
               meshes={meshesWithOriginalMaterials}
-            />
-          )}
-          {activeTab === "lighting" && (
-            <LightControls
-              bulbs={bulbs}
-              setBulbs={setBulbs}
-              isNightMode={isNightMode}
-              setIsNightMode={setIsNightMode}
             />
           )}
         </div>

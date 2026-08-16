@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 
@@ -76,7 +76,7 @@ export default function UserFeedbackHubPage() {
   const categories = roleCategoriesMap[userRole] || roleCategoriesMap.GUEST;
   const activeCategory = category || categories[0];
 
-  const fetchPastFeedbacks = async () => {
+  const fetchPastFeedbacks = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
       return;
@@ -93,11 +93,13 @@ export default function UserFeedbackHubPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, BACKEND_API_URL]);
 
   useEffect(() => {
-    fetchPastFeedbacks();
-  }, [user]);
+    queueMicrotask(() => {
+      fetchPastFeedbacks();
+    });
+  }, [fetchPastFeedbacks]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,8 +133,9 @@ export default function UserFeedbackHubPage() {
         const errData = await res.json().catch(() => ({}));
         showToast({ message: errData.error || "Could not save feedback to database.", severity: "error" });
       }
-    } catch (err: any) {
-      showToast({ message: "Error connecting to server: " + (err.message || "Unknown error"), severity: "error" });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      showToast({ message: "Error connecting to server: " + errorMsg, severity: "error" });
     } finally {
       setIsSubmitting(false);
     }

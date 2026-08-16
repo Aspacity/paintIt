@@ -63,11 +63,11 @@ export default function DedicatedPlayground() {
 
   const [designId, setDesignId] = useState<string>(dynamicId);
   const [designTitle, setDesignTitle] = useState<string>('Loading Workspace Model...');
-  const [templateId, setTemplateId] = useState<string>(dynamicId);
+  const [_templateId, setTemplateId] = useState<string>(dynamicId);
   const [modelUrl, setModelUrl] = useState<string>('/models/selfcon.glb');
-  const [isPremiumTemplate, setIsPremiumTemplate] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activeDesignId, setActiveDesignId] = useState<string | null>(null);
+  const [_isPremiumTemplate, setIsPremiumTemplate] = useState<boolean>(false);
+  const [_isLoading, setIsLoading] = useState<boolean>(true);
+  const [_activeDesignId, setActiveDesignId] = useState<string | null>(null);
 
   const { showToast } = useAlert();
   const { accessToken } = useAuth();
@@ -266,7 +266,7 @@ export default function DedicatedPlayground() {
 
     syncStudioContext();
     return () => { isMounted = false; };
-  }, [searchParams, accessToken]);
+  }, [searchParams, accessToken, dynamicId]);
 
   const handleSaveToDatabase = async () => {
     if (!controlsRef.current) return;

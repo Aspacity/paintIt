@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, Suspense, useRef } from "react";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { useControls, Leva } from "leva";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -72,6 +73,22 @@ export default function ModularStudioSandboxPage() {
     sunlightIntensity: { value: 1.2, min: 0.0, max: 5.0, step: 0.1, label: "☀️ Sunlight Intensity" },
   }));
 
+  const handleDeleteLight = (id: string) => {
+    setBulbs((prev) => prev.filter((b) => b.id !== id));
+    if (selectedLightId === id) setSelectedLightId(null);
+  };
+
+  const handleDeleteSelected = (targetId?: string) => {
+    const idToDelete = targetId || selectedInstanceId;
+    if (!idToDelete) return;
+    setPlacedObjects((prev) => prev.filter((obj) => obj.instance_id !== idToDelete));
+    if (selectedInstanceId === idToDelete) {
+      setSelectedInstanceId(null);
+      setActiveSubMaterials([]);
+    }
+    showToast({ message: "Component deleted from room.", severity: "info" });
+  };
+
   // Keyboard shortcut listener for Delete / Backspace key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,11 +125,6 @@ export default function ModularStudioSandboxPage() {
     setSelectedInstanceId(null);
     setActiveStudioTab("lighting");
     showToast({ message: "Added new 3D light fixture to room!", severity: "success" });
-  };
-
-  const handleDeleteLight = (id: string) => {
-    setBulbs((prev) => prev.filter((b) => b.id !== id));
-    if (selectedLightId === id) setSelectedLightId(null);
   };
 
   const handleToggleBulb = (id: string) => {
@@ -155,7 +167,7 @@ export default function ModularStudioSandboxPage() {
   const handleAddAsset = (asset: CatalogAsset) => {
     const instanceId = `${asset.category}_${Date.now()}`;
     const snapRes = SnappingEngine.snapToFloor(
-      { x: 0, y: 0.5, z: 0 } as any,
+      new THREE.Vector3(0, 0.5, 0),
       0,
       true,
       0.1
@@ -231,17 +243,6 @@ export default function ModularStudioSandboxPage() {
         return obj;
       })
     );
-  };
-
-  const handleDeleteSelected = (targetId?: string) => {
-    const idToDelete = targetId || selectedInstanceId;
-    if (!idToDelete) return;
-    setPlacedObjects((prev) => prev.filter((obj) => obj.instance_id !== idToDelete));
-    if (selectedInstanceId === idToDelete) {
-      setSelectedInstanceId(null);
-      setActiveSubMaterials([]);
-    }
-    showToast({ message: "Component deleted from room.", severity: "info" });
   };
 
   const handleDuplicateSelected = () => {

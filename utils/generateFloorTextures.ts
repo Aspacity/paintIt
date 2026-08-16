@@ -351,6 +351,27 @@ export function getMeshCategory(meshName: string): TextureCategory | "WALL" | "O
   if (!meshName) return "OTHER";
   const name = meshName.toLowerCase();
   
+  // Decorative fixtures, curtains, drapes, blinds, windows, lights, furniture
+  if (
+    name.includes("curtain") ||
+    name.includes("drape") ||
+    name.includes("blind") ||
+    name.includes("window") ||
+    name.includes("glass") ||
+    name.includes("lamp") ||
+    name.includes("light") ||
+    name.includes("fixture") ||
+    name.includes("furniture") ||
+    name.includes("sofa") ||
+    name.includes("chair") ||
+    name.includes("table") ||
+    name.includes("sash") ||
+    name.includes("screen") ||
+    name.includes("shutter")
+  ) {
+    return "OTHER";
+  }
+
   // Floor and ground classification
   if (name.includes("floor") || name.includes("ground") || meshName === "Cube.011") {
     return "FLOOR";

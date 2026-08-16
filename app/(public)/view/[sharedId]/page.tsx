@@ -15,7 +15,7 @@ import PaintPicker, { CustomColor } from "@/components/canvas/ClientPaintPicker"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
-import { TEXTURE_PRESETS, TextureCategory, getMeshCategory } from "@/utils/generateFloorTextures";
+import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
 import { DBRawLight } from "../../workspace/page";
 import { PAINT_FINISH_PRESETS, PaintFinishId } from "@/config/paintFinishes";
 import { generateWallNormalMap } from "@/utils/generateWallNormalMaps";
@@ -102,7 +102,7 @@ function ClientInteractiveCanvas({
   activeTextures?: Record<string, string>;
   onModelLoaded?: (materials: string[], meshes: { name: string; originalMaterial: string }[]) => void;
 }) {
-  const { scene, materials } = useGLTF(modelUrl) as any;
+  const { scene, materials } = useGLTF(modelUrl) as unknown as { scene: THREE.Group; materials: Record<string, THREE.Material> };
   const clonedScene = React.useMemo(() => {
     const clone = scene.clone();
     const hasInnerWalls = !!clone.getObjectByName('wallLeft');
@@ -140,7 +140,7 @@ function ClientInteractiveCanvas({
     if (scene && materials && onModelLoaded) {
       const materialNames = Object.keys(materials);
       const meshList: { name: string; originalMaterial: string }[] = [];
-      scene.traverse((node: any) => {
+      scene.traverse((node: THREE.Object3D) => {
         if (node instanceof THREE.Mesh) {
           const matName = node.material && (node.material as THREE.Material).name;
           meshList.push({
@@ -392,8 +392,8 @@ export default function PublicProfileAndConceptPage() {
       const currentSwaps = (prev._materialSwaps as unknown as Record<string, string>) || {};
       const updatedSwaps = { ...currentSwaps, [meshName]: materialName };
       
-      const copy = { ...prev, _materialSwaps: updatedSwaps as any };
-      return copy;
+      const copy = { ...prev, _materialSwaps: updatedSwaps as unknown as Record<string, string> };
+      return copy as unknown as Record<string, string>;
     });
     
     // Clear active texture for this surface when a native material is selected

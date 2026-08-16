@@ -1,121 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
-import { Environment, Sky, TransformControls } from "@react-three/drei";
-import { BulbState } from "@/components/canvas/LightControls";
-import { LIGHTING_CONTROLS } from "../PaintItMasterCanvas";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
+import { Sky, TransformControls } from "@react-three/drei";
+import { BulbState } from "@/components/canvas/LightControls";
+import {
+  LightingPresetKey,
+  MASTER_LIGHTING_PRESETS,
+  calculateSunPosition,
+} from "@/config/lightingPresets";
 
-interface MasterLightingEngineProps {
-  timeOfDay: "day" | "night";
+export interface MasterLightingEngineProps {
+  timeOfDay?: LightingPresetKey | "day";
+  sunAzimuthOverride?: number;
+  sunElevationOverride?: number;
+  sunIntensityOverride?: number;
+  sunColorOverride?: string;
+  ambientIntensityOverride?: number;
   bulbs?: BulbState[];
   setBulbs?: React.Dispatch<React.SetStateAction<BulbState[]>>;
   selectedBulbId?: string | null;
   onSelectBulb?: (id: string | null) => void;
-}
-
-function sunVectorFromElevationAzimuth(elevationDeg: number, azimuthDeg: number, radius = 100): [number, number, number] {
-  const phi = (90 - elevationDeg) * (Math.PI / 180);
-  const theta = (azimuthDeg - 90) * (Math.PI / 180);
-  const x = radius * Math.sin(phi) * Math.cos(theta);
-  const y = radius * Math.cos(phi);
-  const z = radius * Math.sin(phi) * Math.sin(theta);
-  return [x, y, z];
+  isAdmin?: boolean;
 }
 
 export default function MasterLightingEngine({
-  timeOfDay,
+  timeOfDay = "morning",
+  sunAzimuthOverride,
+  sunElevationOverride,
+  sunIntensityOverride,
+  sunColorOverride,
+  ambientIntensityOverride,
   bulbs = [],
   setBulbs,
-  selectedBulbId,
+  selectedBulbId = null,
   onSelectBulb,
+  isAdmin = false,
 }: MasterLightingEngineProps) {
-  const profile = LIGHTING_CONTROLS[timeOfDay] || LIGHTING_CONTROLS.day;
-  const isDay = timeOfDay === "day";
-  const activeBulbs = bulbs.filter((b) => (b.visible !== undefined ? b.visible : b.enabled));
-
-  const sunPosition = sunVectorFromElevationAzimuth(profile.sunElevationDeg, profile.sunAzimuthDeg, 100);
-
+  const bulbRefs = useRef<Record<string, THREE.Group | null>>({});
   const [selectedMesh, setSelectedMesh] = useState<THREE.Group | null>(null);
+
+  // Normalize preset key (map legacy "day" -> "morning")
+  const activePresetKey: LightingPresetKey =
+    timeOfDay === "day" ? "morning" : (timeOfDay as LightingPresetKey) || "morning";
+
+  const preset = MASTER_LIGHTING_PRESETS[activePresetKey] || MASTER_LIGHTING_PRESETS.morning;
+
+  // Resolve custom overrides over active preset
+  const azimuth = sunAzimuthOverride ?? preset.sun.azimuthDeg;
+  const elevation = sunElevationOverride ?? preset.sun.elevationDeg;
+  const intensity = sunIntensityOverride ?? preset.sun.intensity;
+  const sunColor = sunColorOverride ?? preset.sun.color;
+  const ambientIntensity = ambientIntensityOverride ?? preset.environment.ambientIntensity;
+
+  // Calculate 3D Cartesian sun position vector
+  const sunPosition = useMemo(() => {
+    return calculateSunPosition(elevation, azimuth, 15);
+  }, [elevation, azimuth]);
+
+  // Sync selected mesh for TransformControls when selectedBulbId changes
+  useEffect(() => {
+    if (selectedBulbId && bulbRefs.current[selectedBulbId] && isAdmin) {
+      setSelectedMesh(bulbRefs.current[selectedBulbId]);
+    } else {
+      setSelectedMesh(null);
+    }
+  }, [selectedBulbId, bulbs, isAdmin]);
+
+  const activeBulbs = bulbs.filter((b) => b.visible !== false && b.enabled !== false);
 
   return (
     <>
-      {/* ☀️ DAYTIME SKY / NIGHTTIME DARKNESS */}
-      {isDay ? (
-        <Sky
-          distance={450000}
-          sunPosition={sunPosition}
-          turbidity={profile.skyTurbidity}
-          rayleigh={profile.skyRayleigh}
-          mieCoefficient={profile.skyMieCoefficient}
-          mieDirectionalG={profile.skyMieDirectionalG}
-        />
+      {/* ☀️ 1. GLOBAL WORLD DAYLIGHT & ATMOSPHERE ENGINE */}
+      {activePresetKey !== "night" ? (
+        <>
+          <directionalLight
+            position={sunPosition}
+            intensity={intensity}
+            color={sunColor}
+            castShadow
+            shadow-mapSize-width={preset.sun.shadowMapSize}
+            shadow-mapSize-height={preset.sun.shadowMapSize}
+            shadow-camera-far={preset.sun.shadowCameraFar}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
+            shadow-bias={preset.sun.shadowBias}
+          />
+          <ambientLight intensity={ambientIntensity} color={preset.environment.ambientColor} />
+          <hemisphereLight
+            args={[
+              preset.environment.skySkyColor,
+              preset.environment.skyGroundColor,
+              preset.environment.skyIntensity,
+            ]}
+          />
+          <Sky
+            distance={450000}
+            sunPosition={sunPosition}
+            turbidity={preset.environment.skyTurbidity}
+            rayleigh={preset.environment.skyRayleigh}
+            mieCoefficient={preset.environment.skyMieCoefficient}
+            mieDirectionalG={preset.environment.skyMieDirectionalG}
+          />
+        </>
       ) : (
-        <color attach="background" args={["#050912"]} />
+        <>
+          {/* 🌙 NIGHT MODE MOONLIGHT & ATMOSPHERE */}
+          <directionalLight
+            position={[sunPosition[0], Math.max(8, sunPosition[1]), sunPosition[2]]}
+            intensity={0.4}
+            color="#7a9cc6"
+            castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+            shadow-bias={-0.0005}
+          />
+          <ambientLight intensity={Math.max(0.2, ambientIntensity)} color="#1d283d" />
+          <hemisphereLight args={["#233454", "#090d17", 0.25]} />
+        </>
       )}
 
-      {/* 🌐 EXTERNAL HDRI ENVIRONMENT MAP */}
-      <Environment
-        preset={profile.envPreset as React.ComponentProps<typeof Environment>["preset"]}
-        background={false}
-        environmentIntensity={profile.envIntensity}
-      />
-
-      {/* 🌤️ HEMISPHERE FILL */}
-      <hemisphereLight
-        color={profile.hemisphereSkyColor}
-        groundColor={profile.hemisphereGroundColor}
-        intensity={profile.hemisphereIntensity}
-      />
-
-      {/* 💡 DYNAMIC USER LIGHTBULBS & SPOTLIGHTS */}
+      {/* 💡 2. INTERIOR BULBS ENGINE */}
       {activeBulbs.map((bulb) => {
-        const isSelected = bulb.id === selectedBulbId;
-
+        const isSelected = isAdmin && selectedBulbId === bulb.id;
         return (
           <group
             key={bulb.id}
-            ref={isSelected ? (node: THREE.Group | null) => setSelectedMesh(node) : undefined}
+            ref={(el) => {
+              bulbRefs.current[bulb.id] = el;
+            }}
             position={bulb.position}
+            onClick={(e) => {
+              if (!isAdmin) return;
+              e.stopPropagation();
+              onSelectBulb?.(bulb.id);
+            }}
           >
-            {/* 3D Visual Glowing Bulb Sphere Marker */}
-            <mesh
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectBulb?.(bulb.id);
-              }}
-            >
-              <sphereGeometry args={[0.06, 16, 16]} />
-              <meshBasicMaterial color={bulb.color} />
-            </mesh>
+            {/* Visual Bulb Marker Mesh (Only visible in Master Admin mode) */}
+            {isAdmin && (
+              <mesh castShadow={false} receiveShadow={false}>
+                <sphereGeometry args={[0.08, 24, 24]} />
+                <meshStandardMaterial
+                  color={bulb.color}
+                  emissive={bulb.color}
+                  emissiveIntensity={isSelected ? 2.0 : 1.0}
+                  wireframe={isSelected}
+                />
+              </mesh>
+            )}
 
             {bulb.type === "spot" ? (
               <spotLight
                 position={[0, 0, 0]}
                 rotation={bulb.rotation}
-                intensity={bulb.intensity * 2}
+                intensity={bulb.intensity * 2.5}
                 color={bulb.color}
                 angle={Math.PI / 3}
-                penumbra={0.5}
+                penumbra={0.85} // ☀️ Ultra soft feathered light edges!
                 distance={bulb.distance || 15}
-                castShadow
+                castShadow={false}
               />
             ) : (
               <pointLight
                 position={[0, 0, 0]}
-                intensity={bulb.intensity * 2}
+                intensity={bulb.intensity * 2.5}
                 color={bulb.color}
                 distance={bulb.distance || 15}
-                decay={1.1}
-                castShadow
+                decay={2.0} // ☀️ Physically accurate inverse-square quadratic light falloff!
+                castShadow={false}
               />
             )}
           </group>
         );
       })}
 
-      {/* 🎯 3D LEVA / TRANSFORM GIZMO FOR SELECTED BULB */}
-      {selectedBulbId && selectedMesh && (
+      {/* 🎯 3D LEVA / TRANSFORM GIZMO FOR MASTER ADMIN ONLY */}
+      {isAdmin && selectedBulbId && selectedMesh && (
         <TransformControls
           object={selectedMesh}
           mode="translate"

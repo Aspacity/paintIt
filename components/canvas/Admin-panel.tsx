@@ -6,7 +6,7 @@ import { PaintFinishSelector } from '@/components/ui/PaintFinishSelector';
 import { PaintFinishId } from '@/config/paintFinishes';
 
 import ClientTexturePicker from '@/components/canvas/ClientTexturePicker';
-import { getMeshCategory, MeshCategory } from '@/utils/generateFloorTextures';
+import { getMeshCategory, MeshCategory, TextureCategory } from '@/utils/generateFloorTextures';
 
 const MAX_CEILING_HEIGHT = 15.0;
 
@@ -35,7 +35,7 @@ interface AdminPanelProps {
   onToggleCleanView: () => void;
   isLandscapeLayout: boolean;
   activeTextures?: Record<string, string>;
-  onTextureSelect?: (category: any, textureId: string) => void;
+  onTextureSelect?: (category: TextureCategory | string, textureId: string) => void;
   availableMaterials?: string[];
   materialSwaps?: Record<string, string>;
   onMaterialSwap?: (meshName: string, materialName: string) => void;
@@ -53,7 +53,7 @@ export function FloatingAdminPanel({
   meshes = []
 }: AdminPanelProps) {
   const [position, setPosition] = useState({ x: 16, y: 80 });
-  const [size, setSize] = useState({ width: 340, height: 490 });
+  const size = { width: 340, height: 490 };
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
@@ -229,7 +229,7 @@ export function FloatingAdminPanel({
               {isTextureOpen && activeTextures && onTextureSelect && (
                 <div className="p-3 space-y-3 bg-neutral-950/30">
                   <ClientTexturePicker
-                    activeTextures={activeTextures as any}
+                    activeTextures={activeTextures}
                     onTextureSelect={onTextureSelect}
                     activeSurface={activeSurface}
                     availableMaterials={availableMaterials}

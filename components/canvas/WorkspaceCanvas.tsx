@@ -46,7 +46,7 @@ export default function WorkspaceCanvas({
   onSurfaceSelect,
   bulbs,
   cameraConfig,
-  roomTextures,
+  roomTextures: _roomTextures,
   activeTextures,
   materialSwaps,
   onModelLoaded,
