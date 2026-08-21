@@ -9,6 +9,8 @@ import PaintItMasterCanvas, { MasterCanvasConfig, WallFinishType } from '@/compo
 import { LightingPresetKey } from '@/config/lightingPresets';
 import { CameraConfigPayload } from '@/components/canvas/master/MasterCameraRig';
 
+import ConfirmModal from '@/components/modals/ConfirmModal';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 function PlaygroundCanvasContent() {
@@ -17,6 +19,36 @@ function PlaygroundCanvasContent() {
   const dynamicId = routeParams.id as string;
   const { showToast } = useAlert();
   const { accessToken } = useAuth();
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  const handleDeleteModel = async () => {
+    setIsDeleting(true);
+    const token = accessToken || localStorage.getItem('paintit_access_token') || '';
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/visualizations/catalog/${dynamicId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        showToast({ message: '🗑️ Model frame deleted successfully!', severity: 'success' });
+        router.push('/admin/playground');
+      } else {
+        throw new Error('Delete model rejected.');
+      }
+    } catch {
+      showToast({ message: '❌ Failed to delete model frame from database.', severity: 'error' });
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+    }
+  };
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -201,14 +233,35 @@ function PlaygroundCanvasContent() {
             👑 MASTER ADMIN PLAYGROUND STUDIO
           </span>
         </div>
-        <button
-          onClick={handleSavePlaygroundSetup}
-          disabled={isSaving}
-          className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
-        >
-          <span>{isSaving ? 'SAVING...' : '💾 SAVE CONFIG TO DB'}</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setDeleteModalOpen(true)}
+            disabled={isDeleting}
+            className="px-3.5 py-1.5 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-neutral-950 border border-rose-500/30 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1 shrink-0"
+            title="Delete 3D Model Frame"
+          >
+            <span>{isDeleting ? 'DELETING...' : '🗑️ DELETE MODEL'}</span>
+          </button>
+          <button
+            onClick={handleSavePlaygroundSetup}
+            disabled={isSaving}
+            className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
+          >
+            <span>{isSaving ? 'SAVING...' : '💾 SAVE CONFIG TO DB'}</span>
+          </button>
+        </div>
       </div>
+
+      {/* 🗑️ DELETE MODEL CONFIRMATION MODAL */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteModel}
+        title="Delete 3D Model Frame"
+        message={`Are you sure you want to permanently delete '${designTitle}'? This action will erase the layout from the catalog and cannot be undone.`}
+        confirmText="Delete Model"
+        cancelText="Cancel"
+      />
 
       {/* 🎛️ LEVA CAMERA GUI CONTROLLER CONTAINER */}
       <div className="absolute top-20 right-80 z-40 pointer-events-auto">

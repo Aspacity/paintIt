@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 interface DesignTemplate {
   id: string;
@@ -22,6 +23,11 @@ export default function AdminPlaygroundCatalog() {
   const { showToast } = useAlert();
   const { accessToken } = useAuth();
 
+  // Deletion Modal State Variables
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingTitle, setDeletingTitle] = useState<string>('');
+
   // Modal State Variables
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -29,6 +35,39 @@ export default function AdminPlaygroundCatalog() {
   const [newTitle, setNewTitle] = useState<string>('Cozy Modern Living Room');
   const [newCategory, setNewCategory] = useState<string>('INTERIOR');
   const [creating, setCreating] = useState<boolean>(false);
+
+  const handlePromptDelete = (e: React.MouseEvent, item: DesignTemplate) => {
+    e.stopPropagation();
+    setDeletingId(item.id);
+    setDeletingTitle(item.title);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
+    const token = accessToken || localStorage.getItem('paintit_access_token') || '';
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/visualizations/catalog/${deletingId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        setCatalog((prev) => prev.filter((item) => item.id !== deletingId));
+        showToast({ message: '🗑️ Model frame deleted successfully!', severity: 'success' });
+      } else {
+        throw new Error('Deletion rejected');
+      }
+    } catch {
+      showToast({ message: '❌ Failed to delete model frame.', severity: 'error' });
+    } finally {
+      setDeleteModalOpen(false);
+    }
+  };
 
   // Load all current 3D template rows from backend pg table
   useEffect(() => {
@@ -182,15 +221,39 @@ export default function AdminPlaygroundCatalog() {
                   <p className="text-[10px] font-mono text-neutral-500 mt-1 truncate">{item.model_url}</p>
                 </div>
                 <div className="mt-6 flex items-center justify-between border-t border-neutral-800/60 pt-3">
-                  <span className="text-[9px] font-mono text-neutral-600 tracking-tight truncate max-w-[150px]">ID: {item.id}</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 group-hover:text-cyan-400 transition-colors flex items-center gap-1">
-                    Edit Layer 🛠️
-                  </span>
+                  <span className="text-[9px] font-mono text-neutral-600 tracking-tight truncate max-w-[100px]">ID: {item.id}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => handlePromptDelete(e, item)}
+                      className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-rose-400 hover:text-rose-300 bg-rose-950/40 border border-rose-800/30 hover:border-rose-500 rounded-lg transition-all"
+                      title="Delete 3D Model Frame"
+                    >
+                      🗑️ Delete
+                    </button>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 group-hover:text-cyan-400 transition-colors flex items-center gap-1">
+                      Edit 🛠️
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* 🗑️ DELETE CONFIRMATION MODAL */}
+        <ConfirmModal
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setDeletingId(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete 3D Model Frame"
+          message={`Are you sure you want to permanently delete '${deletingTitle}'? This action cannot be undone.`}
+          confirmText="Delete Model"
+          cancelText="Cancel"
+        />
 
         {/* ➕ CHOOSE MODEL & SET TITLE CREATION MODAL OVERLAY */}
         {modalOpen && (
