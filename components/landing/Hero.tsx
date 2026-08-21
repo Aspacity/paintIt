@@ -2,15 +2,18 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import PaintItMasterCanvas from "@/components/canvas/PaintItMasterCanvas";
+import PaintItMasterCanvas, { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 
 export default function Hero() {
   const [heroColor, setHeroColor] = useState("#C4B199"); // Desert Sand
-  const [heroFinish, setHeroFinish] = useState<"EMULSION" | "GLOSS" | "SATIN">("EMULSION");
-  const [heroWallStates, setHeroWallStates] = useState<Record<string, { color: string; finish: "EMULSION" | "GLOSS" | "SATIN" }>>({
+  const [heroFinish, setHeroFinish] = useState<WallFinishType>("EMULSION");
+  const [heroTimeOfDay, setHeroTimeOfDay] = useState<"day" | "night">("day");
+  const [heroWallStates, setHeroWallStates] = useState<Record<string, { color: string; finish: WallFinishType }>>({
     wall_back: { color: "#C4B199", finish: "EMULSION" },
     wall_left: { color: "#F2F1E9", finish: "EMULSION" },
     wall_right: { color: "#9BA498", finish: "EMULSION" },
+    wall_front: { color: "#C4B199", finish: "EMULSION" },
+    toilet: { color: "#C4B199", finish: "EMULSION" },
     ceiling: { color: "#FFFFFF", finish: "EMULSION" },
   });
 
@@ -83,22 +86,28 @@ export default function Hero() {
           <div className="w-full h-[400px] sm:h-[480px] md:h-[540px] bg-neutral-950 relative overflow-hidden">
             <PaintItMasterCanvas
               config={{
-                mode: "sandbox",
+                mode: "painter",
                 modelUrl: "/models/shells/spacious-lux.glb",
-                timeOfDay: "day",
+                timeOfDay: heroTimeOfDay,
                 activeWallColor: heroColor,
                 activeWallFinish: heroFinish,
                 activeCeilingType: "Ceiling_Cove",
                 activeFloorTextureId: "floor_oak",
                 wallSurfaceStates: heroWallStates,
-                enableAutoCutaway: true,
-                enableZoom: false,
-                hideLightingTab: true,
+                enableZoom: false, // 🔒 Zooming disabled for landing demo!
+                hideFloorTab: true, // 🔒 No floor textures tab!
+                hideColorMixer: true, // 🔒 No color upload mixer!
+                hideAssemblyPanel: true, // 🔒 No 3D assembly dock!
+                isAdmin: false, // 🔒 Painter mode: Day/Night & Lightbulb ON/OFF ONLY!
+                hideLightingTab: false,
               }}
               onConfigChange={(newCfg) => {
                 if (newCfg.wallSurfaceStates) setHeroWallStates(newCfg.wallSurfaceStates);
                 if (newCfg.activeWallColor) setHeroColor(newCfg.activeWallColor);
                 if (newCfg.activeWallFinish) setHeroFinish(newCfg.activeWallFinish);
+                if (newCfg.timeOfDay && (newCfg.timeOfDay === "day" || newCfg.timeOfDay === "night")) {
+                  setHeroTimeOfDay(newCfg.timeOfDay);
+                }
               }}
             />
           </div>

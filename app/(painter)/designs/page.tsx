@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import ConfirmModal from "@/components/modals/ConfirmModal";
@@ -190,14 +191,28 @@ export default function Painter3DStudioDashboardHub() {
     <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-emerald-500 selection:text-black">
 
       {/* HEADER SECTION */}
-      <div className="border-b border-neutral-900 pb-5">
-        <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100">3D Design Studio</h1>
-        <p className="text-xs text-neutral-500 mt-0.5">
-          Select structural rooms, experiment with dynamic color variations, and share realistic 3D visualizations with your clients.
-        </p>
+      <div className="border-b border-neutral-900 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
+            <span>3D Design Studio</span>
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              PAINTER PRO
+            </span>
+          </h1>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Select structural rooms, experiment with dynamic color variations, and share realistic 3D visualizations with your clients.
+          </p>
+        </div>
+
+        <Link
+          href="/designs/workspace"
+          className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0"
+        >
+          <span>🎨 Open Painter 3D Studio Workspace ➔</span>
+        </Link>
       </div>
 
-      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE FOR 3D STUDIO */}
+      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE FOR 3D STUDIO (COMMENTED OUT FOR NOW)
       <MicroVideoCarousel
         title="⚡ 15-Second 3D Studio Quick Guide"
         subtitle="Swipe to watch how to paint 3D walls, pick finishes, and send visual links to clients."
@@ -238,6 +253,7 @@ export default function Painter3DStudioDashboardHub() {
           },
         ]}
       />
+      */}
 
       {/* ZONE 1: PAINTER'S SAVED WORKSPACES */}
       <div className="space-y-4">

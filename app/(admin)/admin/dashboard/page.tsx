@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { PainterVideoWalkthroughPlayer } from "@/components/dashboard/PainterVideoWalkthroughPlayer";
 
 interface SessionLog {
   id: string;
@@ -191,6 +192,9 @@ export default function AdminAnalyticsDashboard() {
           <span className="text-[9px] text-amber-500 mt-1 font-mono">⏳ Private beta signups</span>
         </div>
       </div>
+
+      {/* 🎬 PAINTER PRO VIDEO WALKTHROUGH MODULE */}
+      <PainterVideoWalkthroughPlayer />
 
       {/* ========================================================== */}
       {/* 💬 MASTER ADMIN USER FEEDBACK MANAGEMENT HUB MODULE         */}

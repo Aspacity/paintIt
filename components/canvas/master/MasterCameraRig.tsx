@@ -129,7 +129,10 @@ export default function MasterCameraRig({
     camera.up.set(0, 1, 0);
 
     if (controlsRef.current) {
-      if (!activePreset || activePreset === "FULL_ROOM") {
+      if (savedCameraConfig?.position && savedCameraConfig?.target && !targetPreset) {
+        camera.position.set(savedCameraConfig.position[0], savedCameraConfig.position[1], savedCameraConfig.position[2]);
+        controlsRef.current.target.set(savedCameraConfig.target[0], savedCameraConfig.target[1], savedCameraConfig.target[2]);
+      } else if (!activePreset || activePreset === "FULL_ROOM") {
         camera.position.set(0, 1.8, 4.5);
         controlsRef.current.target.set(0, 1.2, 0);
       } else if (activePreset === "SEATING_FOCUS") {
@@ -145,22 +148,28 @@ export default function MasterCameraRig({
 
       controlsRef.current.update();
     }
-  }, [activePreset, camera]);
+  }, [activePreset, camera, savedCameraConfig]);
 
   return (
     <OrbitControls
       ref={controlsRef}
       makeDefault
       target={savedCameraConfig?.target ?? [0, 1.2, 0]}
-      minPolarAngle={savedCameraConfig?.minPolarAngle ?? 0.01}
-      maxPolarAngle={(levaConfig.maxPolarAngleDeg * Math.PI) / 180}
-      minDistance={levaConfig.minDistance}
-      maxDistance={levaConfig.maxDistance}
-      enableRotate={true}
-      enablePan={true}
-      enableZoom={enableZoom}
+      minPolarAngle={!isAdmin ? (85 * Math.PI) / 180 : (savedCameraConfig?.minPolarAngle ?? 0.01)}
+      maxPolarAngle={!isAdmin ? (85 * Math.PI) / 180 : ((levaConfig.maxPolarAngleDeg * Math.PI) / 180)}
+      minDistance={savedCameraConfig?.minDistance ?? levaConfig.minDistance ?? 0.2}
+      maxDistance={savedCameraConfig?.maxDistance ?? levaConfig.maxDistance ?? 15.0}
+      enableRotate={true} // 🔄 Horizontal 360° rotation around room enabled!
+      enablePan={isAdmin} // 🎥 Position panning enabled ONLY for Admin in Playground!
+      screenSpacePanning={true} // ↕️↔️ Pan along screen plane up, down, left, right along any axis!
+      panSpeed={1.2}
+      enableZoom={enableZoom} // 🔍 Zoom in and out allowed!
       enableDamping={true}
       dampingFactor={0.08}
+      touches={{
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN,
+      }}
     />
   );
 }

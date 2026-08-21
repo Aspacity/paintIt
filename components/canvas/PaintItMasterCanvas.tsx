@@ -27,6 +27,7 @@ function resolveWallKey(meshName: string): string {
   if (!meshName) return "wall_back";
   const name = meshName.toLowerCase();
   if (WALL_MAPPING_PRESETS[name]) return WALL_MAPPING_PRESETS[name];
+  if (name.includes("toilet") || name.includes("bath") || name.includes("wc")) return "toilet";
   if (name.includes("back")) return "wall_back";
   if (name.includes("left")) return "wall_left";
   if (name.includes("right")) return "wall_right";
@@ -61,10 +62,14 @@ export interface MasterCanvasConfig {
   enableAutoCutaway?: boolean;
   enableZoom?: boolean;
   hideLightingTab?: boolean;
+  hideFloorTab?: boolean;
+  hideColorMixer?: boolean;
+  hideAssemblyPanel?: boolean;
   isAdmin?: boolean;
 }
 
 import { CameraConfigPayload } from "./master/MasterCameraRig";
+import { saveCustomPaintSync } from "@/utils/offlineDBSync";
 
 interface PaintItMasterCanvasProps {
   config: MasterCanvasConfig;
@@ -134,6 +139,7 @@ import { REAL_PAINTS_CATALOG } from "@/config/paints";
 function MasterRoomMesh({
   config,
   cameraPreset,
+  isPaintDormant,
   selectedSurfacePoint,
   activeSelectedWall: _activeSelectedWall,
   onSurfaceSelect,
@@ -141,6 +147,7 @@ function MasterRoomMesh({
 }: {
   config: MasterCanvasConfig;
   cameraPreset?: CameraViewPreset | null;
+  isPaintDormant?: boolean;
   selectedSurfacePoint: THREE.Vector3 | null;
   activeSelectedWall?: string | null;
   onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
@@ -328,7 +335,7 @@ function MasterRoomMesh({
     });
   }, [clonedScene, config]);
 
-  // Ceiling & Ceiling Light Cutaway Loop (Allows 100% Unobstructed Interior Raycast Interaction!)
+  // Ceiling & Ceiling Light Cutaway Loop (Only when explicit cutaway is requested!)
   useFrame(({ camera }) => {
     const isHighAngle = camera.position.y > 3.8;
     const shouldCutawayCeiling = config.isCeilingCutaway || cameraPreset === "TOP_DOWN" || isHighAngle;
@@ -366,6 +373,7 @@ function MasterRoomMesh({
         object={clonedScene}
         onClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
+          if (isPaintDormant) return; // 🔒 DORMANT PAINT MODE! When assembling furniture, painting does NOT fire!
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name;
             const category = getMeshCategory(rawName);
@@ -374,6 +382,7 @@ function MasterRoomMesh({
         }}
         onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
+          if (isPaintDormant) return; // 🔒 DORMANT PAINT MODE!
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name;
             const category = getMeshCategory(rawName);
@@ -398,6 +407,15 @@ import MasterLightingEngine from "./master/MasterLightingEngine";
 import MasterCameraRig from "./master/MasterCameraRig";
 import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
+import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
+import { ModularAssetInstance } from "./ModularAssetInstance";
+import { FurnishItAssetItem } from "@/config/furnishItAssets";
+import { PlacedObjectTransform } from "@/types/modular";
+
+// Helper to generate pure unique IDs for custom paints
+function generateCustomPaintId(): string {
+  return `custom-p-${Math.random().toString(36).substring(2, 9)}`;
+}
 
 // ============================================================================
 // 4. UNIFIED MASTER CANVAS CONTAINER COMPONENT
@@ -414,35 +432,131 @@ export default function PaintItMasterCanvas({
   const [activeSelectedWall, setActiveSelectedWall] = useState<string | null>(null);
   const [cameraPreset, setCameraPreset] = useState<CameraViewPreset | null>(null);
 
-  // Dual Sidebar States (Default COLLAPSED on Mobile screens!)
-  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(() => {
-    if (typeof window !== "undefined") return window.innerWidth < 768;
-    return false;
-  });
-  const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(() => {
-    if (typeof window !== "undefined") return window.innerWidth < 768;
-    return false;
-  });
+  // 🛋️ Studio Interaction Mode & Furniture Asset Assembly State
+  const [studioMode, setStudioMode] = useState<"PAINT" | "FURNITURE" | "ROOM">("PAINT");
+  const [selectedFurnitureId, setSelectedFurnitureId] = useState<string | null>(null);
+  const [furnitureTransformMode, setFurnitureTransformMode] = useState<"translate" | "rotate" | "scale">("translate");
+  const [placedFurnitureAssets, setPlacedFurnitureAssets] = useState<
+    Array<{
+      id: string;
+      assetId: string;
+      name: string;
+      modelUrl: string;
+      position: [number, number, number];
+      rotation: [number, number, number];
+      scale: [number, number, number];
+    }>
+  >([]);
+
+  const isPaintDormant = studioMode === "FURNITURE" || selectedFurnitureId !== null;
+
+  const handleAddFurnitureAsset = (asset: FurnishItAssetItem) => {
+    const newInstance = {
+      id: `furn-${Date.now()}`,
+      assetId: asset.id,
+      name: asset.name,
+      modelUrl: asset.modelUrl,
+      position: [0, 0.001, 0] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: asset.defaultScale || [1.8, 1.8, 1.8],
+    };
+    setPlacedFurnitureAssets((prev) => [...prev, newInstance]);
+    setSelectedFurnitureId(newInstance.id);
+    setStudioMode("FURNITURE");
+  };
+
+  // Dual Sidebar States (Default COLLAPSED by default!)
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(true);
+  const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
 
   const [leftTab, setLeftTab] = useState<"colors" | "finishes" | "textures">("colors");
+
+  // 🎨 Custom Paints Catalog & Color Mixer State
+  const [paintsList, setPaintsList] = useState(() => {
+    let saved: Array<{ id: string; name: string; code: string; brand?: string }> = [];
+    if (typeof window !== "undefined") {
+      try {
+        saved = JSON.parse(localStorage.getItem("paintit_custom_paints") || "[]");
+      } catch {
+        saved = [];
+      }
+    }
+    return [...saved, ...REAL_PAINTS_CATALOG];
+  });
+  const [showPaintMixer, setShowPaintMixer] = useState(false);
+  const [newPaintName, setNewPaintName] = useState("");
+  const [newPaintHex, setNewPaintHex] = useState("#2e5b88");
+
+  const handleSaveCustomPaint = async () => {
+    if (!newPaintName.trim()) return;
+    const newPaint = {
+      id: generateCustomPaintId(),
+      brand: "Custom Mixer",
+      name: newPaintName.trim(),
+      code: newPaintHex,
+      hex: newPaintHex,
+    };
+    setPaintsList((prev) => [newPaint, ...prev]);
+    await saveCustomPaintSync({
+      name: newPaintName.trim(),
+      code: newPaintHex,
+      hex: newPaintHex,
+    });
+    setNewPaintName("");
+    setShowPaintMixer(false);
+    handleColorChange(newPaintHex);
+  };
+
+  const handleApplyFinishToAllWalls = (finish: WallFinishType) => {
+    const currentStates = config.wallSurfaceStates || {
+      wall_back: { color: config.activeWallColor, finish: config.activeWallFinish },
+      wall_left: { color: config.activeWallColor, finish: config.activeWallFinish },
+      wall_right: { color: config.activeWallColor, finish: config.activeWallFinish },
+      wall_front: { color: config.activeWallColor, finish: config.activeWallFinish },
+      ceiling: { color: "#FFFFFF", finish: "EMULSION" },
+    };
+
+    const updatedStates: Record<string, { color: string; finish: WallFinishType }> = {};
+    Object.keys(currentStates).forEach((key) => {
+      updatedStates[key] = {
+        ...currentStates[key],
+        finish,
+      };
+    });
+
+    onConfigChange?.({
+      activeWallFinish: finish,
+      wallSurfaceStates: updatedStates,
+    });
+  };
   const [rightTab, setRightTab] = useState<"lighting" | "sun">("sun");
 
   // Draggable Positions
   const [leftPos, setLeftPos] = useState({ x: 0, y: 0 });
   const [rightPos, setRightPos] = useState({ x: 0, y: 0 });
+
   const isDraggingLeft = useRef(false);
+  const dragStartLeft = useRef({ x: 0, y: 0 });
+
   const isDraggingRight = useRef(false);
-  const dragStartRef = useRef({ x: 0, y: 0 });
+  const dragStartRight = useRef({ x: 0, y: 0 });
 
   const handlePointerDownLeft = (e: React.PointerEvent) => {
     isDraggingLeft.current = true;
-    dragStartRef.current = { x: e.clientX - leftPos.x, y: e.clientY - leftPos.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragStartLeft.current = { x: e.clientX - leftPos.x, y: e.clientY - leftPos.y };
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore
+    }
   };
 
   const handlePointerMoveLeft = (e: React.PointerEvent) => {
     if (!isDraggingLeft.current) return;
-    setLeftPos({ x: e.clientX - dragStartRef.current.x, y: e.clientY - dragStartRef.current.y });
+    setLeftPos({
+      x: e.clientX - dragStartLeft.current.x,
+      y: e.clientY - dragStartLeft.current.y,
+    });
   };
 
   const handlePointerUpLeft = (e: React.PointerEvent) => {
@@ -456,13 +570,20 @@ export default function PaintItMasterCanvas({
 
   const handlePointerDownRight = (e: React.PointerEvent) => {
     isDraggingRight.current = true;
-    dragStartRef.current = { x: e.clientX - rightPos.x, y: e.clientY - rightPos.y };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragStartRight.current = { x: e.clientX - rightPos.x, y: e.clientY - rightPos.y };
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore
+    }
   };
 
   const handlePointerMoveRight = (e: React.PointerEvent) => {
     if (!isDraggingRight.current) return;
-    setRightPos({ x: e.clientX - dragStartRef.current.x, y: e.clientY - dragStartRef.current.y });
+    setRightPos({
+      x: e.clientX - dragStartRight.current.x,
+      y: e.clientY - dragStartRight.current.y,
+    });
   };
 
   const handlePointerUpRight = (e: React.PointerEvent) => {
@@ -552,7 +673,7 @@ export default function PaintItMasterCanvas({
         });
       }
     },
-    [config, onConfigChange]
+    [config, onConfigChange, setSplashPoint]
   );
 
   // SINGLE TAP / CLICK HANDLER (Selects wall & handles mobile double-tap detection)
@@ -576,7 +697,7 @@ export default function PaintItMasterCanvas({
       setSplashPoint({ point, wallKey, color: activeColor, id: Date.now() });
       onSurfaceSelect?.(meshName, category, point);
     },
-    [config.wallSurfaceStates, config.activeWallColor, onSurfaceSelect, triggerColorCycle]
+    [config.wallSurfaceStates, config.activeWallColor, onSurfaceSelect, triggerColorCycle, setSplashPoint]
   );
 
   // NATIVE DESKTOP DOUBLE CLICK HANDLER
@@ -647,9 +768,17 @@ export default function PaintItMasterCanvas({
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: config.timeOfDay === "night" ? 0.35 : 0.65,
           }}
-          camera={{ position: [0, 1.8, 4.6], fov: 54 }}
+          camera={{ position: savedCameraConfig?.position || [0, 1.8, 4.6], fov: savedCameraConfig?.fov || 54 }}
         >
           <Suspense fallback={null}>
+            {/* 📷 MASTER CAMERA RIG CONTROLLER */}
+            <MasterCameraRig
+              targetPreset={cameraPreset}
+              enableZoom={config.enableZoom ?? true}
+              isAdmin={config.isAdmin}
+              savedCameraConfig={savedCameraConfig}
+              onSaveCameraConfig={onSaveCameraConfig}
+            />
             {/* 💡 MODULAR LIGHTING ENGINE (Window sunlight + Dynamic lightbulbs + 3D Gizmos for Master Admin) */}
             <MasterLightingEngine
               timeOfDay={config.timeOfDay}
@@ -668,11 +797,57 @@ export default function PaintItMasterCanvas({
             <MasterRoomMesh
               config={config}
               cameraPreset={cameraPreset}
+              isPaintDormant={isPaintDormant}
               selectedSurfacePoint={selectedPoint}
               activeSelectedWall={activeSelectedWall}
               onSurfaceSelect={handleSurfaceClick}
               onDoubleClickSurface={handleSurfaceDoubleClick}
             />
+
+            {/* 🛋️ PLACED FURNITURE 3D ASSET INSTANCES */}
+            {placedFurnitureAssets.map((asset) => (
+              <ModularAssetInstance
+                key={asset.id}
+                objectData={{
+                  instance_id: asset.id,
+                  asset_id: asset.assetId,
+                  name: asset.name,
+                  category: "seating",
+                  model_url: asset.modelUrl,
+                  transform: {
+                    position: asset.position,
+                    rotation: asset.rotation,
+                    scale: asset.scale,
+                  },
+                }}
+                isSelected={selectedFurnitureId === asset.id}
+                transformMode={furnitureTransformMode}
+                onSelect={() => {
+                  setStudioMode("FURNITURE");
+                  setSelectedFurnitureId(asset.id);
+                }}
+                onTransformChange={(newTransform: PlacedObjectTransform) => {
+                  setPlacedFurnitureAssets((prev) =>
+                    prev.map((item) =>
+                      item.id === asset.id
+                        ? {
+                            ...item,
+                            position: newTransform.position,
+                            rotation: newTransform.rotation,
+                            scale: newTransform.scale,
+                          }
+                        : item
+                    )
+                  );
+                }}
+                onDelete={() => {
+                  setPlacedFurnitureAssets((prev) => prev.filter((item) => item.id !== asset.id));
+                  if (selectedFurnitureId === asset.id) {
+                    setSelectedFurnitureId(null);
+                  }
+                }}
+              />
+            ))}
 
             {/* 🎨 3D ANIMATED PAINT SPLASH RIPPLE MARKER */}
             {splashPoint && (
@@ -737,44 +912,88 @@ export default function PaintItMasterCanvas({
             >
               🎨 Wall
             </button>
-            <button
-              onClick={() => setCameraPreset("TOP_DOWN")}
-              className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-            >
-              📐 Plan
-            </button>
-            <button
-              onClick={() => {
-                onConfigChange?.({ isCeilingCutaway: !config.isCeilingCutaway });
-              }}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg border transition-all ${
-                config.isCeilingCutaway
-                  ? "bg-amber-500/20 border-amber-400 text-amber-300 font-black shadow-md"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white"
-              }`}
-              title="Toggle Ceiling & Ceiling Lights Cutaway"
-            >
-              {config.isCeilingCutaway ? "✂️ Cutaway: ON" : "✂️ Ceiling Cut"}
-            </button>
           </div>
         </div>
 
+        {/* 🛋️ FLOATING FURNISH-IT & MODEL ASSEMBLY PANEL (ADMIN ONLY - HIDDEN FOR PAINTERS & DEMO!) */}
+        {config.isAdmin && !config.hideAssemblyPanel && (
+          <div className="absolute top-14 right-3 z-30 pointer-events-none">
+            <MasterModelAssemblyPanel
+              activeRoomModelUrl={config.modelUrl}
+              activeStudioMode={studioMode}
+              selectedFurnitureId={selectedFurnitureId}
+              placedAssets={placedFurnitureAssets}
+              transformMode={furnitureTransformMode}
+              onTransformModeChange={setFurnitureTransformMode}
+              onUpdateTransform={(id, updates) => {
+                setPlacedFurnitureAssets((prev) =>
+                  prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+                );
+              }}
+              onSelectRoomModel={(newModelUrl, keepPaints) => {
+                if (keepPaints) {
+                  onConfigChange?.({ modelUrl: newModelUrl });
+                } else {
+                  const defaultWallStates = {
+                    wall_back: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
+                    wall_left: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
+                    wall_right: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
+                    wall_front: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
+                    ceiling: { color: "#FFFFFF", finish: "EMULSION" as WallFinishType },
+                  };
+                  onConfigChange?.({
+                    modelUrl: newModelUrl,
+                    activeWallColor: "#C4B199",
+                    activeWallFinish: "EMULSION",
+                    wallSurfaceStates: defaultWallStates,
+                  });
+                }
+              }}
+              onSelectStudioMode={(newMode) => {
+                setStudioMode(newMode);
+                if (newMode === "PAINT") {
+                  setSelectedFurnitureId(null);
+                }
+              }}
+              onAddFurnitureAsset={handleAddFurnitureAsset}
+              onSelectFurnitureInstance={(id) => {
+                setSelectedFurnitureId(id);
+                setStudioMode("FURNITURE");
+              }}
+              onDeleteFurnitureInstance={(id) => {
+                setPlacedFurnitureAssets((prev) => prev.filter((item) => item.id !== id));
+                if (selectedFurnitureId === id) {
+                  setSelectedFurnitureId(null);
+                }
+              }}
+              onClearAllFurniture={() => {
+                setPlacedFurnitureAssets([]);
+                setSelectedFurnitureId(null);
+              }}
+            />
+          </div>
+        )}
+
         {/* 🎨 1. LEFT COLLAPSIBLE & DRAGGABLE STUDIO FLOATING PANEL (Surface Paints & Finishes) */}
         <div
-          className="absolute top-14 left-3 z-30 pointer-events-none flex items-start"
+          className="absolute top-16 left-3 z-30 pointer-events-none flex items-start"
           style={{ transform: `translate3d(${leftPos.x}px, ${leftPos.y}px, 0)` }}
         >
           {isLeftCollapsed ? (
             <button
+              onPointerDown={handlePointerDownLeft}
+              onPointerMove={handlePointerMoveLeft}
+              onPointerUp={handlePointerUpLeft}
               onClick={() => setIsLeftCollapsed(false)}
-              className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-black uppercase tracking-wider transition-all"
-              title="Expand Surface Styling Dock"
+              className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-black uppercase tracking-wider transition-all cursor-grab active:cursor-grabbing select-none"
+              title="Expand Surface Styling Dock (Drag anywhere)"
             >
+              <span className="text-neutral-500 font-bold">⋮⋮</span>
               <span>🎨 Paint & Finishes</span>
               <span className="text-emerald-400">▶</span>
             </button>
           ) : (
-            <div className="pointer-events-auto w-72 sm:w-80 max-h-[75vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
+            <div className="pointer-events-auto w-[calc(100vw-28px)] max-w-xs sm:w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
               {/* Left Dock Drag Header */}
               <div
                 onPointerDown={handlePointerDownLeft}
@@ -796,7 +1015,7 @@ export default function PaintItMasterCanvas({
               </div>
 
               {/* Left Dock Sub-Tabs */}
-              <div className="grid grid-cols-2 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850">
+              <div className="grid grid-cols-3 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850">
                 <button
                   onClick={() => setLeftTab("colors")}
                   className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
@@ -813,38 +1032,111 @@ export default function PaintItMasterCanvas({
                 >
                   ✨ Sheen
                 </button>
+                {!config.hideFloorTab && (
+                  <button
+                    onClick={() => setLeftTab("textures")}
+                    className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
+                      leftTab === "textures" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    🪵 Floor
+                  </button>
+                )}
               </div>
 
               {/* Left Dock Content */}
               <div className="flex-1 overflow-y-auto pr-1 space-y-3">
                 {leftTab === "colors" && (
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold uppercase text-neutral-400 block tracking-wider">
-                      Double-Click Wall to Cycle Paint
-                    </span>
-                    <div className="grid grid-cols-1 gap-2">
-                      {REAL_PAINTS_CATALOG.map((paint) => {
+                  <div className="space-y-3">
+                    {/* ➕ CUSTOM PAINT CREATOR / COLOR MIXER DRAWER */}
+                    {!config.hideColorMixer && (
+                      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-2.5 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase text-emerald-400 flex items-center gap-1.5">
+                            <span>🎨 Color Mixer & Upload</span>
+                          </span>
+                          <button
+                            onClick={() => setShowPaintMixer(!showPaintMixer)}
+                            className="text-[9px] font-black uppercase text-emerald-400 hover:underline px-2 py-0.5 bg-emerald-500/10 rounded"
+                          >
+                            {showPaintMixer ? "Close Mixer" : "➕ Custom Paint"}
+                          </button>
+                        </div>
+
+                        {showPaintMixer && (
+                          <div className="space-y-2 pt-2 border-t border-neutral-800">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={newPaintHex}
+                                onChange={(e) => setNewPaintHex(e.target.value)}
+                                className="w-8 h-8 rounded-lg cursor-pointer border border-white/20 shrink-0"
+                                title="Pick Custom Color Hex"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Hex (e.g. #2e5b88)"
+                                value={newPaintHex}
+                                onChange={(e) => setNewPaintHex(e.target.value)}
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1 text-xs text-white font-mono"
+                              />
+                            </div>
+
+                            <input
+                              type="text"
+                              placeholder="Paint Code/Name (e.g. Velvet Teal)"
+                              value={newPaintName}
+                              onChange={(e) => setNewPaintName(e.target.value)}
+                              className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1 text-xs text-white font-sans"
+                            />
+
+                            <button
+                              onClick={handleSaveCustomPaint}
+                              className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow"
+                            >
+                              💾 Save Custom Paint to Database
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider">
+                        Paint Swatch Catalog ({paintsList.length})
+                      </span>
+                      <span className="text-[9px] font-mono text-neutral-500">Double-Click Wall</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
+                      {paintsList.map((paint) => {
                         const targetKey = activeSelectedWall || "wall_back";
-                        const currentWallColor = config.wallSurfaceStates?.[targetKey]?.color || config.activeWallColor;
-                        const isSelected = currentWallColor.toLowerCase() === paint.code.toLowerCase();
+                        const currentStates = config.wallSurfaceStates || {};
+                        const isSelected = currentStates[targetKey]?.color === paint.code;
+
                         return (
                           <button
-                            key={paint.id}
+                            key={paint.id || paint.code}
                             onClick={() => handleColorChange(paint.code)}
-                            className={`p-2 rounded-2xl border flex items-center gap-3 transition-all ${
+                            className={`p-2 rounded-2xl border transition-all text-left flex items-center justify-between ${
                               isSelected
-                                ? "bg-emerald-950/60 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500 scale-[1.02]"
-                                : "bg-neutral-900/80 border-neutral-850 text-neutral-400 hover:border-neutral-700 hover:text-white"
+                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
                             }`}
                           >
-                            <span
-                              className="w-6 h-6 rounded-full border border-black/30 shadow-inner shrink-0"
-                              style={{ backgroundColor: paint.code }}
-                            />
-                            <div className="text-left min-w-0 flex-1">
-                              <p className="text-[11px] font-bold text-white tracking-tight leading-none truncate">{paint.name}</p>
-                              <p className="text-[9px] text-neutral-400 font-mono mt-1">{paint.code.toUpperCase()}</p>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className="w-6 h-6 rounded-xl border border-white/20 shadow-sm shrink-0"
+                                style={{ backgroundColor: paint.code }}
+                              />
+                              <div className="min-w-0">
+                                <span className="text-xs font-bold block truncate">{paint.name}</span>
+                                <span className="text-[9px] font-mono text-neutral-400 block">{paint.code}</span>
+                              </div>
                             </div>
+                            {isSelected && (
+                              <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE</span>
+                            )}
                           </button>
                         );
                       })}
@@ -853,31 +1145,95 @@ export default function PaintItMasterCanvas({
                 )}
 
                 {leftTab === "finishes" && (
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold uppercase text-neutral-400 block tracking-wider">
-                      Wall Sheen & Specular Reflectivity
-                    </span>
-                    <div className="grid grid-cols-1 gap-2">
-                      {[
-                        { id: "EMULSION", name: "🛋️ Emulsion Sheen", desc: "Matte Diffuse Finish" },
-                        { id: "SATIN", name: "✨ Satin Sheen", desc: "Silk Gloss & Smooth Soft Highlights" },
-                        { id: "GLOSS", name: "💎 High Gloss", desc: "Reflective Lacquer Mirror Finish" },
-                      ].map((f) => {
-                        const targetKey = activeSelectedWall || "wall_back";
-                        const currentWallFinish = config.wallSurfaceStates?.[targetKey]?.finish || config.activeWallFinish;
-                        const isSelected = currentWallFinish === f.id;
-                        return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider">
+                        Select Paint Finish & Reflection
+                      </span>
+                    </div>
+
+                    {(
+                      [
+                        { id: "EMULSION", label: "Matte Emulsion", desc: "Velvety flat non-reflective wall sheen" },
+                        { id: "SATIN", label: "Satin Sheen", desc: "Soft pearl sheen with subtle light reflection" },
+                        { id: "GLOSS", label: "High Gloss", desc: "High specular reflective architectural gloss" },
+                      ] as const
+                    ).map((finish) => {
+                      const targetKey = activeSelectedWall || "wall_back";
+                      const currentStates = config.wallSurfaceStates || {};
+                      const isSelected = currentStates[targetKey]?.finish === finish.id;
+
+                      return (
+                        <div key={finish.id} className="space-y-1">
                           <button
-                            key={f.id}
-                            onClick={() => handleFinishChange(f.id as WallFinishType)}
-                            className={`p-3 rounded-2xl border text-left transition-all ${
+                            onClick={() => handleFinishChange(finish.id as WallFinishType)}
+                            className={`w-full p-3 rounded-2xl border transition-all text-left space-y-1 ${
                               isSelected
-                                ? "bg-emerald-950/60 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500"
-                                : "bg-neutral-900/80 border-neutral-850 text-neutral-400 hover:text-white"
+                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
                             }`}
                           >
-                            <p className="text-xs font-black uppercase tracking-wider">{f.name}</p>
-                            <p className="text-[9px] text-neutral-400 font-mono mt-0.5">{f.desc}</p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-neutral-100">{finish.label}</span>
+                              {isSelected && (
+                                <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE WALL</span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-neutral-400 font-normal leading-snug">{finish.desc}</p>
+                          </button>
+
+                          {/* ✨ FINISH ALL WALLS BUTTON */}
+                          <button
+                            onClick={() => handleApplyFinishToAllWalls(finish.id as WallFinishType)}
+                            className="w-full py-1 text-[9px] font-mono font-bold uppercase text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl border border-emerald-500/20 transition-all flex items-center justify-center gap-1"
+                            title="Apply this sheen to all room walls at once"
+                          >
+                            <span>✨ Finish All Walls ({finish.label})</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {leftTab === "textures" && (
+                  <div className="space-y-3">
+                    <span className="text-[9px] font-bold uppercase text-neutral-400 block tracking-wider">
+                      Select Floor Wood & Tile Texture
+                    </span>
+
+                    <div className="grid grid-cols-1 gap-2">
+                      {TEXTURE_PRESETS.filter((t) => t.category === "FLOOR").map((texture) => {
+                        const isSelected = (config.activeFloorTextureId || "floor_oak") === texture.id;
+                        return (
+                          <button
+                            key={texture.id}
+                            onClick={() => {
+                              onConfigChange?.({ activeFloorTextureId: texture.id });
+                            }}
+                            className={`p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between ${
+                              isSelected
+                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className="w-7 h-7 rounded-xl border border-white/20 shadow-sm shrink-0 flex items-center justify-center text-xs font-bold"
+                                style={{ backgroundColor: texture.thumbnailColor }}
+                              >
+                                🪵
+                              </div>
+                              <div className="min-w-0">
+                                <span className="text-xs font-bold block text-neutral-100 truncate">{texture.name}</span>
+                                <span className="text-[9px] font-mono text-neutral-400 block">
+                                  PBR Floor Texture • {texture.roughness} Roughness
+                                </span>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE</span>
+                            )}
                           </button>
                         );
                       })}
@@ -889,10 +1245,10 @@ export default function PaintItMasterCanvas({
           )}
         </div>
 
-        {/* ☀️ 2. RIGHT COLLAPSIBLE & DRAGGABLE STUDIO FLOATING PANEL (Lighting, Atmosphere & Fixtures) */}
-        {config.isAdmin && !config.hideLightingTab && (
+        {/* ☀️ 2. RIGHT COLLAPSIBLE & DRAGGABLE STUDIO FLOATING PANEL (Lighting & Sky for Painters and Admins!) */}
+        {!config.hideLightingTab && (
           <div
-            className="absolute top-14 right-3 z-30 pointer-events-none flex items-start justify-end"
+            className="absolute top-16 right-3 z-30 pointer-events-none flex items-start justify-end"
             style={{ transform: `translate3d(${rightPos.x}px, ${rightPos.y}px, 0)` }}
           >
             {isRightCollapsed ? (
@@ -905,7 +1261,7 @@ export default function PaintItMasterCanvas({
                 <span>☀️ Lighting & Sky</span>
               </button>
             ) : (
-              <div className="pointer-events-auto w-72 sm:w-80 max-h-[75vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
+              <div className="pointer-events-auto w-[calc(100vw-28px)] max-w-xs sm:w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
                 {/* Right Dock Drag Header */}
                 <div
                   onPointerDown={handlePointerDownRight}
@@ -982,8 +1338,8 @@ export default function PaintItMasterCanvas({
                         </div>
                       </div>
 
-                      {/* Sun Azimuth & Elevation Sliders */}
-                      {config.timeOfDay !== "night" && (
+                      {/* Sun Azimuth & Elevation Sliders (ADMIN ONLY!) */}
+                      {config.isAdmin && config.timeOfDay !== "night" && (
                         <div className="space-y-3 bg-neutral-900/60 p-2.5 rounded-2xl border border-neutral-850">
                           <div className="space-y-1">
                             <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
@@ -1041,8 +1397,8 @@ export default function PaintItMasterCanvas({
                         </div>
                       )}
 
-                      {/* 💾 Save Custom Sun Setup per Project */}
-                      {onSaveLightingConfig && (
+                      {/* 💾 Save Custom Sun Setup per Project (ADMIN ONLY) */}
+                      {config.isAdmin && onSaveLightingConfig && (
                         <button
                           onClick={() =>
                             onSaveLightingConfig({
@@ -1064,23 +1420,25 @@ export default function PaintItMasterCanvas({
 
                   {rightTab === "lighting" && (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between bg-neutral-900/80 p-2 rounded-xl border border-neutral-800">
-                        <span className="text-[9px] font-black uppercase text-white tracking-wider">Add Fixture</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleAddBulb("point")}
-                            className="px-2 py-1 bg-emerald-950 text-emerald-400 hover:bg-emerald-900 border border-emerald-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
-                          >
-                            + Lamp
-                          </button>
-                          <button
-                            onClick={() => handleAddBulb("spot")}
-                            className="px-2 py-1 bg-amber-950 text-amber-400 hover:bg-amber-900 border border-amber-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
-                          >
-                            + Spot
-                          </button>
+                      {config.isAdmin && (
+                        <div className="flex items-center justify-between bg-neutral-900/80 p-2 rounded-xl border border-neutral-800">
+                          <span className="text-[9px] font-black uppercase text-white tracking-wider">Add Fixture</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleAddBulb("point")}
+                              className="px-2 py-1 bg-emerald-950 text-emerald-400 hover:bg-emerald-900 border border-emerald-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
+                            >
+                              + Lamp
+                            </button>
+                            <button
+                              onClick={() => handleAddBulb("spot")}
+                              className="px-2 py-1 bg-amber-950 text-amber-400 hover:bg-amber-900 border border-amber-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
+                            >
+                              + Spot
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <LightControls
                         bulbs={bulbs}
@@ -1089,6 +1447,7 @@ export default function PaintItMasterCanvas({
                         setIsNightMode={(isNight) => onConfigChange?.({ timeOfDay: isNight ? "night" : "morning" })}
                         selectedBulbId={selectedBulbId}
                         onSelectBulb={setSelectedBulbId}
+                        isPainterMode={!config.isAdmin}
                       />
                     </div>
                   )}

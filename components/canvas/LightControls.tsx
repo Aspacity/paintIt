@@ -22,6 +22,7 @@ interface LightControlsProps {
   setIsNightMode: (val: boolean) => void;
   selectedBulbId?: string | null;
   onSelectBulb?: (id: string | null) => void;
+  isPainterMode?: boolean;
 }
 
 const PALETTE_LIGHT_COLORS = [
@@ -39,6 +40,7 @@ export default function LightControls({
   setIsNightMode,
   selectedBulbId,
   onSelectBulb,
+  isPainterMode = false,
 }: LightControlsProps) {
   const [activeBulbId, setActiveBulbId] = useState<string | null>(selectedBulbId || bulbs[0]?.id || null);
 
@@ -55,6 +57,7 @@ export default function LightControls({
   };
 
   const handleAddBulb = (type: "spot" | "point") => {
+    if (isPainterMode) return;
     const newId = `bulb_${Date.now()}`;
     const newBulb: BulbState = {
       id: newId,
@@ -73,6 +76,7 @@ export default function LightControls({
   };
 
   const handleDeleteBulb = (id: string) => {
+    if (isPainterMode) return;
     setBulbs((prev) => prev.filter((b) => b.id !== id));
     if (activeBulbId === id) {
       const remaining = bulbs.filter((b) => b.id !== id);
@@ -83,17 +87,19 @@ export default function LightControls({
   };
 
   const updateBulbProperty = (id: string, updates: Partial<BulbState>) => {
+    if (isPainterMode) return;
     setBulbs((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
     );
   };
 
-  const updateBulbPosition = (id: string, axisIndex: 0 | 1 | 2, val: number) => {
+  const updateBulbPosition = (id: string, axis: 0 | 1 | 2, val: number) => {
+    if (isPainterMode) return;
     setBulbs((prev) =>
       prev.map((b) => {
         if (b.id === id) {
-          const newPos: [number, number, number] = [...b.position];
-          newPos[axisIndex] = val;
+          const newPos = [...b.position] as [number, number, number];
+          newPos[axis] = val;
           return { ...b, position: newPos };
         }
         return b;
@@ -101,15 +107,21 @@ export default function LightControls({
     );
   };
 
-  const currentBulb = bulbs.find((b) => b.id === activeBulbId) || bulbs[0];
+  const currentBulb = bulbs.find((b) => b.id === activeBulbId);
 
   return (
-    <div className="space-y-4 text-white select-none">
-      {/* ☀️ Daylight & Atmosphere Toggles */}
-      <div className="space-y-1.5">
+    <div className="bg-neutral-950 p-4 rounded-3xl border border-neutral-850 space-y-4 text-white font-sans select-none">
+      {/* ☀️ DAY / NIGHT AMBIENCE SWITCHER */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">Daylight Atmosphere</span>
+          <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">
+            Natural Sun & Sky Mode
+          </span>
+          <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">
+            {isNightMode ? "🌙 Night Ambient" : "☀️ Natural Day"}
+          </span>
         </div>
+
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -136,29 +148,31 @@ export default function LightControls({
         </div>
       </div>
 
-      {/* 💡 BULB SELECTOR & ADD NEW FIXTURE BUTTONS */}
+      {/* 💡 BULB SELECTOR & ON/OFF TOGGLE SWITCHES */}
       <div className="space-y-2 border-t border-neutral-900 pt-3">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">
-            Bulb Fixtures ({bulbs.length})
+            Light Fixtures ({bulbs.length})
           </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleAddBulb("spot")}
-              className="px-2 py-1 bg-emerald-500 hover:bg-emerald-400 text-black text-[9px] font-black uppercase rounded-lg transition-all"
-            >
-              + Spot Bulb
-            </button>
-            <button
-              onClick={() => handleAddBulb("point")}
-              className="px-2 py-1 bg-indigo-500 hover:bg-indigo-400 text-white text-[9px] font-black uppercase rounded-lg transition-all"
-            >
-              + Point Light
-            </button>
-          </div>
+          {!isPainterMode && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleAddBulb("spot")}
+                className="px-2 py-1 bg-emerald-500 hover:bg-emerald-400 text-black text-[9px] font-black uppercase rounded-lg transition-all"
+              >
+                + Spot Bulb
+              </button>
+              <button
+                onClick={() => handleAddBulb("point")}
+                className="px-2 py-1 bg-indigo-500 hover:bg-indigo-400 text-white text-[9px] font-black uppercase rounded-lg transition-all"
+              >
+                + Point Light
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* BULB CHIP LIST */}
+        {/* BULB CHIP LIST WITH 1-TAP ON/OFF */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {bulbs.map((b, idx) => {
             const isSelected = b.id === activeBulbId;
@@ -167,25 +181,29 @@ export default function LightControls({
               <button
                 key={b.id}
                 onClick={() => {
+                  toggleBulb(b.id);
                   setActiveBulbId(b.id);
                   onSelectBulb?.(b.id);
                 }}
                 className={`px-3 py-1.5 rounded-xl border shrink-0 text-left flex items-center gap-2 transition-all ${
                   isSelected
-                    ? "bg-neutral-800 border-emerald-500 text-white shadow-md scale-105"
+                    ? "bg-neutral-800 border-emerald-500 text-white shadow-md"
                     : "bg-neutral-900 border-neutral-850 text-neutral-400"
                 }`}
+                title="Tap to toggle ON / OFF"
               >
-                <span className={`w-2 h-2 rounded-full ${isOn ? "bg-emerald-400 animate-pulse" : "bg-neutral-600"}`} />
-                <span className="text-[10px] font-bold uppercase">{b.type === "spot" ? `🎯 Spot #${idx + 1}` : `💡 Point #${idx + 1}`}</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${isOn ? "bg-emerald-400 animate-pulse" : "bg-neutral-600"}`} />
+                <span className="text-[10px] font-bold uppercase">
+                  {b.type === "spot" ? `🎯 Spot #${idx + 1}` : `💡 Point #${idx + 1}`} ({isOn ? "ON" : "OFF"})
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 🎚️ SLIDERS / GLIDES PANEL FOR SELECTED BULB */}
-      {currentBulb && (
+      {/* 🎚️ ADVANCED SLIDERS / GLIDES PANEL (ADMIN ONLY - HIDDEN FOR PAINTERS!) */}
+      {!isPainterMode && currentBulb && (
         <div className="bg-neutral-900 p-3 rounded-2xl border border-neutral-850 space-y-3">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
             <div className="flex items-center gap-2">

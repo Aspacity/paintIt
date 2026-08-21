@@ -267,7 +267,7 @@ export default function PainterDashboardPage() {
         </div>
       </div>
 
-      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE */}
+      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE (COMMENTED OUT FOR NOW)
       <MicroVideoCarousel
         title="⚡ 15-Second Painter Success Guide"
         subtitle="Swipe to watch how to use PaintIt Studio to win painting clients."
@@ -304,6 +304,7 @@ export default function PainterDashboardPage() {
           },
         ]}
       />
+      */}
 
       {isBrandNewAccount ? (
         <div className="py-4 flex items-center justify-center">

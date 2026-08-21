@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Canvas } from "@react-three/fiber";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
-
-// Modular Canvas & Controls
-import WorkspaceCanvas from "@/components/canvas/WorkspaceCanvas";
-import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
-import PaintPicker, { CustomColor } from "@/components/canvas/PaintPicker";
-import { BulbState } from "@/components/canvas/LightControls";
-import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
+import PaintItMasterCanvas, { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
+import { CameraConfigPayload } from "@/components/canvas/master/MasterCameraRig";
+import {
+  saveVisualizationSync,
+  VisualizationSavePayload,
+  initOfflineOnlineListener,
+} from "@/utils/offlineDBSync";
 
 export interface DBCameraConfig {
   position?: [number, number, number];
@@ -42,318 +41,164 @@ function WorkspaceContent() {
   const urlDesignId = searchParams?.get("id") || null;
   const urlTemplateId = searchParams?.get("template") || "tmpl_hostel_lux";
 
-  // System UI Panels States
-  const [activeTab, setActiveTab] = useState<"paint" | "texture" | "lighting">("paint");
-  const [activeSurface, setActiveSurface] = useState<string>("wallFront");
-  const [activeTextures, setActiveTextures] = useState<Record<string, string>>({
-    FLOOR: "original",
-    WARDROBE: "original",
-    DOOR: "original",
-  });
-  const [detectedMeshes, setDetectedMeshes] = useState<string[]>([]);
-  const [availableMaterials, setAvailableMaterials] = useState<string[]>([]);
-  const [meshesWithOriginalMaterials, setMeshesWithOriginalMaterials] = useState<{ name: string; originalMaterial: string }[]>([]);
-  const [materialSwaps, setMaterialSwaps] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Custom Save Modal States
-  const [saveModalOpen, setSaveModalOpen] = useState<boolean>(false);
-  const [saveName, setSaveName] = useState<string>("");
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
-  // Bottom Resizable Panel Sheet Configurations
-  const [panelHeight, setPanelHeight] = useState<number>(280);
-  const [isPanelCollapsed, setIsPanelCollapsed] = useState<boolean>(false);
-  const isDragging = useRef<boolean>(false);
-
-  // Dynamic Scene States
   const [designTitle, setDesignTitle] = useState<string>("Custom Design Concept");
   const [modelUrl, setModelUrl] = useState<string>("/models/selfcon.glb");
-  const [templateId, setTemplateId] = useState<string>(urlTemplateId);
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
+  const [activeFloorTexture, setActiveFloorTexture] = useState<string>("floor_oak");
 
-  // Default Fallback Colors & Paint Finishes
   const [roomColors, setRoomColors] = useState<Record<string, string>>({
-    floor: "#f2f0ea",
-    ceiling: "#ffffff",
     wallFront: "#C4B199",
     wallBack: "#C4B199",
     wallLeft: "#C4B199",
     wallRight: "#C4B199",
-    toilet: "#C4B199"
+    ceiling: "#FFFFFF",
   });
 
   const [roomFinishes, setRoomFinishes] = useState<Record<string, string>>({
     wallFront: "EMULSION",
     wallBack: "EMULSION",
     wallLeft: "EMULSION",
-    wallRight: "EMULSION"
+    wallRight: "EMULSION",
   });
 
-  const [bulbs, setBulbs] = useState<BulbState[]>([]);
-
-  const [cameraConfig, setCameraConfig] = useState<DBCameraConfig>({
-    position: [-2.73, 3.28, -2.51],
-    target: [-1.94, 2.7, 0.05],
-    floorLimitAngle: 1.85,
-    ceilingLimitAngle: 0,
-    maxZoomDistance: 0.55
-  });
-
-  const [customColors, setCustomColors] = useState<CustomColor[]>([]);
+  // Modal Save States
+  const [saveModalOpen, setSaveModalOpen] = useState<boolean>(false);
+  const [saveName, setSaveName] = useState<string>("");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  const initialRoomColorsRef = useRef(roomColors);
-  const initialCameraConfigRef = useRef(cameraConfig);
 
-  const handleModelLoaded = (materials: string[], meshes: { name: string; originalMaterial: string }[]) => {
-    setDetectedMeshes(meshes.map(m => m.name));
-    setAvailableMaterials(materials);
-    setMeshesWithOriginalMaterials(meshes);
-  };
+  // Saved DB Camera Configuration State
+  const [savedCameraConfig, setSavedCameraConfig] = useState<CameraConfigPayload | null>(null);
 
-  // Deep Hydration Loop
+  // 📥 Comprehensive DB Hydration Pipeline (Loads Model URL, Camera Settings, Lighting & Paints from DB)
   useEffect(() => {
     let isMounted = true;
+
     const hydrateWorkspace = async () => {
+      const targetId = urlDesignId || urlTemplateId;
+      if (!targetId) {
+        if (isMounted) setIsLoading(false);
+        return;
+      }
+
       try {
-        const activeToken = accessToken || (typeof window !== "undefined" ? localStorage.getItem("paintit_access_token") : null);
-        let resolvedTemplateId = urlTemplateId;
-        let activeColors = { ...initialRoomColorsRef.current };
-        let activeLights: BulbState[] = [];
-        let activeCamera = { ...initialCameraConfigRef.current };
-        let loadedTitle = "Custom Design Concept";
-        let resolvedModelPath = "/models/selfcon.glb";
-        let resolvedNightMode = false;
-        let activeSwaps = {};
-
-        // 🚀 FETCH 1: Get complete template configurations
-        const templateRes = await fetch(`${BACKEND_API_URL}/api/visualizations/catalog/${resolvedTemplateId}`).catch(() => null);
-
-        if (templateRes && templateRes.ok) {
-          const templateData = await templateRes.json();
-          console.log("📥 Deep Hydrated Catalog Template Config:", templateData);
-
-          if (templateData) {
-            loadedTitle = templateData.title || loadedTitle;
-            resolvedModelPath = templateData.model_url || resolvedModelPath;
-
-            if (templateData.default_room_data) {
-              activeColors = { ...templateData.default_room_data };
-              if (activeColors._materialSwaps) {
-                activeSwaps = { ...(activeColors._materialSwaps as unknown as Record<string, string>) };
-                delete activeColors._materialSwaps;
-              }
-            }
-
-            if (templateData.lighting_settings) {
-              activeLights = templateData.lighting_settings.map((light: DBRawLight) => ({
-                ...light,
-                enabled: light.visible !== undefined ? light.visible : true,
-                visible: light.visible !== undefined ? light.visible : true
-              }));
-            }
-
-            if (templateData.camera_settings) {
-              activeCamera = templateData.camera_settings;
-            }
-
-            if (templateData.global_environment) {
-              resolvedNightMode = templateData.global_environment.isNightMode ?? false;
-            }
-          }
+        // Try fetching visualization record or catalog record from PostgreSQL backend
+        let endpoint = `${BACKEND_API_URL}/api/visualizations/${targetId}`;
+        if (urlTemplateId && !urlDesignId) {
+          endpoint = `${BACKEND_API_URL}/api/visualizations/catalog/${urlTemplateId}`;
         }
 
-        // 🚀 FETCH 2: Overwrite defaults if editing a saved project design ID
-        if (urlDesignId && activeToken) {
-          const visRes = await fetch(`${BACKEND_API_URL}/api/visualizations/${urlDesignId}`, {
-            headers: { "Authorization": `Bearer ${activeToken}` }
-          }).catch(() => null);
+        const res = await fetch(endpoint, {
+          method: "GET",
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        });
 
-          if (visRes && visRes.ok) {
-            const visData = await visRes.json();
-            console.log("📥 Deep Hydrated Saved Layout:", visData);
-            if (visData.visualization) {
-              loadedTitle = visData.visualization.name;
-              
-              const rawColors = visData.visualization.room_data || visData.visualization.roomData || activeColors;
-              activeColors = { ...rawColors };
-              if (activeColors._materialSwaps) {
-                activeSwaps = { ...(activeColors._materialSwaps as unknown as Record<string, string>) };
-                delete activeColors._materialSwaps;
-              }
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          const vis = data.visualization || data.catalog || data.data || data;
 
-              const savedLights = visData.visualization.light_data || visData.visualization.lightData;
-              if (savedLights && savedLights.length > 0) {
-                activeLights = savedLights.map((light: DBRawLight) => ({
-                  ...light,
-                  enabled: light.visible !== undefined ? light.visible : true,
-                  visible: light.visible !== undefined ? light.visible : true
-                }));
-              }
+          if (vis.name || vis.title) {
+            setDesignTitle(vis.name || vis.title);
+            setSaveName(vis.name || vis.title);
+          }
 
-              if (visData.visualization.camera_data || visData.visualization.cameraData) {
-                activeCamera = visData.visualization.camera_data || visData.visualization.cameraData;
-              }
+          if (vis.model_url || vis.modelUrl) {
+            setModelUrl(vis.model_url || vis.modelUrl);
+          }
 
-              if (visData.visualization.global_environment || visData.visualization.globalEnvironment) {
-                const env = visData.visualization.global_environment || visData.visualization.globalEnvironment;
-                resolvedNightMode = env.isNightMode ?? resolvedNightMode;
-              }
-              resolvedTemplateId = visData.visualization.master_design_id || visData.visualization.masterDesignId || visData.visualization.parent_template_id || urlTemplateId;
+          // Hydrate DB Saved Camera Configuration (FOV, Position, Target, Zoom Boundaries)
+          if (vis.camera_settings || vis.cameraSettings || vis.camera_data) {
+            const cam = vis.camera_settings || vis.cameraSettings || vis.camera_data;
+            setSavedCameraConfig({
+              minDistance: cam.minDistance ?? 0.2,
+              maxDistance: cam.maxDistance ?? 15.0,
+              maxPolarAngle: cam.maxPolarAngle ?? Math.PI - 0.05,
+              minPolarAngle: cam.minPolarAngle ?? 0.01,
+              fov: cam.fov ?? 45,
+              position: cam.position ?? [0, 1.8, 4.5],
+              target: cam.target ?? [0, 1.2, 0],
+            });
+          }
+
+          // Hydrate DB Environment & Night Mode
+          if (vis.global_environment?.isNightMode !== undefined) {
+            setIsNightMode(vis.global_environment.isNightMode);
+          }
+
+          // Hydrate DB Wall Paints, Finishes & Floor Texture
+          const roomObj = vis.room_data || vis.roomData || vis.default_room_data;
+          if (roomObj) {
+            if (roomObj.wallColors || roomObj.wall_colors) {
+              const colors = roomObj.wallColors || roomObj.wall_colors;
+              setRoomColors((prev) => ({ ...prev, ...colors }));
+            }
+            if (roomObj.wallFinishes || roomObj.wall_finishes) {
+              const finishes = roomObj.wallFinishes || roomObj.wall_finishes;
+              setRoomFinishes((prev) => ({ ...prev, ...finishes }));
+            }
+            if (roomObj.floorTexture || roomObj.floor_texture) {
+              setActiveFloorTexture(roomObj.floorTexture || roomObj.floor_texture);
             }
           }
-        }
-
-        if (isMounted) {
-          setRoomColors(activeColors);
-          setMaterialSwaps(activeSwaps);
-          setBulbs(activeLights);
-          setCameraConfig(activeCamera);
-          setTemplateId(resolvedTemplateId);
-          setDesignTitle(loadedTitle);
-          setSaveName(loadedTitle);
-          setModelUrl(resolvedModelPath);
-          setIsNightMode(resolvedNightMode);
         }
       } catch (err) {
-        console.error("Hydration processing error:", err);
+        console.error("Failed to hydrate workspace from DB:", err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
 
     hydrateWorkspace();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [urlDesignId, urlTemplateId, accessToken, BACKEND_API_URL]);
 
+  // 🔄 Automatic Network Reconnect DB Sync Listener
   useEffect(() => {
-    const lockOrientation = async () => {
-      try {
-        if (
-          typeof window !== "undefined" &&
-          "orientation" in screen &&
-          "lock" in (screen.orientation as unknown as Record<string, unknown>)
-        ) {
-          await (screen.orientation as unknown as { lock: (orientation: string) => Promise<void> }).lock("landscape");
-        }
-      } catch (err) {
-        console.log("Auto-landscape lock requires user interaction or isn't supported on this browser:", err);
-      }
-    };
+    const cleanup = initOfflineOnlineListener(accessToken);
+    return () => cleanup();
+  }, [accessToken]);
 
-    lockOrientation();
-
-    return () => {
-      try {
-        if (
-          typeof window !== "undefined" &&
-          "orientation" in screen &&
-          "unlock" in (screen.orientation as unknown as Record<string, unknown>)
-        ) {
-          (screen.orientation as unknown as { unlock: () => void }).unlock();
-        }
-      } catch (err) {
-        console.log("Failed to unlock orientation:", err);
-      }
-    };
-  }, []);
-
-  const startDrag = () => {
-    isDragging.current = true;
-    document.addEventListener("mousemove", onDrag);
-    document.addEventListener("mouseup", stopDrag);
-    document.addEventListener("touchmove", onDrag);
-    document.addEventListener("touchend", stopDrag);
-  };
-
-  const onDrag = (e: MouseEvent | TouchEvent) => {
-    if (!isDragging.current) return;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    const calculatedHeight = window.innerHeight - clientY;
-
-    if (calculatedHeight > 140 && calculatedHeight < window.innerHeight * 0.85) {
-      setPanelHeight(calculatedHeight);
-      setIsPanelCollapsed(false);
-    }
-  };
-
-  const stopDrag = () => {
-    isDragging.current = false;
-    document.removeEventListener("mousemove", onDrag);
-    document.removeEventListener("mouseup", stopDrag);
-    document.removeEventListener("touchmove", onDrag);
-    document.removeEventListener("touchend", stopDrag);
-  };
-
-  const handleTabFABClick = (tab: "paint" | "texture" | "lighting") => {
-    setActiveTab(tab);
-    setIsPanelCollapsed(false);
-  };
-
-  const triggerSaveModal = () => {
-    setSaveName(designTitle);
-    setSaveModalOpen(true);
-  };
-
-  const handleSaveWorkspace = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!saveName.trim()) {
-      showToast({ message: "Please enter a valid save name.", severity: "info" });
-      return;
-    }
-
-    const activeToken = accessToken || localStorage.getItem("paintit_access_token");
-    if (!activeToken) {
-      showToast({ message: "Session expired. Please log in again.", severity: "error" });
-      return;
-    }
+  const handleSaveWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!saveName.trim()) return;
 
     setIsSaving(true);
-
     try {
-      const saveRoomColors = {
-        ...roomColors,
-        _materialSwaps: materialSwaps
-      };
-
-      const saveBody = {
-        id: urlDesignId,
+      const payload: VisualizationSavePayload = {
+        id: urlDesignId || undefined,
         name: saveName.trim(),
-        roomData: saveRoomColors,
-        room_data: saveRoomColors,
-        lightData: bulbs,
-        light_data: bulbs,
-        cameraData: cameraConfig,
-        camera_data: cameraConfig,
-        globalEnvironment: { isNightMode },
-        global_environment: { isNightMode },
-        masterDesignId: templateId,
-        master_design_id: templateId,
-        parent_template_id: templateId
+        parent_template_id: urlTemplateId || null,
+        room_data: {
+          modelUrl,
+          wallColors: roomColors,
+          wallFinishes: roomFinishes as Record<string, WallFinishType>,
+          floorTexture: activeFloorTexture,
+          isNightMode,
+        },
+        camera_settings: savedCameraConfig || undefined,
       };
 
-      const res = await fetch(`${BACKEND_API_URL}/api/visualizations`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${activeToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(saveBody)
-      });
+      const result = await saveVisualizationSync(payload, accessToken);
 
-      if (res.ok) {
-        showToast({ message: "Design synced successfully!", severity: "success" });
-        setDesignTitle(saveName.trim());
-        setSaveModalOpen(false);
-        router.push("/designs");
-      } else {
-        showToast({ message: "Error synchronizing configuration.", severity: "error" });
+      showToast({
+        message: result.message,
+        severity: result.isOffline ? "info" : "success",
+      });
+      setSaveModalOpen(false);
+      if (result.id && result.id !== urlDesignId) {
+        router.push(`/workspace?id=${result.id}`);
       }
     } catch (err) {
-      console.error(err);
-      showToast({ message: "Network connection failure.", severity: "error" });
+      console.error("Workspace save failed:", err);
+      showToast({
+        message: "Saved locally! (Backend sync pending)",
+        severity: "info",
+      });
+      setSaveModalOpen(false);
     } finally {
       setIsSaving(false);
     }
@@ -361,157 +206,134 @@ function WorkspaceContent() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-black">Spawning Spatial Deck...</span>
+      <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 text-white font-mono">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
+          Loading Spatial Master Canvas...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-neutral-950 flex flex-col overflow-hidden text-white font-sans">
-      <header className="w-full bg-neutral-950/85 border-b border-neutral-900 px-4 py-3 flex items-center justify-between z-30 backdrop-blur-md">
-        <div className="flex flex-col">
-          <span className="text-xs font-black uppercase tracking-wide text-white truncate max-w-37.5">
+    <div className="fixed inset-0 z-[100] w-screen h-screen bg-neutral-950 overflow-hidden select-none">
+      {/* 🚀 FLOATING FULL-SCREEN HEADER OVERLAY */}
+      <div className="absolute top-4 left-4 z-50 pointer-events-auto flex items-center gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-neutral-800 px-4 py-2 rounded-2xl shadow-2xl">
+        <button
+          onClick={() => router.back()}
+          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+          title="Exit Workspace"
+        >
+          ◀
+        </button>
+        <div>
+          <h1 className="text-xs font-black uppercase text-white tracking-wide truncate max-w-[160px] sm:max-w-xs">
             {designTitle}
-          </span>
-          <span className="text-[10px] text-neutral-500 uppercase mt-0.5">
-            Active: <span className="text-emerald-400 font-bold">{activeSurface.replace(/_/g, " ")}</span>
+          </h1>
+          <span className="text-[9px] font-mono text-emerald-400 block leading-none">
+            Painter Workspace • Full Screen
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.push("/designs")}
-            className="px-3 py-1.5 bg-neutral-900 text-[10px] font-black uppercase tracking-wider rounded-xl text-neutral-400 border border-neutral-850"
-          >
-            Exit
-          </button>
-          <button
-            onClick={triggerSaveModal}
-            className="hidden md:inline-block px-4 py-1.5 bg-emerald-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg"
-          >
-            Save Layout ➔
-          </button>
-        </div>
-      </header>
-
-      <section className="flex-1 w-full h-full relative z-10">
-        <CanvasErrorBoundary>
-          <Canvas camera={{ position: cameraConfig.position || [-2.73, 3.28, -2.51], fov: 65 }}>
-            <Suspense fallback={null}>
-              <WorkspaceCanvas
-                modelUrl={modelUrl}
-                roomColors={roomColors}
-                roomFinishes={roomFinishes}
-                activeSurface={activeSurface}
-                onSurfaceSelect={setActiveSurface}
-                bulbs={bulbs}
-                cameraConfig={cameraConfig}
-                roomTextures={{}}
-                activeTextures={activeTextures}
-                materialSwaps={materialSwaps}
-                onModelLoaded={handleModelLoaded}
-                isNightMode={isNightMode}
-              />
-            </Suspense>
-          </Canvas>
-        </CanvasErrorBoundary>
-      </section>
-
-      <div className="absolute right-4 bottom-75 z-20 flex flex-col gap-2">
         <button
-          onClick={triggerSaveModal}
-          className="w-12 h-12 rounded-full bg-emerald-500 border border-emerald-400 text-neutral-950 flex items-center justify-center shadow-2xl font-bold animate-bounce hover:scale-105 transition-transform"
-          title="Save Layout Safely"
+          onClick={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+              document.exitFullscreen().catch(() => {});
+            }
+          }}
+          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+          title="Toggle Native Fullscreen"
         >
-          💾
+          ⛶
         </button>
         <button
-          onClick={() => handleTabFABClick("paint")}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-2xl transition-all ${
-            activeTab === "paint" && !isPanelCollapsed
-              ? "bg-emerald-500 border-emerald-400 text-neutral-950"
-              : "bg-neutral-900/90 border-neutral-800 text-white"
-          }`}
-          title="Paint Color & Finishes"
+          onClick={() => setSaveModalOpen(true)}
+          className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
         >
-          🎨
-        </button>
-        <button
-          onClick={() => handleTabFABClick("texture")}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-2xl transition-all ${
-            activeTab === "texture" && !isPanelCollapsed
-              ? "bg-amber-500 border-amber-400 text-neutral-950"
-              : "bg-neutral-900/90 border-neutral-800 text-white"
-          }`}
-          title="Texture & Materials"
-        >
-          🪵
-        </button>
-        <button
-          onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
-          className="w-10 h-10 rounded-full bg-neutral-950/90 border border-neutral-850 text-neutral-400 flex items-center justify-center shadow-2xl font-bold"
-        >
-          {isPanelCollapsed ? "▲" : "▼"}
+          <span>💾 SAVE CONCEPT</span>
         </button>
       </div>
 
-      <div
-        style={{ height: isPanelCollapsed ? 0 : `${panelHeight}px` }}
-        className="absolute bottom-0 left-0 right-0 bg-neutral-950/95 border-t border-neutral-900 z-20 shadow-2xl overflow-hidden transition-all duration-300 ease-out flex flex-col backdrop-blur-lg"
-      >
-        <div
-          onMouseDown={startDrag}
-          onTouchStart={startDrag}
-          className="w-full h-5 flex items-center justify-center cursor-ns-resize hover:bg-neutral-900/50 shrink-0"
-        >
-          <div className="w-12 h-1 bg-neutral-800 rounded-full" />
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 pb-6">
-          {activeTab === "paint" && (
-            <PaintPicker
-              activeSurface={activeSurface}
-              roomColors={roomColors}
-              setRoomColors={setRoomColors}
-              roomFinishes={roomFinishes}
-              setRoomFinishes={setRoomFinishes}
-              customColors={customColors}
-              setCustomColors={setCustomColors}
-              detectedMeshes={detectedMeshes}
-              onSurfaceSelect={setActiveSurface}
-            />
-          )}
-          {activeTab === "texture" && (
-            <ClientTexturePicker
-              activeTextures={activeTextures}
-              onTextureSelect={(category, textureId) =>
-                setActiveTextures((prev) => ({ ...prev, [category]: textureId }))
-              }
-              activeSurface={activeSurface}
-              availableMaterials={availableMaterials}
-              materialSwaps={materialSwaps}
-              onMaterialSwap={(meshName, materialName) => {
-                setMaterialSwaps((prev) => ({ ...prev, [meshName]: materialName }));
-                // Clear any procedural texture for this surface to let the native material show
-                setActiveTextures((prev) => {
-                  const copy = { ...prev };
-                  delete copy[meshName];
-                  return copy;
-                });
-              }}
-              meshes={meshesWithOriginalMaterials}
-            />
-          )}
-        </div>
+      {/* 🟢 100% FULL-SCREEN UNIFIED MASTER CANVAS VIEWPORT */}
+      <div className="w-full h-full relative overflow-hidden bg-neutral-950">
+        <PaintItMasterCanvas
+          config={{
+            mode: "painter",
+            modelUrl: modelUrl,
+            timeOfDay: isNightMode ? "night" : "day",
+            activeWallColor: roomColors.wallFront || "#C4B199",
+            activeWallFinish: (roomFinishes.wallFront as WallFinishType) || "EMULSION",
+            activeCeilingType: "Ceiling_Cove",
+            activeFloorTextureId: activeFloorTexture,
+            wallSurfaceStates: {
+              wall_back: {
+                color: roomColors.wallBack || roomColors.wall_back || "#C4B199",
+                finish: (roomFinishes.wallBack as WallFinishType) || "EMULSION",
+              },
+              wall_left: {
+                color: roomColors.wallLeft || roomColors.wall_left || "#C4B199",
+                finish: (roomFinishes.wallLeft as WallFinishType) || "EMULSION",
+              },
+              wall_right: {
+                color: roomColors.wallRight || roomColors.wall_right || "#C4B199",
+                finish: (roomFinishes.wallRight as WallFinishType) || "EMULSION",
+              },
+              wall_front: {
+                color: roomColors.wallFront || roomColors.wall_front || "#C4B199",
+                finish: (roomFinishes.wallFront as WallFinishType) || "EMULSION",
+              },
+              toilet: {
+                color: roomColors.toilet || "#C4B199",
+                finish: (roomFinishes.toilet as WallFinishType) || "EMULSION",
+              },
+              ceiling: {
+                color: roomColors.ceiling || "#FFFFFF",
+                finish: "EMULSION",
+              },
+            },
+            enableAutoCutaway: true,
+            isAdmin: false, // 🔒 Painter mode: hides raw lighting glides!
+            hideLightingTab: false,
+          }}
+          savedCameraConfig={savedCameraConfig}
+          onConfigChange={(newCfg) => {
+            if (newCfg.modelUrl) setModelUrl(newCfg.modelUrl);
+            if (newCfg.timeOfDay) setIsNightMode(newCfg.timeOfDay === "night");
+            if (newCfg.activeFloorTextureId) setActiveFloorTexture(newCfg.activeFloorTextureId);
+            if (newCfg.wallSurfaceStates) {
+              const states = newCfg.wallSurfaceStates;
+              setRoomColors((prev) => ({
+                ...prev,
+                wallFront: states.wall_front?.color || prev.wallFront,
+                wallBack: states.wall_back?.color || prev.wallBack,
+                wallLeft: states.wall_left?.color || prev.wallLeft,
+                wallRight: states.wall_right?.color || prev.wallRight,
+                ceiling: states.ceiling?.color || prev.ceiling,
+              }));
+              setRoomFinishes((prev) => ({
+                ...prev,
+                wallFront: states.wall_front?.finish || prev.wallFront,
+                wallBack: states.wall_back?.finish || prev.wallBack,
+                wallLeft: states.wall_left?.finish || prev.wallLeft,
+                wallRight: states.wall_right?.finish || prev.wallRight,
+              }));
+            }
+          }}
+        />
       </div>
 
+      {/* SAVE CONCEPT MODAL */}
       {saveModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
-          <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 p-6 rounded-2xl shadow-2xl space-y-4 animate-fade-in">
+          <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 p-6 rounded-3xl shadow-2xl space-y-4 text-white">
             <div className="space-y-1">
-              <h3 className="text-sm font-black uppercase tracking-wider text-neutral-100">Save Color Concept</h3>
-              <p className="text-[11px] text-neutral-400">Specify the name you want to use to register this mockup in your 3D design portfolio.</p>
+              <h3 className="text-sm font-black uppercase tracking-wider text-neutral-100">
+                Save Color Concept
+              </h3>
+              <p className="text-[11px] text-neutral-400 font-sans">
+                Specify a name to register this design concept in your 3D portfolio.
+              </p>
             </div>
 
             <form onSubmit={handleSaveWorkspace} className="space-y-4">
@@ -519,10 +341,10 @@ function WorkspaceContent() {
                 type="text"
                 required
                 autoFocus
-                placeholder="e.g. Amber Glow Hostel Layout"
+                placeholder="e.g. Executive Minimalist Living Room"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all"
+                className="w-full bg-neutral-950 border border-neutral-800 focus:border-emerald-500 rounded-2xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-sans"
               />
 
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -532,21 +354,14 @@ function WorkspaceContent() {
                   onClick={() => setSaveModalOpen(false)}
                   className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-neutral-400 hover:text-white transition-colors"
                 >
-                  Go Back
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 disabled:bg-emerald-800 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-emerald-500 disabled:bg-emerald-800 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2"
                 >
-                  {isSaving ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Confirm Save ➔"
-                  )}
+                  {isSaving ? "Saving..." : "Confirm Save ➔"}
                 </button>
               </div>
             </form>
@@ -557,15 +372,14 @@ function WorkspaceContent() {
   );
 }
 
-// 🚀 Export the page wrapped inside a dynamic suspense shell to bypass bailing static site checks during deployment
 export default function WorkspacePage() {
   return (
     <Suspense
       fallback={
-        <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50">
+        <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 font-mono text-white">
           <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-black">
-            Mounting Spatial Parameters...
+            Loading Spatial Parameters...
           </span>
         </div>
       }
