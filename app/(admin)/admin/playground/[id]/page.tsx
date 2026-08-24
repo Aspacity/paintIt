@@ -84,6 +84,17 @@ function PlaygroundCanvasContent() {
     target: [0, 1.2, 0],
   });
 
+  const [lightingSettings, setLightingSettings] = useState<{
+    timeOfDay?: LightingPresetKey;
+    sunAzimuthOverride?: number;
+    sunElevationOverride?: number;
+    sunIntensityOverride?: number;
+    ambientIntensityOverride?: number;
+    sunColorOverride?: string;
+  }>({
+    timeOfDay: "morning",
+  });
+
   // 🎛️ LEVA GUI CONTROLLER FOR MASTER PLAYGROUND CAMERA & LIGHTING SYNC
   const [levaCameraControls] = useControls('📷 Studio Camera & Viewport Limits', () => ({
     minDistance: {
@@ -134,6 +145,21 @@ function PlaygroundCanvasContent() {
             }));
           }
 
+          if (data.lighting_settings) {
+            let ls = data.lighting_settings;
+            if (typeof ls === 'string') {
+              try { ls = JSON.parse(ls); } catch { ls = {}; }
+            }
+            if (Array.isArray(ls) && ls.length > 0) {
+              const firstObj = typeof ls[0] === 'object' ? ls[0] : {};
+              setLightingSettings((prev) => ({ ...prev, ...firstObj }));
+              if (firstObj.timeOfDay) setIsNightMode(firstObj.timeOfDay === 'night');
+            } else if (typeof ls === 'object' && ls !== null) {
+              setLightingSettings((prev) => ({ ...prev, ...ls }));
+              if (ls.timeOfDay) setIsNightMode(ls.timeOfDay === 'night');
+            }
+          }
+
           if (data.global_environment?.isNightMode !== undefined) {
             setIsNightMode(data.global_environment.isNightMode);
           }
@@ -164,6 +190,14 @@ function PlaygroundCanvasContent() {
           minDistance: levaCameraControls.minDistance,
           maxDistance: levaCameraControls.maxDistance,
           fov: levaCameraControls.fov,
+        },
+        lighting_settings: {
+          timeOfDay: isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning'),
+          sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
+          sunElevationOverride: lightingSettings.sunElevationOverride,
+          sunIntensityOverride: lightingSettings.sunIntensityOverride,
+          ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
+          sunColorOverride: lightingSettings.sunColorOverride,
         },
         default_room_data: {
           modelUrl,
@@ -281,7 +315,12 @@ function PlaygroundCanvasContent() {
           config={{
             mode: 'admin',
             modelUrl: modelUrl,
-            timeOfDay: isNightMode ? 'night' : 'day',
+            timeOfDay: isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning'),
+            sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
+            sunElevationOverride: lightingSettings.sunElevationOverride,
+            sunIntensityOverride: lightingSettings.sunIntensityOverride,
+            ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
+            sunColorOverride: lightingSettings.sunColorOverride,
             activeWallColor: roomColors.wallFront || '#C4B199',
             activeWallFinish: (roomFinishes.wallFront as WallFinishType) || 'EMULSION',
             activeCeilingType: 'Ceiling_Cove',
@@ -325,9 +364,35 @@ function PlaygroundCanvasContent() {
           onSaveCameraConfig={(camData) => {
             setSavedCameraConfig(camData);
           }}
+          onSaveLightingConfig={(data) => {
+            setLightingSettings({
+              timeOfDay: data.timeOfDay,
+              sunAzimuthOverride: data.azimuth,
+              sunElevationOverride: data.elevation,
+              sunIntensityOverride: data.intensity,
+              ambientIntensityOverride: data.ambient,
+              sunColorOverride: data.color,
+            });
+            showToast({ message: '☀️ Lighting configuration locked in!', severity: 'success' });
+          }}
           onConfigChange={(newCfg) => {
             if (newCfg.modelUrl) setModelUrl(newCfg.modelUrl);
-            if (newCfg.timeOfDay) setIsNightMode(newCfg.timeOfDay === 'night');
+            if (newCfg.timeOfDay) {
+              setLightingSettings((prev) => ({ ...prev, timeOfDay: newCfg.timeOfDay as LightingPresetKey }));
+              setIsNightMode(newCfg.timeOfDay === 'night');
+            }
+            if (newCfg.sunAzimuthOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunAzimuthOverride: newCfg.sunAzimuthOverride }));
+            }
+            if (newCfg.sunElevationOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunElevationOverride: newCfg.sunElevationOverride }));
+            }
+            if (newCfg.sunIntensityOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunIntensityOverride: newCfg.sunIntensityOverride }));
+            }
+            if (newCfg.ambientIntensityOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, ambientIntensityOverride: newCfg.ambientIntensityOverride }));
+            }
             if (newCfg.activeFloorTextureId) setActiveFloorTexture(newCfg.activeFloorTextureId);
             if (newCfg.wallSurfaceStates) {
               const states = newCfg.wallSurfaceStates;

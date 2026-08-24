@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import PaintItMasterCanvas, { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 import { CameraConfigPayload } from "@/components/canvas/master/MasterCameraRig";
+import { LightingPresetKey } from "@/config/lightingPresets";
 import {
   saveVisualizationSync,
   VisualizationSavePayload,
@@ -46,6 +47,17 @@ function WorkspaceContent() {
   const [modelUrl, setModelUrl] = useState<string>("/models/selfcon.glb");
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const [activeFloorTexture, setActiveFloorTexture] = useState<string>("floor_oak");
+
+  const [lightingSettings, setLightingSettings] = useState<{
+    timeOfDay?: LightingPresetKey;
+    sunAzimuthOverride?: number;
+    sunElevationOverride?: number;
+    sunIntensityOverride?: number;
+    ambientIntensityOverride?: number;
+    sunColorOverride?: string;
+  }>({
+    timeOfDay: "morning",
+  });
 
   const [roomColors, setRoomColors] = useState<Record<string, string>>({
     wallFront: "#C4B199",
@@ -122,6 +134,22 @@ function WorkspaceContent() {
             });
           }
 
+          // Hydrate DB Saved Lighting Configuration (Day/Night, Sun Azimuth/Elevation, Light Sliders)
+          if (vis.lighting_settings || vis.lightingSettings || vis.light_data) {
+            let ls = vis.lighting_settings || vis.lightingSettings || vis.light_data;
+            if (typeof ls === "string") {
+              try { ls = JSON.parse(ls); } catch { ls = {}; }
+            }
+            if (Array.isArray(ls) && ls.length > 0) {
+              const firstObj = typeof ls[0] === "object" ? ls[0] : {};
+              setLightingSettings((prev) => ({ ...prev, ...firstObj }));
+              if (firstObj.timeOfDay) setIsNightMode(firstObj.timeOfDay === "night");
+            } else if (typeof ls === "object" && ls !== null) {
+              setLightingSettings((prev) => ({ ...prev, ...ls }));
+              if (ls.timeOfDay) setIsNightMode(ls.timeOfDay === "night");
+            }
+          }
+
           // Hydrate DB Environment & Night Mode
           if (vis.global_environment?.isNightMode !== undefined) {
             setIsNightMode(vis.global_environment.isNightMode);
@@ -180,6 +208,14 @@ function WorkspaceContent() {
           isNightMode,
         },
         camera_settings: savedCameraConfig || undefined,
+        lighting_settings: {
+          timeOfDay: isNightMode ? "night" : (lightingSettings.timeOfDay || "morning"),
+          sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
+          sunElevationOverride: lightingSettings.sunElevationOverride,
+          sunIntensityOverride: lightingSettings.sunIntensityOverride,
+          ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
+          sunColorOverride: lightingSettings.sunColorOverride,
+        },
       };
 
       const result = await saveVisualizationSync(payload, accessToken);
@@ -261,7 +297,12 @@ function WorkspaceContent() {
           config={{
             mode: "painter",
             modelUrl: modelUrl,
-            timeOfDay: isNightMode ? "night" : "day",
+            timeOfDay: isNightMode ? "night" : (lightingSettings.timeOfDay || "morning"),
+            sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
+            sunElevationOverride: lightingSettings.sunElevationOverride,
+            sunIntensityOverride: lightingSettings.sunIntensityOverride,
+            ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
+            sunColorOverride: lightingSettings.sunColorOverride,
             activeWallColor: roomColors.wallFront || "#C4B199",
             activeWallFinish: (roomFinishes.wallFront as WallFinishType) || "EMULSION",
             activeCeilingType: "Ceiling_Cove",
@@ -297,9 +338,35 @@ function WorkspaceContent() {
             hideLightingTab: false,
           }}
           savedCameraConfig={savedCameraConfig}
+          onSaveLightingConfig={(data) => {
+            setLightingSettings({
+              timeOfDay: data.timeOfDay,
+              sunAzimuthOverride: data.azimuth,
+              sunElevationOverride: data.elevation,
+              sunIntensityOverride: data.intensity,
+              ambientIntensityOverride: data.ambient,
+              sunColorOverride: data.color,
+            });
+            showToast({ message: "☀️ Lighting configuration saved!", severity: "success" });
+          }}
           onConfigChange={(newCfg) => {
             if (newCfg.modelUrl) setModelUrl(newCfg.modelUrl);
-            if (newCfg.timeOfDay) setIsNightMode(newCfg.timeOfDay === "night");
+            if (newCfg.timeOfDay) {
+              setLightingSettings((prev) => ({ ...prev, timeOfDay: newCfg.timeOfDay as LightingPresetKey }));
+              setIsNightMode(newCfg.timeOfDay === "night");
+            }
+            if (newCfg.sunAzimuthOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunAzimuthOverride: newCfg.sunAzimuthOverride }));
+            }
+            if (newCfg.sunElevationOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunElevationOverride: newCfg.sunElevationOverride }));
+            }
+            if (newCfg.sunIntensityOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, sunIntensityOverride: newCfg.sunIntensityOverride }));
+            }
+            if (newCfg.ambientIntensityOverride !== undefined) {
+              setLightingSettings((prev) => ({ ...prev, ambientIntensityOverride: newCfg.ambientIntensityOverride }));
+            }
             if (newCfg.activeFloorTextureId) setActiveFloorTexture(newCfg.activeFloorTextureId);
             if (newCfg.wallSurfaceStates) {
               const states = newCfg.wallSurfaceStates;

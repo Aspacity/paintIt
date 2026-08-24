@@ -20,6 +20,7 @@ export interface VisualizationSavePayload {
   parent_template_id?: string | null;
   room_data: RoomDataPayload;
   camera_settings?: Partial<CameraConfigPayload>;
+  lighting_settings?: Record<string, unknown> | unknown;
   is_pending_sync?: boolean;
   timestamp?: number;
 }
