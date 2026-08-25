@@ -187,9 +187,9 @@ function PlaygroundCanvasContent() {
         model_url: modelUrl,
         camera_settings: {
           ...savedCameraConfig,
-          minDistance: levaCameraControls.minDistance,
-          maxDistance: levaCameraControls.maxDistance,
-          fov: levaCameraControls.fov,
+          minDistance: levaCameraControls?.minDistance ?? savedCameraConfig.minDistance ?? 0.2,
+          maxDistance: levaCameraControls?.maxDistance ?? savedCameraConfig.maxDistance ?? 15.0,
+          fov: levaCameraControls?.fov ?? savedCameraConfig.fov ?? 45,
         },
         lighting_settings: {
           timeOfDay: isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning'),
@@ -357,9 +357,9 @@ function PlaygroundCanvasContent() {
           }}
           savedCameraConfig={{
             ...savedCameraConfig,
-            minDistance: levaCameraControls.minDistance,
-            maxDistance: levaCameraControls.maxDistance,
-            fov: levaCameraControls.fov,
+            minDistance: levaCameraControls?.minDistance ?? savedCameraConfig.minDistance ?? 0.2,
+            maxDistance: levaCameraControls?.maxDistance ?? savedCameraConfig.maxDistance ?? 15.0,
+            fov: levaCameraControls?.fov ?? savedCameraConfig.fov ?? 45,
           }}
           onSaveCameraConfig={(camData) => {
             setSavedCameraConfig(camData);

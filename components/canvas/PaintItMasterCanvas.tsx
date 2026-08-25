@@ -133,6 +133,54 @@ export const LIGHTING_CONTROLS = {
 // Import Real Paint Swatch Catalog
 import { REAL_PAINTS_CATALOG } from "@/config/paints";
 
+// 3D Canvas Fallback & Loader
+function Canvas3DSpinner() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 2.5;
+    }
+  });
+  return (
+    <mesh ref={meshRef} position={[0, 1.5, 0]}>
+      <torusGeometry args={[0.3, 0.04, 16, 32]} />
+      <meshBasicMaterial color="#10b981" wireframe />
+    </mesh>
+  );
+}
+
+class CanvasErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback?: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.warn("3D Model load error caught cleanly:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <mesh position={[0, 1.5, 0]}>
+            <boxGeometry args={[3.2, 2.4, 3.2]} />
+            <meshStandardMaterial color="#1c1c1e" wireframe />
+          </mesh>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ============================================================================
 // 2. INNER 3D ROOM MESH COMPONENT
 // ============================================================================
@@ -770,7 +818,7 @@ export default function PaintItMasterCanvas({
           }}
           camera={{ position: savedCameraConfig?.position || [0, 1.8, 4.6], fov: savedCameraConfig?.fov || 54 }}
         >
-          <Suspense fallback={null}>
+          <Suspense fallback={<Canvas3DSpinner />}>
             {/* 📷 MASTER CAMERA RIG CONTROLLER */}
             <MasterCameraRig
               targetPreset={cameraPreset}
@@ -794,15 +842,17 @@ export default function PaintItMasterCanvas({
             />
 
             {/* 3D ROOM MODEL */}
-            <MasterRoomMesh
-              config={config}
-              cameraPreset={cameraPreset}
-              isPaintDormant={isPaintDormant}
-              selectedSurfacePoint={selectedPoint}
-              activeSelectedWall={activeSelectedWall}
-              onSurfaceSelect={handleSurfaceClick}
-              onDoubleClickSurface={handleSurfaceDoubleClick}
-            />
+            <CanvasErrorBoundary>
+              <MasterRoomMesh
+                config={config}
+                cameraPreset={cameraPreset}
+                isPaintDormant={isPaintDormant}
+                selectedSurfacePoint={selectedPoint}
+                activeSelectedWall={activeSelectedWall}
+                onSurfaceSelect={handleSurfaceClick}
+                onDoubleClickSurface={handleSurfaceDoubleClick}
+              />
+            </CanvasErrorBoundary>
 
             {/* 🛋️ PLACED FURNITURE 3D ASSET INSTANCES */}
             {placedFurnitureAssets.map((asset) => (
