@@ -51,6 +51,7 @@ export interface MasterCanvasConfig {
   sunIntensityOverride?: number;
   sunColorOverride?: string;
   ambientIntensityOverride?: number;
+  bulbs?: BulbState[];
   activeWallColor: string;
   activeWallFinish: WallFinishType;
   activeCeilingType: CeilingType;
@@ -70,6 +71,7 @@ export interface MasterCanvasConfig {
 
 import { CameraConfigPayload } from "./master/MasterCameraRig";
 import { saveCustomPaintSync } from "@/utils/offlineDBSync";
+import { BulbState } from "@/components/canvas/LightControls";
 
 interface PaintItMasterCanvasProps {
   config: MasterCanvasConfig;
@@ -83,6 +85,7 @@ interface PaintItMasterCanvasProps {
     intensity: number;
     ambient: number;
     color?: string;
+    bulbs?: BulbState[];
   }) => void;
   onSaveCameraConfig?: (cameraData: CameraConfigPayload) => void;
 }
@@ -454,7 +457,7 @@ function MasterRoomMesh({
 import MasterLightingEngine from "./master/MasterLightingEngine";
 import MasterCameraRig from "./master/MasterCameraRig";
 import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
-import LightControls, { BulbState } from "@/components/canvas/LightControls";
+import LightControls from "@/components/canvas/LightControls";
 import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
 import { ModularAssetInstance } from "./ModularAssetInstance";
 import { FurnishItAssetItem } from "@/config/furnishItAssets";
@@ -648,19 +651,31 @@ export default function PaintItMasterCanvas({
 
   const [selectedBulbId, setSelectedBulbId] = useState<string | null>("ceiling-light-1");
 
-  // Dynamic User Interactive Lightbulbs State (Starts with 1 default ceiling lamp in Admin mode)
-  const [bulbs, setBulbs] = useState<BulbState[]>([
-    {
-      id: "ceiling-light-1",
-      name: "Central Ceiling Lamp",
-      type: "point",
-      position: [0, 2.6, 0],
-      color: "#fffaed",
-      intensity: 3.5,
-      enabled: true,
-      visible: true,
-    },
-  ]);
+  // Dynamic User Interactive Lightbulbs State (Hydrates from DB config or defaults)
+  const [bulbs, setBulbs] = useState<BulbState[]>(() => {
+    if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
+      return config.bulbs;
+    }
+    return [
+      {
+        id: "ceiling-light-1",
+        name: "Central Ceiling Lamp",
+        type: "point",
+        position: [0, 2.6, 0],
+        color: "#fffaed",
+        intensity: 3.5,
+        enabled: true,
+        visible: true,
+      },
+    ];
+  });
+
+  // Sync bulbs state when config.bulbs changes from DB hydration
+  useEffect(() => {
+    if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
+      setBulbs(config.bulbs);
+    }
+  }, [config.bulbs]);
 
   const handleAddBulb = (type: "point" | "spot") => {
     const newId = `bulb-${Date.now()}`;
@@ -674,8 +689,10 @@ export default function PaintItMasterCanvas({
       enabled: true,
       visible: true,
     };
-    setBulbs((prev) => [...prev, newBulb]);
+    const updatedBulbs = [...bulbs, newBulb];
+    setBulbs(updatedBulbs);
     setSelectedBulbId(newId);
+    onConfigChange?.({ bulbs: updatedBulbs });
   };
 
   const lastTapRef = useRef<{ time: number; wallKey: string }>({ time: 0, wallKey: "" });
@@ -1458,6 +1475,7 @@ export default function PaintItMasterCanvas({
                               intensity: config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8,
                               ambient: config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5,
                               color: config.sunColorOverride,
+                              bulbs,
                             })
                           }
                           className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5"

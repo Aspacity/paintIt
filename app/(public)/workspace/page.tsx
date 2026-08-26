@@ -55,6 +55,7 @@ function WorkspaceContent() {
     sunIntensityOverride?: number;
     ambientIntensityOverride?: number;
     sunColorOverride?: string;
+    bulbs?: any[];
   }>({
     timeOfDay: "morning",
   });
@@ -215,6 +216,7 @@ function WorkspaceContent() {
           sunIntensityOverride: lightingSettings.sunIntensityOverride,
           ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
           sunColorOverride: lightingSettings.sunColorOverride,
+          bulbs: lightingSettings.bulbs || [],
         },
       };
 
@@ -303,6 +305,7 @@ function WorkspaceContent() {
             sunIntensityOverride: lightingSettings.sunIntensityOverride,
             ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
             sunColorOverride: lightingSettings.sunColorOverride,
+            bulbs: lightingSettings.bulbs,
             activeWallColor: roomColors.wallFront || "#C4B199",
             activeWallFinish: (roomFinishes.wallFront as WallFinishType) || "EMULSION",
             activeCeilingType: "Ceiling_Cove",
@@ -346,11 +349,13 @@ function WorkspaceContent() {
               sunIntensityOverride: data.intensity,
               ambientIntensityOverride: data.ambient,
               sunColorOverride: data.color,
+              bulbs: data.bulbs,
             });
             showToast({ message: "☀️ Lighting configuration saved!", severity: "success" });
           }}
           onConfigChange={(newCfg) => {
             if (newCfg.modelUrl) setModelUrl(newCfg.modelUrl);
+            if (newCfg.bulbs) setLightingSettings((prev) => ({ ...prev, bulbs: newCfg.bulbs }));
             if (newCfg.timeOfDay) {
               setLightingSettings((prev) => ({ ...prev, timeOfDay: newCfg.timeOfDay as LightingPresetKey }));
               setIsNightMode(newCfg.timeOfDay === "night");
