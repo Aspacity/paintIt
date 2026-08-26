@@ -5,13 +5,15 @@ import { StudioProvider } from "@/context/StudioContext";
 import { AlertProvider } from "@/context/AlertContext";
 import LandingNavbar from "@/components/landing/LandingNavbar";
 import Hero from "@/components/landing/Hero";
-import EcosystemCarousel from "@/components/landing/EcosystemCarousel";
-import HowItWorks from "@/components/landing/HowItWorks";
-import RealismComparison from "@/components/landing/RealismComparison";
-import WhyPainters from "@/components/landing/WhyPainters";
-import WhyHomeOwners from "@/components/landing/WhyHomeOwners";
-import FutureVision from "@/components/landing/FutureVision";
-import EarlyAccessForm from "@/components/landing/EarlyAccessForm";
+import ProblemSection from "@/components/landing/ProblemSection";
+import SolutionSection from "@/components/landing/SolutionSection";
+import FeatureStorytelling from "@/components/landing/FeatureStorytelling";
+import ForPaintersSection from "@/components/landing/ForPaintersSection";
+import SharedExperienceSection from "@/components/landing/SharedExperienceSection";
+import ProfessionalProfileSection from "@/components/landing/ProfessionalProfileSection";
+import EarlyAccessProof from "@/components/landing/EarlyAccessProof";
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
 import { startTrackingLifecycle, identifyUserSession } from "@/utils/tracker";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,16 +68,18 @@ export default function Home() {
           <div className="absolute top-[25%] right-0 w-96 h-96 bg-emerald-900/5 blur-[140px] pointer-events-none rounded-full" />
           <div className="absolute top-[60%] left-0 w-96 h-96 bg-emerald-900/5 blur-[140px] pointer-events-none rounded-full" />
 
-          {/* MAIN EDITORIAL LANDING SECTIONS */}
-          <main className="relative z-10 space-y-10 sm:space-y-16 pb-16">
+          {/* RESTRUCTURED PAINTIT LANDING SECTIONS */}
+          <main className="relative z-10 space-y-6 sm:space-y-12 pb-16">
             <Hero />
-            <HowItWorks />
-            <WhyPainters />
-            <WhyHomeOwners />
-            <RealismComparison />
-            <EcosystemCarousel />
-            <FutureVision />
-            <EarlyAccessForm />
+            <ProblemSection />
+            <SolutionSection />
+            <FeatureStorytelling />
+            <ForPaintersSection />
+            <SharedExperienceSection />
+            <ProfessionalProfileSection />
+            <EarlyAccessProof />
+            <HowItWorksSection />
+            <FinalCTA />
           </main>
 
           {/* Footer */}

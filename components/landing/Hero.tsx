@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import PaintItMasterCanvas, { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 
@@ -18,55 +19,72 @@ export default function Hero() {
   });
 
   return (
-    <section className="relative pt-20 sm:pt-28 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center flex flex-col items-center">
-      {/* Audience Badges */}
+    <section className="relative pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center flex flex-col items-center">
+      {/* EYEBROW */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-6"
+        className="mb-4 sm:mb-6"
       >
-        <span className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold rounded-full bg-neutral-900 border border-neutral-800 text-emerald-400">
-          ✨ 3D Spatial Design Platform
-        </span>
-        <span className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300">
-          🏡 For Designers & Owners
-        </span>
-        <span className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300">
-          👨‍🎨 For Contractors & Pros
+        <span className="px-3.5 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+          BUILT FOR BETTER PAINT DECISIONS
         </span>
       </motion.div>
 
-      {/* Main Headline */}
+      {/* HEADLINE */}
       <motion.h1
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.1 }}
-        className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] max-w-4xl mx-auto"
+        className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.08] max-w-4xl mx-auto text-balance"
       >
-        See how your room looks <br className="hidden sm:inline" />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-neutral-100 to-neutral-400">
-          before you design & build it.
+        Don't explain the result.{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-200 to-neutral-200">
+          Show it.
         </span>
       </motion.h1>
 
-      {/* Supporting Copy */}
+      {/* SUPPORTING TEXT */}
       <motion.p
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.2 }}
-        className="mt-3 sm:mt-5 text-xs sm:text-lg text-neutral-300 max-w-2xl mx-auto font-normal leading-relaxed"
+        className="mt-4 sm:mt-6 text-sm sm:text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto font-normal leading-relaxed text-balance"
       >
-        PaintIT helps painters, homeowners, and designers preview real paint colors and finishes in interactive 3D. Tap any wall to test colors instantly.
+        PaintIT Studio helps painters and homeowners explore paint colours, finishes, and lighting inside interactive 3D spaces before work begins.
       </motion.p>
 
-      {/* Primary Hero 3D Room Visualizer Frame */}
+      {/* CTAS */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98, y: 25 }}
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.3 }}
+        className="mt-8 flex flex-wrap items-center justify-center gap-4"
+      >
+        <Link
+          href="/workspace"
+          className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
+        >
+          <span>Get Started</span>
+          <span>→</span>
+        </Link>
+
+        <a
+          href="#how-it-works"
+          className="px-6 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-200 font-bold text-xs sm:text-sm uppercase tracking-wider transition-all"
+        >
+          See How It Works
+        </a>
+      </motion.div>
+
+      {/* HERO VISUAL: 3D ROOM INTERACTIVE DEMO */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
         id="demo"
-        className="mt-6 sm:mt-10 w-full max-w-5xl mx-auto rounded-2xl sm:rounded-3xl border border-neutral-850 bg-neutral-950 p-1.5 sm:p-2 shadow-2xl overflow-hidden relative"
+        className="mt-10 sm:mt-14 w-full max-w-5xl mx-auto rounded-2xl sm:rounded-3xl border border-neutral-850 bg-neutral-950 p-1.5 sm:p-2.5 shadow-2xl overflow-hidden relative"
       >
         <div className="w-full rounded-xl sm:rounded-2xl bg-neutral-950 flex flex-col overflow-hidden relative">
           {/* Header toolbar */}
@@ -74,16 +92,16 @@ export default function Hero() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] sm:text-[11px] font-mono font-bold text-neutral-300 uppercase tracking-wider">
-                PaintIT 3D Room Studio
+                PaintIT 3D Room Studio Viewport
               </span>
             </div>
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 sm:px-2.5 py-0.5 rounded border border-emerald-500/20">
-              Double Tap Wall To Change Paint
+              Double Tap Wall To Test Paint
             </span>
           </div>
 
           {/* Render Frame Area */}
-          <div className="w-full h-[400px] sm:h-[480px] md:h-[540px] bg-neutral-950 relative overflow-hidden">
+          <div className="w-full h-[380px] sm:h-[480px] md:h-[540px] bg-neutral-950 relative overflow-hidden">
             <PaintItMasterCanvas
               config={{
                 mode: "painter",
@@ -94,11 +112,11 @@ export default function Hero() {
                 activeCeilingType: "Ceiling_Cove",
                 activeFloorTextureId: "floor_oak",
                 wallSurfaceStates: heroWallStates,
-                enableZoom: false, // 🔒 Zooming disabled for landing demo!
-                hideFloorTab: true, // 🔒 No floor textures tab!
-                hideColorMixer: true, // 🔒 No color upload mixer!
-                hideAssemblyPanel: true, // 🔒 No 3D assembly dock!
-                isAdmin: false, // 🔒 Painter mode: Day/Night & Lightbulb ON/OFF ONLY!
+                enableZoom: false,
+                hideFloorTab: true,
+                hideColorMixer: true,
+                hideAssemblyPanel: true,
+                isAdmin: false,
                 hideLightingTab: false,
               }}
               onConfigChange={(newCfg) => {
