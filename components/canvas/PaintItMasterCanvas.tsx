@@ -6,6 +6,7 @@ import { useGLTF, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { LightingPresetKey, MASTER_LIGHTING_PRESETS } from "@/config/lightingPresets";
 import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
+import { OfflineSyncBanner } from "@/components/ui/OfflineSyncBanner";
 
 // ============================================================================
 // 1. UNIFIED MASTER CANVAS TYPES & SCHEMAS
@@ -518,6 +519,31 @@ export default function PaintItMasterCanvas({
     setStudioMode("FURNITURE");
   };
 
+  // ⚡ Offline Auto-Draft Save States
+  const [isSavingLocally, setIsSavingLocally] = useState<boolean>(false);
+  const [lastSavedTimestamp, setLastSavedTimestamp] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (config.wallSurfaceStates) {
+      setIsSavingLocally(true);
+      const draftPayload = {
+        timestamp: new Date().toISOString(),
+        modelUrl: config.modelUrl,
+        wallSurfaceStates: config.wallSurfaceStates,
+        timeOfDay: config.timeOfDay,
+      };
+      try {
+        localStorage.setItem("paintit_offline_workspace_draft", JSON.stringify(draftPayload));
+        const nowString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        setLastSavedTimestamp(nowString);
+      } catch (e) {
+        console.warn("Offline cache quota exceeded", e);
+      }
+      const timer = setTimeout(() => setIsSavingLocally(false), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [config.wallSurfaceStates, config.timeOfDay, config.modelUrl]);
+
   // Dual Sidebar States (Default COLLAPSED by default!)
   const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(true);
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
@@ -982,19 +1008,32 @@ export default function PaintItMasterCanvas({
 
         {/* 📱 TOP CENTER FLOATING CAMERA & STATUS BAR */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-          {/* Active Wall Status Pill */}
-          <div className="bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 px-3 py-1.5 rounded-2xl pointer-events-auto flex items-center gap-2 shadow-2xl">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wide">
-              {activeSelectedWall ? activeSelectedWall.toUpperCase() : "SELECT SURFACE"}
-              {activeSelectedWall &&
-              (activeSelectedWall.toLowerCase().includes("curtain") ||
-                activeSelectedWall.toLowerCase().includes("window") ||
-                activeSelectedWall.toLowerCase().includes("door") ||
-                activeSelectedWall.toLowerCase().includes("lamp"))
-                ? " • NATIVE FIXTURE"
-                : ` • ${config.activeWallFinish}`}
-            </span>
+          {/* Active Wall Status Pill & Offline Sync Indicator */}
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <div className="bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-2xl">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wide">
+                {activeSelectedWall ? activeSelectedWall.toUpperCase() : "SELECT SURFACE"}
+                {activeSelectedWall &&
+                (activeSelectedWall.toLowerCase().includes("curtain") ||
+                  activeSelectedWall.toLowerCase().includes("window") ||
+                  activeSelectedWall.toLowerCase().includes("door") ||
+                  activeSelectedWall.toLowerCase().includes("lamp"))
+                  ? " • NATIVE FIXTURE"
+                  : ` • ${config.activeWallFinish}`}
+              </span>
+            </div>
+
+            {/* 🌐 OFFLINE & AUTO-DRAFT SYNC STATUS BANNER */}
+            <OfflineSyncBanner
+              isSavingLocally={isSavingLocally}
+              lastSavedTimestamp={lastSavedTimestamp}
+              onSyncToLiveServer={async () => {
+                if (onConfigChange && config.wallSurfaceStates) {
+                  onConfigChange(config);
+                }
+              }}
+            />
           </div>
 
           {/* Camera View Preset Pills */}
