@@ -41,7 +41,7 @@ export default function Footer() {
           <a href="#for-painters" className="hover:text-white transition-colors">
             For Painters
           </a>
-          <Link href="/workspace" className="hover:text-white transition-colors">
+          <Link href="/search/designs" className="hover:text-white transition-colors">
             Explore
           </Link>
           <a href="mailto:hello@aspacity.com" className="hover:text-white transition-colors">

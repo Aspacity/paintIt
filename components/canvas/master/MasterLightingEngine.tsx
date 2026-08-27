@@ -49,9 +49,9 @@ export default function MasterLightingEngine({
   // Resolve custom overrides over active preset
   const azimuth = sunAzimuthOverride ?? preset.sun.azimuthDeg;
   const elevation = sunElevationOverride ?? preset.sun.elevationDeg;
-  const intensity = sunIntensityOverride ?? preset.sun.intensity;
+  const intensity = (sunIntensityOverride ?? preset.sun.intensity) * 1.6;
   const sunColor = sunColorOverride ?? preset.sun.color;
-  const ambientIntensity = ambientIntensityOverride ?? preset.environment.ambientIntensity;
+  const ambientIntensity = (ambientIntensityOverride ?? preset.environment.ambientIntensity) * 2.2;
 
   // Calculate 3D Cartesian sun position vector
   const sunPosition = useMemo(() => {
@@ -82,10 +82,10 @@ export default function MasterLightingEngine({
             shadow-mapSize-width={preset.sun.shadowMapSize}
             shadow-mapSize-height={preset.sun.shadowMapSize}
             shadow-camera-far={preset.sun.shadowCameraFar}
-            shadow-camera-left={-10}
-            shadow-camera-right={10}
-            shadow-camera-top={10}
-            shadow-camera-bottom={-10}
+            shadow-camera-left={-15}
+            shadow-camera-right={15}
+            shadow-camera-top={15}
+            shadow-camera-bottom={-15}
             shadow-bias={preset.sun.shadowBias}
           />
           <ambientLight intensity={ambientIntensity} color={preset.environment.ambientColor} />
@@ -93,7 +93,7 @@ export default function MasterLightingEngine({
             args={[
               preset.environment.skySkyColor,
               preset.environment.skyGroundColor,
-              preset.environment.skyIntensity,
+              preset.environment.skyIntensity * 1.8,
             ]}
           />
           <Sky
@@ -110,15 +110,15 @@ export default function MasterLightingEngine({
           {/* 🌙 NIGHT MODE MOONLIGHT & ATMOSPHERE */}
           <directionalLight
             position={[sunPosition[0], Math.max(8, sunPosition[1]), sunPosition[2]]}
-            intensity={0.4}
-            color="#7a9cc6"
+            intensity={0.8}
+            color="#9bb8e8"
             castShadow
             shadow-mapSize-width={1024}
             shadow-mapSize-height={1024}
             shadow-bias={-0.0005}
           />
-          <ambientLight intensity={Math.max(0.2, ambientIntensity)} color="#1d283d" />
-          <hemisphereLight args={["#233454", "#090d17", 0.25]} />
+          <ambientLight intensity={Math.max(0.4, ambientIntensity)} color="#2c3a54" />
+          <hemisphereLight args={["#354b73", "#111827", 0.4]} />
         </>
       )}
 
@@ -145,7 +145,7 @@ export default function MasterLightingEngine({
                 <meshStandardMaterial
                   color={bulb.color}
                   emissive={bulb.color}
-                  emissiveIntensity={isSelected ? 2.0 : 1.0}
+                  emissiveIntensity={isSelected ? 2.5 : 1.2}
                   wireframe={isSelected}
                 />
               </mesh>
@@ -155,20 +155,20 @@ export default function MasterLightingEngine({
               <spotLight
                 position={[0, 0, 0]}
                 rotation={bulb.rotation}
-                intensity={bulb.intensity * 2.5}
+                intensity={(bulb.intensity || 2.5) * 6.0}
                 color={bulb.color}
                 angle={Math.PI / 3}
-                penumbra={0.85} // ☀️ Ultra soft feathered light edges!
-                distance={bulb.distance || 15}
+                penumbra={0.85}
+                distance={bulb.distance || 20}
                 castShadow={false}
               />
             ) : (
               <pointLight
                 position={[0, 0, 0]}
-                intensity={bulb.intensity * 2.5}
+                intensity={(bulb.intensity || 1.5) * 5.0}
                 color={bulb.color}
-                distance={bulb.distance || 15}
-                decay={2.0} // ☀️ Physically accurate inverse-square quadratic light falloff!
+                distance={bulb.distance || 20}
+                decay={1.5}
                 castShadow={false}
               />
             )}

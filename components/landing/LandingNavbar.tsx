@@ -54,25 +54,25 @@ export default function LandingNavbar() {
           <a href="#for-painters" className="hover:text-white transition-colors">
             For Painters
           </a>
-          <a href="#explore" className="hover:text-white transition-colors">
+          <Link href="/search/designs" className="hover:text-white transition-colors">
             Explore
-          </a>
+          </Link>
         </nav>
 
         {/* Action CTAs */}
         <div className="flex items-center gap-3">
           <Link
-            href="/workspace"
+            href="/search/designs"
             className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg border border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800 text-neutral-300 font-bold text-xs uppercase tracking-wider transition-all"
           >
             Explore PaintIT
           </Link>
-          <Link
-            href="/workspace"
+          <a
+            href="#early-access"
             className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/15 active:scale-95 transition-all"
           >
             Get Started
-          </Link>
+          </a>
 
           {/* Mobile Menu Trigger */}
           <button
@@ -104,18 +104,18 @@ export default function LandingNavbar() {
             <a href="#for-painters" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-400">
               For Painters
             </a>
-            <a href="#explore" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-400">
+            <Link href="/search/designs" onClick={() => setMobileMenuOpen(false)} className="hover:text-emerald-400">
               Explore
-            </a>
+            </Link>
           </nav>
           <div className="pt-2 flex flex-col gap-2">
-            <Link
-              href="/workspace"
+            <a
+              href="#early-access"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-lg bg-emerald-500 text-neutral-950 font-black text-xs uppercase tracking-wider"
+              className="w-full text-center py-2.5 rounded-lg bg-emerald-500 text-neutral-950 font-black text-xs uppercase tracking-wider block"
             >
               Get Started
-            </Link>
+            </a>
           </div>
         </div>
       )}

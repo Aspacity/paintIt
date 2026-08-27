@@ -46,13 +46,13 @@ export default function ForPaintersSection() {
           </p>
 
           <div className="pt-2">
-            <Link
-              href="/workspace"
+            <a
+              href="#early-access"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all"
             >
               <span>Get Started with PaintIT</span>
               <span>→</span>
-            </Link>
+            </a>
           </div>
         </div>
 

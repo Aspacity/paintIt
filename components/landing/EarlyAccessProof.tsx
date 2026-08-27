@@ -96,7 +96,7 @@ export default function EarlyAccessProof() {
                 </div>
                 <h4 className="text-sm font-bold text-white">Thank you for joining!</h4>
                 <p className="text-xs text-neutral-400 leading-relaxed">
-                  We'll keep you updated as PaintIT Studio evolves.
+                  We&apos;ll keep you updated as PaintIT Studio evolves.
                 </p>
               </motion.div>
             )}

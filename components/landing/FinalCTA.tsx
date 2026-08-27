@@ -28,12 +28,12 @@ export default function FinalCTA() {
           </p>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/workspace"
+            <a
+              href="#early-access"
               className="px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
             >
               Get Started with PaintIT
-            </Link>
+            </a>
 
             <a
               href="#early-access"

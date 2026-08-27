@@ -1454,10 +1454,28 @@ export default function PaintItMasterCanvas({
                             <input
                               type="range"
                               min="0.5"
-                              max="5.0"
+                              max="8.0"
                               step="0.1"
                               value={config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8}
                               onChange={(e) => onConfigChange?.({ sunIntensityOverride: parseFloat(e.target.value) })}
+                              className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="space-y-1 pt-2 border-t border-neutral-800/60">
+                            <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
+                              <span>Ambient Fill Light</span>
+                              <span className="font-mono text-emerald-400">
+                                {(config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5).toFixed(2)}x
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0.1"
+                              max="3.0"
+                              step="0.05"
+                              value={config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5}
+                              onChange={(e) => onConfigChange?.({ ambientIntensityOverride: parseFloat(e.target.value) })}
                               className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                             />
                           </div>

@@ -95,13 +95,13 @@ export default function ProfessionalProfileSection() {
           </ul>
 
           <div className="pt-4">
-            <Link
-              href="/workspace"
+            <a
+              href="#early-access"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500/60 text-white font-bold text-xs uppercase tracking-wider transition-all"
             >
               <span>Build Your Painter Profile</span>
               <span>→</span>
-            </Link>
+            </a>
           </div>
         </div>
       </div>

@@ -236,7 +236,7 @@ export default function LightControls({
             <input
               type="range"
               min="0.1"
-              max="10.0"
+              max="20.0"
               step="0.1"
               value={currentBulb.intensity}
               onChange={(e) => updateBulbProperty(currentBulb.id, { intensity: parseFloat(e.target.value) })}
@@ -253,7 +253,7 @@ export default function LightControls({
             <input
               type="range"
               min="1.0"
-              max="25.0"
+              max="35.0"
               step="0.5"
               value={currentBulb.distance || 12}
               onChange={(e) => updateBulbProperty(currentBulb.id, { distance: parseFloat(e.target.value) })}
@@ -261,25 +261,31 @@ export default function LightControls({
             />
           </div>
 
-          {/* POSITION X, Y, Z SLIDERS GLIDES */}
+          {/* POSITION X, Y, Z SLIDERS & FINE CONTROLS */}
           <div className="space-y-2 border-t border-neutral-800 pt-2">
-            <span className="text-[9px] font-mono uppercase text-neutral-500">3D Position Coordinates (X, Y, Z)</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-mono uppercase text-neutral-400 font-bold">3D Light Position Coordinates (X, Y, Z)</span>
+            </div>
             
             {/* Position X */}
             <div className="flex items-center gap-2">
               <span className="text-[9px] font-mono text-red-400 w-4 font-bold">X:</span>
               <input
                 type="range"
-                min="-4.0"
-                max="4.0"
-                step="0.1"
+                min="-10.0"
+                max="10.0"
+                step="0.05"
                 value={currentBulb.position[0]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 0, parseFloat(e.target.value))}
                 className="flex-1 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-500"
               />
-              <span className="text-[9px] font-mono text-neutral-400 w-8 text-right">
-                {currentBulb.position[0].toFixed(1)}
-              </span>
+              <input
+                type="number"
+                step="0.1"
+                value={currentBulb.position[0]}
+                onChange={(e) => updateBulbPosition(currentBulb.id, 0, parseFloat(e.target.value) || 0)}
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+              />
             </div>
 
             {/* Position Y (Height) */}
@@ -287,16 +293,20 @@ export default function LightControls({
               <span className="text-[9px] font-mono text-emerald-400 w-4 font-bold">Y:</span>
               <input
                 type="range"
-                min="0.5"
-                max="4.5"
-                step="0.1"
+                min="0.1"
+                max="8.0"
+                step="0.05"
                 value={currentBulb.position[1]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 1, parseFloat(e.target.value))}
                 className="flex-1 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
               />
-              <span className="text-[9px] font-mono text-neutral-400 w-8 text-right">
-                {currentBulb.position[1].toFixed(1)}
-              </span>
+              <input
+                type="number"
+                step="0.1"
+                value={currentBulb.position[1]}
+                onChange={(e) => updateBulbPosition(currentBulb.id, 1, parseFloat(e.target.value) || 0)}
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+              />
             </div>
 
             {/* Position Z */}
@@ -304,16 +314,20 @@ export default function LightControls({
               <span className="text-[9px] font-mono text-blue-400 w-4 font-bold">Z:</span>
               <input
                 type="range"
-                min="-4.0"
-                max="4.0"
-                step="0.1"
+                min="-10.0"
+                max="10.0"
+                step="0.05"
                 value={currentBulb.position[2]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 2, parseFloat(e.target.value))}
                 className="flex-1 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
               />
-              <span className="text-[9px] font-mono text-neutral-400 w-8 text-right">
-                {currentBulb.position[2].toFixed(1)}
-              </span>
+              <input
+                type="number"
+                step="0.1"
+                value={currentBulb.position[2]}
+                onChange={(e) => updateBulbPosition(currentBulb.id, 2, parseFloat(e.target.value) || 0)}
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+              />
             </div>
           </div>
 

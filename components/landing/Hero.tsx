@@ -39,7 +39,7 @@ export default function Hero() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.08] max-w-4xl mx-auto text-balance"
       >
-        Don't explain the result.{" "}
+        Don&apos;t explain the result.{" "}
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-200 to-neutral-200">
           Show it.
         </span>
@@ -62,13 +62,13 @@ export default function Hero() {
         transition={{ duration: 0.7, delay: 0.3 }}
         className="mt-8 flex flex-wrap items-center justify-center gap-4"
       >
-        <Link
-          href="/workspace"
+        <a
+          href="#early-access"
           className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
         >
           <span>Get Started</span>
           <span>→</span>
-        </Link>
+        </a>
 
         <a
           href="#how-it-works"
