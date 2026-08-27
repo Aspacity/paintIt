@@ -204,7 +204,9 @@ function MasterRoomMesh({
   onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
   onDoubleClickSurface?: (meshName: string, category: string, point: THREE.Vector3) => void;
 }) {
-  const { scene } = useGLTF(config.modelUrl) as unknown as { scene: THREE.Group };
+  const cdnBase = typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_3D_CDN_URL || "" : "";
+  const resolvedModelUrl = (cdnBase && config.modelUrl.startsWith("/")) ? `${cdnBase}${config.modelUrl}` : config.modelUrl;
+  const { scene } = useGLTF(resolvedModelUrl) as unknown as { scene: THREE.Group };
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
   // Map to hold unique isolated material instances per wall mesh

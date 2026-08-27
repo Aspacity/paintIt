@@ -117,15 +117,16 @@ export default function PublicDesignTemplatesDirectoryPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTemplates.map((template) => (
-            <div
+            <Link
               key={template.id}
-              className="group bg-neutral-950 border border-neutral-900 hover:border-neutral-800 rounded-2xl p-5 flex flex-col justify-between shadow-xl transition-all duration-200"
+              href={`/workspace?template=${template.id}`}
+              className="group bg-neutral-950 border border-neutral-900 hover:border-emerald-500/50 rounded-2xl p-5 flex flex-col justify-between shadow-xl transition-all duration-200 cursor-pointer"
             >
               <div className="space-y-4">
                 {/* 3D Scene Interactive Mock Canvas Box */}
-                <div className="w-full h-40 bg-neutral-900 border border-neutral-850 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group-hover:border-neutral-700 transition-colors shadow-inner select-none">
+                <div className="w-full h-40 bg-neutral-900 border border-neutral-850 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group-hover:border-emerald-500/30 transition-colors shadow-inner select-none">
                   <div className="absolute top-0 right-0 p-2.5">
-                    <span className="text-[9px] font-mono bg-neutral-950/80 backdrop-blur-md border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                    <span className="text-[9px] font-mono bg-neutral-950/80 backdrop-blur-md border border-neutral-800 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                       {template.category || "INTERIOR"}
                     </span>
                   </div>
@@ -134,8 +135,8 @@ export default function PublicDesignTemplatesDirectoryPage() {
                     {template.thumbnail_icon || "🛋️"}
                   </span>
 
-                  <span className="text-[9px] font-mono tracking-widest uppercase font-black text-neutral-600 mt-3 block">
-                    [ Click to Launch 3D View ]
+                  <span className="text-[9px] font-mono tracking-widest uppercase font-black text-emerald-400 mt-3 block">
+                    [ Tap to Launch 3D Canvas 🚀 ]
                   </span>
                 </div>
 
@@ -156,16 +157,15 @@ export default function PublicDesignTemplatesDirectoryPage() {
                 </div>
               </div>
 
-              {/* 🎯 ROUTE DIRECTLY TO PUBLIC CLIENT VIEW PAGE */}
+              {/* 🎯 ROUTE DIRECTLY TO PUBLIC CANVAS WORKSPACE PAGE */}
               <div className="pt-5 mt-4 border-t border-neutral-900/60">
-                <Link
-                  href={`/view/${template.id}`}
-                  className="block w-full py-2.5 bg-neutral-900 hover:bg-emerald-500 border border-neutral-850 hover:border-emerald-500 text-center text-xs font-black uppercase tracking-wider text-neutral-300 hover:text-black rounded-xl transition-all shadow-inner"
+                <div
+                  className="w-full py-2.5 bg-emerald-500/10 group-hover:bg-emerald-500 border border-emerald-500/20 group-hover:border-emerald-500 text-center text-xs font-black uppercase tracking-wider text-emerald-400 group-hover:text-black rounded-xl transition-all shadow-inner"
                 >
-                  Inspect 3D Layout ➔
-                </Link>
+                  Open 3D Canvas Workspace ➔
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
