@@ -22,6 +22,13 @@ export interface RoomModelItem {
  */
 export const REAL_ROOM_SHELLS: RoomModelItem[] = [
   {
+    id: "lux_livingroom",
+    name: "Luxurious TV Living Suite",
+    tagline: "Architectural TV panel wall with floating shelf & curtain bay",
+    thumbnailColor: "#eab308",
+    modelUrl: "/models/shells/lux-livingroom.glb",
+  },
+  {
     id: "spacious_lux",
     name: "Spacious Luxury Lounge",
     tagline: "10m luxury open-plan lounge with floor cove & window daylighting",
