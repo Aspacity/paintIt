@@ -7,6 +7,10 @@ import * as THREE from "three";
 import { LightingPresetKey, MASTER_LIGHTING_PRESETS } from "@/config/lightingPresets";
 import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
 import { OfflineSyncBanner } from "@/components/ui/OfflineSyncBanner";
+import {
+  getSavedModelLightingConfig,
+  saveModelLightingConfig,
+} from "@/config/roomModelLightingConfigs";
 
 // ============================================================================
 // 1. UNIFIED MASTER CANVAS TYPES & SCHEMAS
@@ -715,10 +719,14 @@ export default function PaintItMasterCanvas({
 
   const [selectedBulbId, setSelectedBulbId] = useState<string | null>("ceiling-light-1");
 
-  // Dynamic User Interactive Lightbulbs State (Hydrates from DB config or defaults)
+  // Dynamic User Interactive Lightbulbs State (Hydrates from model config registry, DB config or defaults)
   const [bulbs, setBulbs] = useState<BulbState[]>(() => {
     if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
       return config.bulbs;
+    }
+    const savedModelConfig = getSavedModelLightingConfig(config.modelUrl);
+    if (savedModelConfig && Array.isArray(savedModelConfig.bulbs) && savedModelConfig.bulbs.length > 0) {
+      return savedModelConfig.bulbs;
     }
     return [
       {
@@ -734,12 +742,32 @@ export default function PaintItMasterCanvas({
     ];
   });
 
-  // Sync bulbs state when config.bulbs changes from DB hydration
+  // Automatically load model's saved bulbs whenever config.modelUrl changes!
   useEffect(() => {
     if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
       setBulbs(config.bulbs);
+    } else if (config.modelUrl) {
+      const savedModelConfig = getSavedModelLightingConfig(config.modelUrl);
+      if (savedModelConfig && Array.isArray(savedModelConfig.bulbs) && savedModelConfig.bulbs.length > 0) {
+        setBulbs(savedModelConfig.bulbs);
+      }
     }
-  }, [config.bulbs]);
+  }, [config.modelUrl, config.bulbs]);
+
+  // Auto-Save Bulb Changes per 3D Model
+  useEffect(() => {
+    if (config.modelUrl && bulbs.length > 0) {
+      saveModelLightingConfig({
+        modelUrl: config.modelUrl,
+        sunAzimuth: config.sunAzimuthOverride,
+        sunElevation: config.sunElevationOverride,
+        sunIntensity: config.sunIntensityOverride,
+        ambientIntensity: config.ambientIntensityOverride,
+        timeOfDay: config.timeOfDay,
+        bulbs,
+      });
+    }
+  }, [bulbs, config.modelUrl, config.sunAzimuthOverride, config.sunElevationOverride, config.sunIntensityOverride, config.ambientIntensityOverride, config.timeOfDay]);
 
   const handleAddBulb = (type: "point" | "spot") => {
     const newId = `bulb-${Date.now()}`;

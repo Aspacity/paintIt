@@ -3,13 +3,17 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AlertProvider } from "@/context/AlertContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { TrafficTracker } from "@/components/analytics/TrafficTracker";
 import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine"; // Rendered below
 import { FeedbackModalPopup } from "@/components/ui/FeedbackModalPopup";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta"
+  variable: "--font-jakarta",
+  display: "swap",
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+  adjustFontFallback: false,
 });
 
 // ✅ SAFE SERVER-SIDE SEO EXTRACTIONS (No "use client" at the top)
@@ -87,17 +91,19 @@ export default function RootLayout({
       lang="en"
       className="scroll-smooth"
     >
-      <body className={`${jakarta.variable} font-sans bg-neutral-950 text-neutral-100 antialiased overflow-x-hidden`}>
+      <body className={`${jakarta.variable} font-sans bg-black text-neutral-100 antialiased overflow-x-hidden`}>
         {/* ✅ Injects browser runtime hooks cleanly on server-side layouts */}
         <ServiceWorkerRegisterEngine />
 
-        <AlertProvider>
-          <AuthProvider>
-            <TrafficTracker />
-            {children}
-            <FeedbackModalPopup />
-          </AuthProvider>
-        </AlertProvider>
+        <ThemeProvider>
+          <AlertProvider>
+            <AuthProvider>
+              <TrafficTracker />
+              {children}
+              <FeedbackModalPopup />
+            </AuthProvider>
+          </AlertProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

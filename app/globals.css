@@ -1,45 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+:root,
+[data-theme="light"] {
+  --background: #FAF8F5;
+  --foreground: #181716;
+  --bg-primary: #FAF8F5;
+  --bg-card: #F4F1EA;
+  --bg-subtle: #EFECE6;
+  --text-primary: #181716;
+  --text-secondary: #57534E;
+  --text-muted: #8C857B;
+  --border-subtle: rgba(28, 25, 23, 0.12);
+  --accent-orange: #FF8C38;
+}
+
+[data-theme="dark"],
+.dark {
+  --background: #0A0A0A;
+  --foreground: #F5F5F5;
+  --bg-primary: #0A0A0A;
+  --bg-card: #171717;
+  --bg-subtle: #262626;
+  --text-primary: #F5F5F5;
+  --text-secondary: #D4D4D4;
+  --text-muted: #A3A3A3;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --accent-orange: #FF8C38;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-jakarta);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Sleek Modern Scrollbar Styling */
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 15, 20, 0.7);
+  background: var(--bg-card);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.4);
+  background: #555555;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.8);
+  background: var(--accent-orange);
 }
 
-/* Utility to completely hide scrollbar while keeping scroll functionality */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -47,4 +70,15 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom glass backdrop */
+.editorial-glass {
+  background: var(--bg-primary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cursor-ew-resize {
+  cursor: ew-resize;
 }
