@@ -22,7 +22,7 @@ export default function LandingNavbar() {
     { name: "How It Works", href: "#how-it-works" },
     { name: "For Homeowners", href: "#for-homeowners" },
     { name: "For Painters", href: "#for-painters" },
-    { name: "Demo Studio", href: "#interactive-demo" },
+    { name: "3D Designs", href: "/search/designs" },
     { name: "FAQ", href: "#faq" },
   ];
 
@@ -95,12 +95,12 @@ export default function LandingNavbar() {
             >
               Log in
             </Link>
-            <a
-              href="#interactive-demo"
+            <Link
+              href="/search/designs"
               className="inline-flex items-center justify-center px-4.5 py-2.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-sm font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              Try PaintIT free
-            </a>
+              Explore 3D Rooms
+            </Link>
           </div>
 
           {/* Mobile Hamburger Toggle & Theme Switcher */}
@@ -198,13 +198,13 @@ export default function LandingNavbar() {
               >
                 Log in
               </Link>
-              <a
-                href="#interactive-demo"
+              <Link
+                href="/search/designs"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full text-center text-black bg-[#FF8C38] font-bold py-2.5 rounded-lg shadow-sm"
               >
-                Try PaintIT free
-              </a>
+                Explore 3D Rooms
+              </Link>
             </div>
           </motion.div>
         )}

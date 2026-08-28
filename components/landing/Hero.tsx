@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import HeroRoomVisual from "./HeroRoomVisual";
 import { useTheme } from "@/context/ThemeContext";
@@ -65,12 +66,12 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a
-            href="#interactive-demo"
+          <Link
+            href="/search/designs"
             className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-base font-bold shadow-lg hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center"
           >
-            Try PaintIT free
-          </a>
+            Explore 3D Designs
+          </Link>
           <a
             href="#how-it-works"
             className={`w-full sm:w-auto px-8 py-3.5 rounded-full text-base font-semibold border shadow-xs transition-all text-center ${
@@ -95,11 +96,11 @@ export default function Hero() {
           <span className={`font-semibold uppercase tracking-wider text-[11px] ${
             isDark ? "text-neutral-300" : "text-stone-800"
           }`}>
-            Tailored For You:
+            Tailored Path:
           </span>
           <div className="flex items-center gap-2">
-            <a
-              href="#for-homeowners"
+            <Link
+              href="/search/designs"
               className={`px-3.5 py-1.5 rounded-full font-medium transition border ${
                 isDark
                   ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-200"
@@ -107,9 +108,9 @@ export default function Hero() {
               }`}
             >
               🏠 I want to visualize my space
-            </a>
-            <a
-              href="#for-painters"
+            </Link>
+            <Link
+              href="/register?role=painter"
               className={`px-3.5 py-1.5 rounded-full font-medium transition border ${
                 isDark
                   ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-200"
@@ -117,7 +118,7 @@ export default function Hero() {
               }`}
             >
               🎨 I'm a painting professional
-            </a>
+            </Link>
           </div>
         </motion.div>
 

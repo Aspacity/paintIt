@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/context/ThemeContext";
 
 interface FAQItem {
   question: string;
@@ -37,16 +38,20 @@ const FAQS: FAQItem[] = [
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
-    <section id="faq" className="py-16 sm:py-24 bg-neutral-950 text-white">
+    <section id="faq" className={`py-16 sm:py-24 transition-colors duration-300 ${
+      isDark ? "bg-neutral-950 text-white" : "bg-[#FAF8F5] text-stone-900"
+    }`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12 sm:mb-16">
           <span className="text-xs font-bold uppercase tracking-widest text-[#FF8C38] mb-2 block">
             Frequently Asked Questions
           </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white font-sans leading-tight">
+          <h2 className={`text-3xl sm:text-5xl font-bold tracking-tight font-sans leading-tight ${isDark ? "text-white" : "text-stone-900"}`}>
             Clear answers to <span className="font-serif italic text-[#FF8C38]">common questions.</span>
           </h2>
         </div>
@@ -58,16 +63,20 @@ export default function FAQSection() {
             return (
               <div
                 key={faq.question}
-                className="rounded-2xl bg-neutral-900 border border-neutral-800 overflow-hidden transition-all"
+                className={`rounded-2xl border overflow-hidden transition-colors ${
+                  isDark ? "bg-neutral-900 border-neutral-800" : "bg-[#F4F1EA] border-stone-300"
+                }`}
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
                   className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 focus:outline-none"
                 >
-                  <span className="text-base sm:text-lg font-bold text-white">
+                  <span className={`text-base sm:text-lg font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {faq.question}
                   </span>
-                  <span className="w-8 h-8 rounded-full bg-black border border-neutral-800 flex items-center justify-center text-[#FF8C38] font-bold shrink-0 text-sm">
+                  <span className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold shrink-0 text-sm ${
+                    isDark ? "bg-black border-neutral-800 text-[#FF8C38]" : "bg-white border-stone-300 text-stone-800"
+                  }`}>
                     {isOpen ? "−" : "+"}
                   </span>
                 </button>
@@ -81,7 +90,9 @@ export default function FAQSection() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-6 sm:px-6 sm:pb-6 pt-0 text-xs sm:text-sm text-neutral-400 leading-relaxed border-t border-neutral-800/80">
+                      <div className={`px-5 pb-6 sm:px-6 sm:pb-6 pt-0 text-xs sm:text-sm leading-relaxed border-t ${
+                        isDark ? "text-neutral-400 border-neutral-800/80" : "text-stone-600 border-stone-300/50"
+                      }`}>
                         {faq.answer}
                       </div>
                     </motion.div>

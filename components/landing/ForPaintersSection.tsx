@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -49,12 +50,12 @@ export default function ForPaintersSection() {
             </div>
 
             <div>
-              <a
-                href="#interactive-demo"
+              <Link
+                href="/register?role=painter"
                 className="inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-sm font-bold shadow-md transition-all"
               >
                 Explore PaintIT for professionals
-              </a>
+              </Link>
             </div>
           </div>
 

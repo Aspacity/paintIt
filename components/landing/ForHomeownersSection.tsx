@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -135,12 +136,12 @@ export default function ForHomeownersSection() {
               <p className={`text-base font-bold ${isDark ? "text-white" : "text-stone-900"}`}>Explore before you commit.</p>
               <p className={`text-xs ${isDark ? "text-neutral-400" : "text-stone-600"}`}>Save hours of guesswork and eliminate regret before buying paint.</p>
             </div>
-            <a
-              href="#interactive-demo"
+            <Link
+              href="/search/designs"
               className="px-6 py-3 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold shadow-md transition-all shrink-0"
             >
-              Try PaintIT free
-            </a>
+              Explore 3D Rooms
+            </Link>
           </div>
         </div>
       </div>

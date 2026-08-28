@@ -1,11 +1,18 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function FinalCTASection() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
-    <section className="py-20 sm:py-28 bg-black text-white relative overflow-hidden">
+    <section className={`py-20 sm:py-28 relative overflow-hidden transition-colors duration-300 ${
+      isDark ? "bg-black text-white" : "bg-[#1C1917] text-[#FAF8F5]"
+    }`}>
       {/* Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-96 bg-[#FF8C38]/20 blur-[140px] pointer-events-none rounded-full" />
 
@@ -30,22 +37,22 @@ export default function FinalCTASection() {
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#interactive-demo"
+            <Link
+              href="/search/designs"
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-base font-bold shadow-lg hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 text-center"
             >
-              Try PaintIT free
-            </a>
-            <a
-              href="#for-painters"
+              Explore 3D Rooms
+            </Link>
+            <Link
+              href="/register?role=painter"
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-base font-semibold border border-neutral-700 shadow-xs transition-all text-center"
             >
               I'm a professional
-            </a>
+            </Link>
           </div>
 
           <div className="pt-6 text-xs text-neutral-500 font-medium">
-            No credit card required • Instant interactive studio access
+            No credit card required • Instant interactive 3D room access
           </div>
         </motion.div>
       </div>

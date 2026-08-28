@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -82,12 +83,12 @@ export default function TwoSidesSection() {
               </div>
             </div>
 
-            <a
-              href="#interactive-demo"
+            <Link
+              href="/search/designs"
               className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-sm shadow-md transition-all text-center"
             >
               Visualize my space
-            </a>
+            </Link>
           </motion.div>
 
           {/* RIGHT: For Painters */}
@@ -139,14 +140,14 @@ export default function TwoSidesSection() {
               </div>
             </div>
 
-            <a
-              href="#for-painters-section"
+            <Link
+              href="/register?role=painter"
               className={`inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 rounded-full text-sm font-semibold border transition-all text-center ${
                 isDark ? "bg-neutral-800 hover:bg-neutral-700 text-white border-neutral-700" : "bg-[#5A7361] hover:bg-[#4a6150] text-white border-transparent"
               }`}
             >
               I'm a painting professional
-            </a>
+            </Link>
           </motion.div>
         </div>
 
