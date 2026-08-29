@@ -68,8 +68,8 @@ function RegisterFormContent() {
   };
 
   const handleGoogleSignup = () => {
-    showToast({ message: "Google Sign-Up initiated. Redirecting to OAuth provider...", severity: "info" });
-    window.location.href = `${BACKEND_API_URL}/api/auth/google`;
+    showToast({ message: "Initiating Google Sign-Up...", severity: "info" });
+    window.location.href = `${BACKEND_API_URL}/api/auth/google?role=${initialRole}`;
   };
 
   return (

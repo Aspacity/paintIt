@@ -117,7 +117,7 @@ export default function Hero() {
                   : "bg-[#F4F1EA] hover:bg-[#EFECE6] border-stone-300/70 text-stone-800"
               }`}
             >
-              🎨 I'm a painting professional
+              🎨 I&apos;m a painting professional
             </Link>
           </div>
         </motion.div>

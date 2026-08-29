@@ -1,9 +1,10 @@
-// app/(auth)/reset-password/page.tsx
 "use client";
 
 import React, { useState, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("");
@@ -13,10 +14,11 @@ function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // Derived state variables directly from the render cycle
   const emailContext = searchParams?.get("email") || null;
   const tokenContext = searchParams?.get("token") || null;
   const hasValidToken = !!(emailContext && tokenContext && tokenContext.length === 6);
@@ -43,89 +45,111 @@ function ResetPasswordForm() {
         body: JSON.stringify({
           email: emailContext,
           otpCode: tokenContext,
-          newPassword: password
+          newPassword: password,
         }),
       });
 
       if (response.ok) {
-        showToast({ message: "Password updated successfully! Redirecting to login portal.", severity: "success" });
+        showToast({ message: "Password updated successfully! Redirecting to sign in...", severity: "success" });
         setTimeout(() => {
           router.push("/login");
-        }, 1500);
+        }, 1200);
       } else {
         const data = await response.json();
-        showToast({ message: data.error || "Failed to update credentials.", severity: "error" });
+        showToast({ message: data.error || "Failed to update password.", severity: "error" });
       }
-    } catch (err) {
-      console.error("Authentication override network transaction exception:", err);
-      showToast({ message: "Network connection failure.", severity: "error" });
+    } catch {
+      showToast({ message: "Network connection error.", severity: "error" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full max-w-sm bg-neutral-950 border border-neutral-900 rounded-2xl p-6 shadow-2xl text-left space-y-5">
+    <div className="space-y-5 animate-fade-in text-left">
       <div>
-        <h2 className="text-lg font-black tracking-tight uppercase text-neutral-100">Configure Password</h2>
-        <p className="text-xs text-neutral-500 mt-1">Set up your fresh global entry passphrase configuration below.</p>
+        <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Set New Password
+        </h2>
+        <p className={`text-xs mt-1 leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Enter and confirm your new password below.
+        </p>
       </div>
 
       {!hasValidToken && (
         <div className="p-3 text-xs rounded-xl border font-medium bg-red-950/20 border-red-900/40 text-red-400">
-          ⚠️ Missing required token access identifier link.
+          ⚠️ Missing or invalid reset verification code link.
         </div>
       )}
 
-      <form onSubmit={handleResetSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-[10px] uppercase font-black tracking-wider text-neutral-400 block pl-0.5">
-            New Passphrase
+      <form onSubmit={handleResetSubmit} className="space-y-3.5">
+        <div className="space-y-1">
+          <label htmlFor="newPassword" className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            New Password
           </label>
           <input
+            id="newPassword"
             type="password"
             disabled={!hasValidToken}
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 disabled:bg-neutral-950 disabled:text-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors placeholder:text-neutral-700 font-medium"
+            className={`w-full px-3.5 py-2.5 border rounded-xl text-xs transition-colors focus:outline-none focus:border-[#FF8C38] ${
+              isDark
+                ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+            }`}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] uppercase font-black tracking-wider text-neutral-400 block pl-0.5">
-            Confirm New Passphrase
+        <div className="space-y-1">
+          <label htmlFor="confirmPassword" className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Confirm New Password
           </label>
           <input
+            id="confirmPassword"
             type="password"
             disabled={!hasValidToken}
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 disabled:bg-neutral-950 disabled:text-neutral-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors placeholder:text-neutral-700 font-medium"
+            className={`w-full px-3.5 py-2.5 border rounded-xl text-xs transition-colors focus:outline-none focus:border-[#FF8C38] ${
+              isDark
+                ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+            }`}
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting || !password || !confirmPassword || !hasValidToken}
-          className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-900 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-colors shadow-lg mt-2"
+          className="w-full py-3 mt-1 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
         >
-          {isSubmitting ? "Committing Passphrase..." : "Commit New Password"}
+          {isSubmitting ? (
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+          ) : (
+            "Save New Password"
+          )}
         </button>
       </form>
+
+      <div className={`text-center text-xs pt-3 border-t ${isDark ? "border-neutral-800 text-neutral-400" : "border-stone-200 text-stone-600"}`}>
+        Back to{" "}
+        <Link href="/login" className="text-[#FF8C38] font-bold hover:underline">
+          Sign In
+        </Link>
+      </div>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 text-white">
-      <Suspense fallback={<div className="text-neutral-500 text-xs uppercase font-mono tracking-widest animate-pulse">Loading secure tokens...</div>}>
-        <ResetPasswordForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="text-center py-6 text-xs text-neutral-400">Loading password setup...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

@@ -1,10 +1,10 @@
-// app/(auth)/verify-otp/page.tsx
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 function VerifyOTPForm() {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
@@ -17,10 +17,11 @@ function VerifyOTPForm() {
   const searchParams = useSearchParams();
   const { showToast } = useAlert();
   const { login } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // Memoize search query tracking context parameters
   const isRecoveryFlow = useMemo(() => {
     return searchParams?.get("purpose") === "recovery";
   }, [searchParams]);
@@ -49,14 +50,14 @@ function VerifyOTPForm() {
         body: JSON.stringify({
           email: verificationEmail,
           otpCode: completeCode,
-          isRecovery: isRecoveryFlow
+          isRecovery: isRecoveryFlow,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Invalid verification token submission.");
+        throw new Error(data.error || "Invalid verification code.");
       }
 
       showToast({ message: "Account activated successfully!", severity: "success" });
@@ -71,7 +72,7 @@ function VerifyOTPForm() {
             id: data.user.id,
             email: data.user.email,
             fullName: data.user.fullName || data.user.full_name || "User Account",
-            role: data.user.role
+            role: data.user.role,
           });
           router.push(data.user.role === "ADMIN" ? "/admin/playground" : "/dashboard");
         } else {
@@ -79,10 +80,57 @@ function VerifyOTPForm() {
         }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred during verification.";
+      const errorMessage = err instanceof Error ? err.message : "Verification error occurred.";
       showToast({ message: errorMessage, severity: "error" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const processPastedCode = (pastedText: string) => {
+    const digitsOnly = pastedText.replace(/[^0-9]/g, "").substring(0, 6);
+    if (digitsOnly.length > 0) {
+      const newOtp = new Array(6).fill("");
+      for (let i = 0; i < digitsOnly.length; i++) {
+        newOtp[i] = digitsOnly[i];
+      }
+      setOtp(newOtp);
+
+      if (digitsOnly.length === 6) {
+        showToast({ message: "6-digit code detected! Verifying...", severity: "info" });
+        if (inputRefs.current[5]) {
+          inputRefs.current[5].focus();
+        }
+        triggerAutoSubmit(digitsOnly);
+      } else {
+        const nextIndex = Math.min(digitsOnly.length, 5);
+        if (inputRefs.current[nextIndex]) {
+          inputRefs.current[nextIndex].focus();
+        }
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    processPastedCode(pastedData);
+  };
+
+  const handleClipboardButtonClick = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const clipboardText = await navigator.clipboard.readText();
+        if (clipboardText) {
+          processPastedCode(clipboardText);
+        } else {
+          showToast({ message: "Clipboard is empty.", severity: "info" });
+        }
+      } else {
+        showToast({ message: "Please use Ctrl+V / Cmd+V on any digit box to paste.", severity: "info" });
+      }
+    } catch {
+      showToast({ message: "Paste using Ctrl+V or Cmd+V directly in the input boxes.", severity: "info" });
     }
   };
 
@@ -109,29 +157,16 @@ function VerifyOTPForm() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === "Backspace") {
       const newOtp = [...otp];
-      newOtp[index] = "";
-      setOtp(newOtp);
-
-      if (index > 0 && inputRefs.current[index - 1]) {
-        inputRefs.current[index - 1].focus();
+      if (newOtp[index] !== "") {
+        newOtp[index] = "";
+        setOtp(newOtp);
+      } else if (index > 0) {
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        if (inputRefs.current[index - 1]) {
+          inputRefs.current[index - 1].focus();
+        }
       }
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/[^0-9]/g, "").substring(0, 6);
-
-    if (pastedData.length === 6) {
-      const pastedArray = pastedData.split("");
-      setOtp(pastedArray);
-
-      if (inputRefs.current[5]) {
-        inputRefs.current[5].focus();
-        inputRefs.current[5].blur();
-      }
-
-      triggerAutoSubmit(pastedData);
     }
   };
 
@@ -150,7 +185,7 @@ function VerifyOTPForm() {
   const handleResendOtpCode = async () => {
     const verificationEmail = sessionStorage.getItem("paintit_verification_email");
     if (!verificationEmail) {
-      showToast({ message: "Verification context expired. Please clear profile vectors.", severity: "error" });
+      showToast({ message: "Verification session expired. Please request again.", severity: "error" });
       return;
     }
 
@@ -164,12 +199,12 @@ function VerifyOTPForm() {
         body: JSON.stringify({ email: verificationEmail }),
       });
 
-      if (!response.ok) throw new Error("Failed to dispatch fresh OTP token.");
+      if (!response.ok) throw new Error("Failed to dispatch fresh OTP code.");
 
-      showToast({ message: "A fresh 6-digit code has been sent to your email inbox.", severity: "success" });
+      showToast({ message: "A fresh 6-digit code has been sent to your email.", severity: "success" });
       setCountdown(60);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to resend activation pin.";
+      const errorMessage = err instanceof Error ? err.message : "Failed to resend code.";
       showToast({ message: errorMessage, severity: "error" });
     } finally {
       setResending(false);
@@ -177,20 +212,23 @@ function VerifyOTPForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl text-white text-center">
-      <div className="mb-6">
-        <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-          <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="space-y-5 animate-fade-in text-center">
+      <div>
+        <div className="w-12 h-12 bg-[#FF8C38]/15 border border-[#FF8C38]/30 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+          <svg className="w-6 h-6 text-[#FF8C38]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.952 11.952 0 01-7.618 3.013C5.4 10.016 7.421 17.152 12 21a11.955 11.955 0 007.618-15.043z" />
           </svg>
         </div>
-        <h2 className="text-xl font-black tracking-tight text-neutral-100">Verify Your Account</h2>
-        <p className="text-xs text-neutral-500 mt-1.5 px-4">
-          Enter the 6-digit security code sent via our email infrastructure.
+        <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Verify Your Account
+        </h2>
+        <p className={`text-xs mt-1.5 px-2 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Enter or paste the 6-digit security code sent to your email.
         </p>
       </div>
 
-      <form onSubmit={handleSubmitVerification} className="space-y-6">
+      <form onSubmit={handleSubmitVerification} className="space-y-4">
+        {/* 6 Digit Input Grid */}
         <div className="grid grid-cols-6 max-w-xs mx-auto gap-2">
           {otp.map((data, index) => (
             <input
@@ -204,35 +242,56 @@ function VerifyOTPForm() {
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
-              className="w-full aspect-[6/7] bg-neutral-950 border border-neutral-800 text-center text-xl font-black text-emerald-400 rounded-xl focus:border-emerald-500 focus:outline-none transition-all flex items-center justify-center p-0"
+              className={`w-full aspect-square border text-center text-lg font-bold rounded-xl focus:border-[#FF8C38] focus:outline-none transition-all flex items-center justify-center p-0 ${
+                isDark
+                  ? "bg-black border-neutral-800 text-[#FF8C38]"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900"
+              }`}
             />
           ))}
+        </div>
+
+        {/* Quick Paste Code Action */}
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleClipboardButtonClick}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 ${
+              isDark
+                ? "bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-neutral-700"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-300"
+            }`}
+          >
+            <span>📋</span>
+            <span>Paste Code from Clipboard</span>
+          </button>
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-neutral-800 disabled:text-neutral-600 text-neutral-950 font-black text-sm rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
+          className="w-full py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
         >
           {submitting ? (
-            <div className="w-4 h-4 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
           ) : (
-            "Verify Security Key"
+            "Verify & Continue"
           )}
         </button>
       </form>
 
-      <div className="mt-6 text-xs text-neutral-500">
+      {/* Resend Code Section */}
+      <div className={`text-xs pt-3 border-t ${isDark ? "border-neutral-800 text-neutral-400" : "border-stone-200 text-stone-600"}`}>
         Didn&apos;t receive the code?{" "}
         {countdown > 0 ? (
-          <span className="text-neutral-400 font-medium">Resend in {countdown}s</span>
+          <span className="font-semibold text-neutral-500">Resend in {countdown}s</span>
         ) : (
           <button
             onClick={handleResendOtpCode}
             disabled={resending}
-            className="text-emerald-400 font-bold hover:underline bg-transparent border-none outline-none cursor-pointer"
+            className="text-[#FF8C38] font-bold hover:underline bg-transparent border-none outline-none cursor-pointer"
           >
-            {resending ? "Dispatching..." : "Resend Code"}
+            {resending ? "Sending..." : "Resend Code"}
           </button>
         )}
       </div>
@@ -242,10 +301,8 @@ function VerifyOTPForm() {
 
 export default function VerifyOtpPage() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 text-white">
-      <Suspense fallback={<div className="text-neutral-500 text-xs uppercase font-mono tracking-widest animate-pulse">Loading secure session keys...</div>}>
-        <VerifyOTPForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="text-center py-6 text-xs text-neutral-400">Loading verification session...</div>}>
+      <VerifyOTPForm />
+    </Suspense>
   );
 }

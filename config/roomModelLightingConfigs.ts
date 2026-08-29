@@ -108,8 +108,7 @@ export const ROOM_MODEL_LIGHTING_REGISTRY: Record<string, ModelLightingConfig> =
 };
 
 /**
- * Retrieves the saved bulb/lighting configuration for a given 3D room model URL.
- * Checks LocalStorage first (for dynamic user edits), then falls back to the code registry.
+ * Synchronously retrieves cached lighting configuration from LocalStorage or code fallback.
  */
 export function getSavedModelLightingConfig(modelUrl: string): ModelLightingConfig | null {
   if (!modelUrl) return null;
@@ -139,9 +138,45 @@ export function getSavedModelLightingConfig(modelUrl: string): ModelLightingConf
 }
 
 /**
- * Saves/Updates the lighting & bulb configuration for a 3D model in LocalStorage & Registry.
+ * Asynchronously fetches global online lightbulb & sun configuration from Neon PostgreSQL Database.
  */
-export function saveModelLightingConfig(config: ModelLightingConfig): void {
+export async function fetchOnlineModelLightingConfig(modelUrl: string): Promise<ModelLightingConfig | null> {
+  if (!modelUrl) return null;
+
+  try {
+    const res = await fetch(`/api/models/lighting?model_url=${encodeURIComponent(modelUrl)}`, {
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.bulbs) && data.bulbs.length > 0) {
+        const config: ModelLightingConfig = {
+          modelUrl: data.modelUrl || modelUrl,
+          sunAzimuth: data.sunAzimuth,
+          sunElevation: data.sunElevation,
+          sunIntensity: data.sunIntensity,
+          ambientIntensity: data.ambientIntensity,
+          timeOfDay: data.timeOfDay,
+          bulbs: data.bulbs,
+        };
+
+        // Cache in LocalStorage and memory registry
+        saveModelLightingConfigLocal(config);
+        return config;
+      }
+    }
+  } catch (err) {
+    console.warn("⚠️ Failed to fetch global model lighting from Neon Database:", err);
+  }
+
+  return getSavedModelLightingConfig(modelUrl);
+}
+
+/**
+ * Saves/Updates local cache in LocalStorage & memory registry.
+ */
+export function saveModelLightingConfigLocal(config: ModelLightingConfig): void {
   if (!config.modelUrl) return;
 
   if (typeof window !== "undefined") {
@@ -153,6 +188,33 @@ export function saveModelLightingConfig(config: ModelLightingConfig): void {
     }
   }
 
-  // Update memory registry
   ROOM_MODEL_LIGHTING_REGISTRY[config.modelUrl] = config;
+}
+
+/**
+ * Saves the lightbulb and sun configuration globally to Neon PostgreSQL Database AND local cache.
+ */
+export async function saveModelLightingConfigGlobal(config: ModelLightingConfig): Promise<boolean> {
+  if (!config.modelUrl) return false;
+
+  // 1. Update local cache immediately
+  saveModelLightingConfigLocal(config);
+
+  // 2. Persist globally to Neon PostgreSQL Database via API
+  try {
+    const res = await fetch("/api/models/lighting", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    });
+
+    if (res.ok) {
+      console.log("🌐 Lightbulb & Sun configuration saved globally to Neon Cloud DB!");
+      return true;
+    }
+  } catch (err) {
+    console.warn("⚠️ Failed to sync lightbulb setup to online Neon Database:", err);
+  }
+
+  return false;
 }

@@ -9,7 +9,8 @@ import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures"
 import { OfflineSyncBanner } from "@/components/ui/OfflineSyncBanner";
 import {
   getSavedModelLightingConfig,
-  saveModelLightingConfig,
+  fetchOnlineModelLightingConfig,
+  saveModelLightingConfigGlobal,
 } from "@/config/roomModelLightingConfigs";
 
 // ============================================================================
@@ -742,22 +743,34 @@ export default function PaintItMasterCanvas({
     ];
   });
 
-  // Automatically load model's saved bulbs whenever config.modelUrl changes!
+  // Automatically load model's saved bulbs from Neon Cloud Database whenever config.modelUrl changes!
   useEffect(() => {
+    let isSubscribed = true;
     if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
       setBulbs(config.bulbs);
     } else if (config.modelUrl) {
-      const savedModelConfig = getSavedModelLightingConfig(config.modelUrl);
-      if (savedModelConfig && Array.isArray(savedModelConfig.bulbs) && savedModelConfig.bulbs.length > 0) {
-        setBulbs(savedModelConfig.bulbs);
+      // 1. Instantly populate from local cache/registry
+      const localConfig = getSavedModelLightingConfig(config.modelUrl);
+      if (localConfig && Array.isArray(localConfig.bulbs) && localConfig.bulbs.length > 0) {
+        setBulbs(localConfig.bulbs);
       }
+
+      // 2. Fetch global online lighting configuration from Neon PostgreSQL Database
+      fetchOnlineModelLightingConfig(config.modelUrl).then((onlineConfig) => {
+        if (isSubscribed && onlineConfig && Array.isArray(onlineConfig.bulbs) && onlineConfig.bulbs.length > 0) {
+          setBulbs(onlineConfig.bulbs);
+        }
+      });
     }
+    return () => {
+      isSubscribed = false;
+    };
   }, [config.modelUrl, config.bulbs]);
 
-  // Auto-Save Bulb Changes per 3D Model
+  // Auto-Save Bulb Changes per 3D Model Globally to Neon Database
   useEffect(() => {
     if (config.modelUrl && bulbs.length > 0) {
-      saveModelLightingConfig({
+      saveModelLightingConfigGlobal({
         modelUrl: config.modelUrl,
         sunAzimuth: config.sunAzimuthOverride,
         sunElevation: config.sunElevationOverride,
@@ -1587,23 +1600,34 @@ export default function PaintItMasterCanvas({
                         </div>
                       )}
 
-                      {/* 💾 Save Custom Sun Setup per Project (ADMIN ONLY) */}
-                      {config.isAdmin && onSaveLightingConfig && (
+                      {/* 💾 Save Custom Sun Setup per Project Globally to Neon Database (ADMIN ONLY) */}
+                      {config.isAdmin && (
                         <button
-                          onClick={() =>
-                            onSaveLightingConfig({
-                              timeOfDay: (config.timeOfDay as LightingPresetKey) || "morning",
-                              azimuth: config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135,
-                              elevation: config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35,
-                              intensity: config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8,
-                              ambient: config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5,
-                              color: config.sunColorOverride,
+                          onClick={async () => {
+                            await saveModelLightingConfigGlobal({
+                              modelUrl: config.modelUrl,
+                              sunAzimuth: config.sunAzimuthOverride,
+                              sunElevation: config.sunElevationOverride,
+                              sunIntensity: config.sunIntensityOverride,
+                              ambientIntensity: config.ambientIntensityOverride,
+                              timeOfDay: config.timeOfDay,
                               bulbs,
-                            })
-                          }
+                            });
+                            if (onSaveLightingConfig) {
+                              onSaveLightingConfig({
+                                timeOfDay: (config.timeOfDay as LightingPresetKey) || "morning",
+                                azimuth: config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135,
+                                elevation: config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35,
+                                intensity: config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8,
+                                ambient: config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5,
+                                color: config.sunColorOverride,
+                                bulbs,
+                              });
+                            }
+                          }}
                           className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5"
                         >
-                          💾 Save Sun Setup
+                          💾 Save Sun & Light Setup (Global DB)
                         </button>
                       )}
                     </div>

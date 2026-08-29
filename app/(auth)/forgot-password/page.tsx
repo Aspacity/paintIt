@@ -1,106 +1,100 @@
-// app/forgot-password/page.tsx
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/navigation"; // Changed to next/navigation for router management
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedbackBanner, setFeedbackBanner] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const router = useRouter();
+  const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email.trim()) return;
 
     setIsSubmitting(true);
-    setFeedbackBanner(null);
-
     try {
       const response = await fetch(`${BACKEND_API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Mailing interface dropped.");
+      if (!response.ok) throw new Error(data.error || "Failed to send reset code.");
 
-      // ✅ FIX: Save the email context so verify-otp can read it for recovery verification
       sessionStorage.setItem("paintit_verification_email", email.toLowerCase().trim());
+      showToast({ message: "Reset code sent! Redirecting to verification...", severity: "success" });
 
-      setFeedbackBanner({ type: "success", msg: data.message });
-      setEmail("");
-
-      // ✅ FIX: Give the user time to read the message, then route them straight to verify-otp
       setTimeout(() => {
         router.push("/verify-otp?purpose=recovery");
-      }, 1500);
+      }, 1200);
 
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Network transaction aborted.";
-      setFeedbackBanner({ type: "error", msg });
+      const msg = err instanceof Error ? err.message : "Network error occurred.";
+      showToast({ message: msg, severity: "error" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 text-white">
-      <div className="w-full max-w-sm bg-neutral-950 border border-neutral-900 rounded-2xl p-6 shadow-2xl text-left space-y-5">
+    <div className="space-y-5 animate-fade-in text-left">
+      <div>
+        <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Recover Account Password
+        </h2>
+        <p className={`text-xs mt-1 leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Enter your registered email address to receive a 6-digit security code.
+        </p>
+      </div>
 
-        <div>
-          <h2 className="text-lg font-black tracking-tight uppercase text-neutral-100">Recover Account</h2>
-          <p className="text-xs text-neutral-500 mt-1">Enter your registered email address to receive a secure code to reset your account credentials.</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-1">
+          <label htmlFor="recoveryEmail" className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Registered Email
+          </label>
+          <input
+            id="recoveryEmail"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="sarah@example.com"
+            className={`w-full px-3.5 py-2.5 border rounded-xl text-xs transition-colors focus:outline-none focus:border-[#FF8C38] ${
+              isDark
+                ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+            }`}
+          />
         </div>
 
-        {feedbackBanner && (
-          <div className={`p-3 text-xs rounded-xl border font-medium ${feedbackBanner.type === "success"
-              ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-400"
-              : "bg-red-950/20 border-red-900/40 text-red-400"
-            }`}>
-            {feedbackBanner.type === "success" ? "✅" : "⚠️"} {feedbackBanner.msg}
-          </div>
-        )}
+        <button
+          type="submit"
+          disabled={isSubmitting || !email.trim()}
+          className="w-full py-3 mt-1 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          {isSubmitting ? (
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+          ) : (
+            "Send Reset Code"
+          )}
+        </button>
+      </form>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-wider text-neutral-400 block pl-0.5">
-              Registered Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="painter@example.com"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors placeholder:text-neutral-600 font-medium"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !email}
-            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-900 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-colors shadow-lg"
-          >
-            {isSubmitting ? "Sending Reset Code..." : "Send Reset Link"}
-          </button>
-        </form>
-
-        <div className="text-center pt-2 border-t border-neutral-900/40">
-          <button
-            type="button"
-            onClick={() => router.push("/login")}
-            className="text-[11px] font-bold text-neutral-500 hover:text-emerald-400 transition-colors uppercase tracking-wider block mx-auto bg-transparent border-none outline-none cursor-pointer"
-          >
-            ← Return to login portal
-          </button>
-        </div>
-
+      <div className={`text-center text-xs pt-3 border-t ${isDark ? "border-neutral-800 text-neutral-400" : "border-stone-200 text-stone-600"}`}>
+        Remember your password?{" "}
+        <Link href="/login" className="text-[#FF8C38] font-bold hover:underline">
+          Return to Sign In
+        </Link>
       </div>
     </div>
   );
