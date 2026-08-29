@@ -77,7 +77,7 @@ export default function ConnectionStorySection() {
               ✨
             </div>
             <span className="text-xs font-bold text-[#FF8C38] uppercase tracking-wider block">
-              2. PaintIT Studio
+              2. PaintIT Platform
             </span>
             <blockquote className="text-xl font-serif italic leading-snug">
               "Let's see it."

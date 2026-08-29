@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useTheme } from "@/context/ThemeContext";
+import Logo from "@/components/common/Logo";
 
 export default function FooterSection() {
   const { theme } = useTheme();
@@ -16,39 +17,14 @@ export default function FooterSection() {
         <div className={`grid grid-cols-1 md:grid-cols-5 gap-10 pb-12 border-b ${
           isDark ? "border-neutral-800" : "border-stone-800"
         }`}>
-          {/* Brand Column & Aspacity Acknowledgement */}
+          {/* Brand Column */}
           <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#FF8C38] text-black flex items-center justify-center font-bold text-sm tracking-widest">
-                P
-              </div>
-              <span className="font-semibold text-white tracking-tight text-lg font-sans">
-                PaintIT<span className="text-[#FF8C38] font-bold">.</span>
-              </span>
-            </Link>
+            <Logo size="md" textColor="text-white" />
             <p className="text-neutral-400 text-sm max-w-sm leading-relaxed font-normal">
-              Visualizing better spaces, one colour at a time. The 3D room visualization platform for homeowners and painting contractors.
+              Visualizing better spaces, one colour at a time. The architectural visualization platform for homeowners and painting contractors.
             </p>
-            
-            {/* 🏢 ASPACITY COMPANY ACKNOWLEDGEMENT CARD & LINK */}
-            <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 space-y-1.5 max-w-sm">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="font-mono text-neutral-400 font-bold uppercase tracking-wider">
-                  PARENT TECHNOLOGY COMPANY
-                </span>
-                <a
-                  href="https://aspacity.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#FF8C38] hover:underline font-bold flex items-center gap-1 font-mono text-[10px]"
-                >
-                  <span>Explore Aspacity</span>
-                  <span>➔</span>
-                </a>
-              </div>
-              <p className="text-[11px] text-neutral-400 leading-snug">
-                PaintIT is a product by <a href="https://aspacity.vercel.app" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#FF8C38] underline font-semibold">Aspacity</a> — building software products that connect people, professionals, creativity, and technology.
-              </p>
+            <div className="pt-2 text-neutral-500 font-mono text-[11px]">
+              Core Positioning: <span className="text-[#FF8C38] font-semibold">Visualize before you paint.</span>
             </div>
           </div>
 
@@ -74,8 +50,8 @@ export default function FooterSection() {
                 </a>
               </li>
               <li>
-                <a href="#interactive-demo" className="hover:text-white transition">
-                  Interactive Demo
+                <a href="/search/designs" className="hover:text-white transition">
+                  3D Designs
                 </a>
               </li>
             </ul>
@@ -88,14 +64,8 @@ export default function FooterSection() {
             </h4>
             <ul className="space-y-2 font-medium">
               <li>
-                <a
-                  href="https://aspacity.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition flex items-center gap-1"
-                >
-                  <span>Aspacity Company</span>
-                  <span className="text-[10px] text-[#FF8C38]">↗</span>
+                <a href="#faq" className="hover:text-white transition">
+                  About Stage
                 </a>
               </li>
               <li>
@@ -104,8 +74,8 @@ export default function FooterSection() {
                 </a>
               </li>
               <li>
-                <a href="mailto:contact@aspacity.com" className="hover:text-white transition">
-                  Contact Us
+                <a href="mailto:contact@paintit.app" className="hover:text-white transition">
+                  Contact Support
                 </a>
               </li>
             </ul>
@@ -139,17 +109,15 @@ export default function FooterSection() {
         {/* Bottom Social & Copyright Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500">
           <div>
-            © {new Date().getFullYear()} PaintIT — A product by <a href="https://aspacity.vercel.app" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-[#FF8C38] underline font-semibold">Aspacity</a>. All rights reserved.
+            © {new Date().getFullYear()} PaintIT. All rights reserved. Built for visual spatial decisions.
           </div>
 
-          <div className="flex items-center gap-4 text-neutral-400 font-medium">
-            <a href="https://aspacity.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-[#FF8C38] transition">
-              Aspacity Ecosystem
-            </a>
-            <span>•</span>
-            <a href="#early-access" className="text-[#FF8C38] hover:underline font-bold">
-              Early Access
-            </a>
+          {/* Social Placeholders */}
+          <div className="flex items-center gap-5">
+            <span className="hover:text-white transition cursor-pointer">Instagram</span>
+            <span className="hover:text-white transition cursor-pointer">TikTok</span>
+            <span className="hover:text-white transition cursor-pointer">LinkedIn</span>
+            <span className="hover:text-white transition cursor-pointer">X</span>
           </div>
         </div>
       </div>

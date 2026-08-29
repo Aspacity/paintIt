@@ -1,8 +1,8 @@
-// app/(public)/search/painters/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 interface PainterProfile {
   id: string;
@@ -18,6 +18,8 @@ export default function PublicPainterSearchPage() {
   const [painters, setPainters] = useState<PainterProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -44,52 +46,69 @@ export default function PublicPainterSearchPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-white selection:bg-emerald-500 selection:text-black">
+    <div className={`space-y-6 max-w-7xl mx-auto animate-fade-in pb-16 transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
 
       {/* Top Banner Control Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100">Verified Pro Contractors</h1>
-          <p className="text-xs text-neutral-500 mt-0.5">Explore premium finishes, verified records, and real-time project deep-links.</p>
+          <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+            Verified Professional Contractors
+          </h1>
+          <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Explore verified painting contractors, past portfolios, and request project quotes directly.
+          </p>
         </div>
 
         <input
           type="text"
-          placeholder="Search by name or location (e.g., Ibadan)..."
+          placeholder="Search by name or location..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-4 py-2.5 bg-neutral-950 border border-neutral-900 rounded-xl text-xs w-full md:max-w-sm focus:outline-none focus:border-emerald-500/30 transition-all text-neutral-200 font-medium"
+          className={`px-4 py-2.5 border rounded-xl text-xs w-full md:max-w-sm transition-all font-medium focus:outline-none focus:border-[#FF8C38] ${
+            isDark
+              ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+              : "bg-white border-stone-300 text-stone-900 placeholder:text-stone-400"
+          }`}
         />
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 space-y-3">
-          <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] uppercase font-black tracking-widest text-neutral-600">Reindexing Providers...</span>
+          <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
+          <span className={`text-[10px] uppercase font-bold tracking-widest ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>
+            Reindexing Providers...
+          </span>
         </div>
       ) : filteredPainters.length === 0 ? (
-
-        /* ✅ ULTRAPR_EMIUM ZERO STATE MISS HANDLER CONTAINER */
-        <div className="text-center py-16 border border-dashed border-neutral-900 rounded-3xl max-w-md mx-auto bg-neutral-950/10 space-y-4 px-6">
-          <div className="w-10 h-10 rounded-xl bg-neutral-900/50 border border-neutral-850 flex items-center justify-center mx-auto text-base shadow-inner select-none">
+        <div className={`text-center py-16 border border-dashed rounded-3xl max-w-md mx-auto space-y-4 px-6 ${
+          isDark ? "border-neutral-800 bg-neutral-950/30" : "border-stone-300 bg-white"
+        }`}>
+          <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mx-auto text-base shadow-xs select-none ${
+            isDark ? "bg-neutral-900 border-neutral-800" : "bg-stone-100 border-stone-200"
+          }`}>
             🔍
           </div>
           <div className="space-y-1">
-            <h3 className="text-xs font-black uppercase tracking-wide text-neutral-300">
-              No Contractors Found for <span className="text-emerald-400 font-mono italic select-all font-bold">&quot;{searchQuery}&quot;</span>
+            <h3 className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>
+              No Contractors Found for <span className="text-[#FF8C38] font-mono italic select-all font-bold">&quot;{searchQuery}&quot;</span>
             </h3>
-            <p className="text-[11px] text-neutral-500 leading-relaxed max-w-xs mx-auto">
-              We couldn&apos;t match that string parameter to any registered locations or company records.
+            <p className={`text-xs max-w-xs mx-auto ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+              We couldn&apos;t match that query to any registered painter profile or location.
             </p>
           </div>
 
-          {/* Action Helper Link reset anchor */}
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="text-[10px] bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-emerald-400 font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all select-none"
+            className="text-[10px] bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-sm"
           >
-            ← Clear Parameters & Reset Filter
+            ← Reset Filter
           </button>
         </div>
       ) : (
@@ -98,39 +117,52 @@ export default function PublicPainterSearchPage() {
           {filteredPainters.map((painter) => (
             <div
               key={painter.id}
-              className="group bg-neutral-950 border border-neutral-900 hover:border-neutral-800 rounded-2xl p-5 flex flex-col justify-between shadow-xl transition-all duration-200"
+              className={`group border rounded-2xl p-5 flex flex-col justify-between shadow-md transition-all duration-200 ${
+                isDark
+                  ? "bg-neutral-950 border-neutral-900 hover:border-[#FF8C38]/50"
+                  : "bg-white border-stone-200 hover:border-[#FF8C38]"
+              }`}
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center font-black text-xs text-emerald-400 tracking-wider overflow-hidden shrink-0 select-none">
+                  <div className="w-11 h-11 rounded-xl bg-[#FF8C38] text-black flex items-center justify-center font-bold text-sm tracking-wider overflow-hidden shrink-0 select-none shadow-xs">
                     {painter.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={painter.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span>{painter.full_name.charAt(0).toUpperCase()}</span>
                     )}
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-neutral-200 group-hover:text-emerald-400 transition-colors uppercase tracking-wide">
+                    <h3 className={`text-sm font-bold uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors ${
+                      isDark ? "text-white" : "text-stone-900"
+                    }`}>
                       {painter.full_name}
                     </h3>
-                    <p className="text-[11px] text-neutral-500 mt-0.5">📍 {painter.location}</p>
+                    <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>📍 {painter.location}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-neutral-900/60 text-[10px] font-bold text-neutral-400 select-none">
-                  <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 rounded">🛡️ {painter.experience_rating}</span>
+                <div className={`flex items-center gap-2 pt-2 border-t text-[10px] font-medium select-none ${
+                  isDark ? "border-neutral-900 text-neutral-400" : "border-stone-200 text-stone-600"
+                }`}>
+                  <span className={`px-2 py-0.5 border rounded ${
+                    isDark ? "bg-black border-neutral-800" : "bg-stone-100 border-stone-200"
+                  }`}>🛡️ {painter.experience_rating}</span>
                   {painter.total_showcases > 0 && (
-                    <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 rounded">📸 {painter.total_showcases} Works</span>
+                    <span className={`px-2 py-0.5 border rounded ${
+                      isDark ? "bg-black border-neutral-800" : "bg-stone-100 border-stone-200"
+                    }`}>📸 {painter.total_showcases} Works</span>
                   )}
                 </div>
               </div>
 
-              <div className="pt-5 mt-4 border-t border-neutral-900/40">
+              <div className={`pt-4 mt-4 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
                 <Link
                   href={`/painter/${painter.id}`}
-                  className="block w-full py-2.5 bg-neutral-900 hover:bg-emerald-500 border border-neutral-850 hover:border-emerald-500 text-center text-xs font-black uppercase tracking-wider text-neutral-300 hover:text-black rounded-xl transition-all"
+                  className="block w-full py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-center text-xs font-bold uppercase tracking-wider text-black rounded-xl transition-all shadow-sm"
                 >
-                  View Profile & Studio ➔
+                  View Profile & Portfolio ➔
                 </Link>
               </div>
             </div>

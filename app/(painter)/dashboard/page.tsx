@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 import { StepOnboarding } from "@/components/ui/StepOnboarding";
 import { OnboardingStep } from "@/types/index";
-import { MicroVideoCarousel } from "@/components/ui/MicroVideoCarousel";
 
 interface DashboardStats {
   profileViews: number;
@@ -29,6 +29,8 @@ interface ProfileCompletenessCheck {
 export default function PainterDashboardPage() {
   const { user, accessToken, updateUser } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [contentMetrics, setContentMetrics] = useState<ContentMetrics>({ totalProjects: 0, totalImages: 0 });
@@ -124,8 +126,10 @@ export default function PainterDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] w-full flex items-center justify-center">
-        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className={`min-h-[50vh] w-full flex items-center justify-center ${
+        isDark ? "text-white" : "text-stone-900"
+      }`}>
+        <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -153,7 +157,7 @@ export default function PainterDashboardPage() {
     },
     {
       id: "location",
-      label: "Set Your City or Area",
+      label: "Set Your Location",
       isComplete: isLocationConfigured,
       nudgeText: "Helps homeowners find your business when looking for local painters in your area.",
     },
@@ -161,7 +165,7 @@ export default function PainterDashboardPage() {
       id: "bio",
       label: "Fill Out Your About Description",
       isComplete: isBioConfigured,
-      nudgeText: "Describe your professional skills and styling techniques to attract high-paying jobs.",
+      nudgeText: "Describe your professional skills and techniques to attract high-paying jobs.",
     },
     {
       id: "projects",
@@ -183,19 +187,8 @@ export default function PainterDashboardPage() {
     { id: 4, label: "Share Profile Link", description: "Send your web link directly to potential clients." },
   ];
 
-  // Pre-Loaded 3D Room Color Presets for Instant Client Sharing
-  const preloadedPresets = [
-    { id: "satin_alabaster", name: "Alabaster White & Cream", hex: "#F2EFE9", badge: "Most Popular" },
-    { id: "royal_navy", name: "Royal Navy & Gold Accent", hex: "#1B2A4A", badge: "Trending" },
-    { id: "emerald_luxe", name: "Emerald Luxe Living Room", hex: "#0F382C", badge: "Premium" },
-    { id: "warm_greige", name: "Warm Greige & Earthy Tan", hex: "#9E9585", badge: "Modern" },
-  ];
-
-  const handleShareToWhatsAppStatus = (presetName?: string) => {
-    const text = presetName
-      ? `🎨 See how ${presetName} wall paint looks in 3D before you buy! Check out my 3D Painting Portfolio & request a quote: ${businessPageLink}`
-      : `🎨 Want to see 3D previews of your wall colors before buying paint? Check out my professional painting portfolio & request a quote: ${businessPageLink}`;
-
+  const handleShareToWhatsAppStatus = () => {
+    const text = `🎨 Want to see 3D previews of your wall colors before buying paint? Check out my professional painting portfolio & request a quote: ${businessPageLink}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
     showToast({ message: "Opening WhatsApp share...", severity: "success" });
@@ -204,13 +197,15 @@ export default function PainterDashboardPage() {
   const isBrandNewAccount = !hasUploadedWork && !isProfileCompleted && leadCount === 0 && (!stats || (stats.profileViews === 0 && stats.designViews === 0));
 
   return (
-    <div className="space-y-6 text-white animate-fade-in max-w-md mx-auto md:max-w-none pb-12 selection:bg-emerald-500 selection:text-black">
+    <div className="space-y-6 animate-fade-in max-w-md mx-auto md:max-w-none pb-12">
       {/* Header Context Block */}
-      <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
+      <div className={`flex items-center justify-between border-b pb-4 ${
+        isDark ? "border-neutral-900 text-white" : "border-stone-200 text-stone-900"
+      }`}>
         <div className="flex items-center gap-3">
           <a
             href="/profile"
-            className="w-10 h-10 rounded-xl bg-neutral-950 mercantile-border hover:border-emerald-500/30 flex items-center justify-center font-black text-sm text-emerald-400 tracking-wider overflow-hidden transition-all relative group shadow-inner shrink-0 select-none"
+            className="w-10 h-10 rounded-xl bg-[#FF8C38] text-black flex items-center justify-center font-bold text-sm tracking-wider overflow-hidden transition-all shadow-xs shrink-0 select-none"
           >
             {userAvatarImageSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -220,36 +215,40 @@ export default function PainterDashboardPage() {
             )}
           </a>
           <div>
-            <h1 className="text-base font-black text-neutral-100">
-              Welcome, <span className="text-emerald-400">{displayFirstName}</span> 👋
+            <h1 className={`text-base sm:text-lg font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
+              Welcome, <span className="text-[#FF8C38]">{displayFirstName}</span> 👋
             </h1>
-            <p className="text-[11px] text-neutral-500 mt-0.5 font-medium">Your business dashboard & sales hub.</p>
+            <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>Your business dashboard & sales hub.</p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => handleShareToWhatsAppStatus()}
-          className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-1.5 select-none active:scale-95"
+          className="px-3.5 py-2 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0"
         >
-          <span>💬 Share to WhatsApp</span>
+          <span>💬 Share Link</span>
         </button>
       </div>
 
-      {/* 🚀 VIRAL WHATSAPP SALES CARD FOR PAINTERS */}
-      <div className="p-5 bg-gradient-to-r from-emerald-950/40 via-neutral-950 to-neutral-950 border border-emerald-500/30 rounded-3xl space-y-3 shadow-2xl relative overflow-hidden">
+      {/* WHATSAPP SALES CARD FOR PAINTERS */}
+      <div className={`p-5 border rounded-3xl space-y-3 shadow-md relative overflow-hidden ${
+        isDark ? "bg-neutral-950 border-neutral-800 text-white" : "bg-white border-stone-200 text-stone-900"
+      }`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <h3 className="text-xs font-black uppercase text-emerald-400 flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase text-[#FF8C38] flex items-center gap-1.5">
               <span>🚀 Win Clients Faster on WhatsApp</span>
             </h3>
-            <p className="text-[11px] text-neutral-300 leading-relaxed font-medium max-w-xl">
-              Post your PaintIt business link to your WhatsApp Status or send it to prospective clients so they can see 3D wall color previews before hiring you!
+            <p className={`text-xs leading-relaxed font-normal max-w-xl ${
+              isDark ? "text-neutral-300" : "text-stone-600"
+            }`}>
+              Post your PaintIT business link to your WhatsApp Status or send it to clients so they can see 3D wall color previews before hiring you!
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => handleShareToWhatsAppStatus()}
-              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5"
             >
               <span>💬 Post to Status</span>
             </button>
@@ -258,7 +257,9 @@ export default function PainterDashboardPage() {
                 navigator.clipboard.writeText(businessPageLink);
                 showToast({ message: "Business page link copied to clipboard!", severity: "success" });
               }}
-              className="px-3.5 py-2.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-neutral-300 rounded-xl transition-all"
+              className={`px-3.5 py-2.5 border text-xs font-mono rounded-xl transition-all ${
+                isDark ? "bg-neutral-900 border-neutral-800 text-neutral-300" : "bg-stone-100 border-stone-300 text-stone-700"
+              }`}
               title="Copy Link"
             >
               📋 Copy Link
@@ -267,49 +268,10 @@ export default function PainterDashboardPage() {
         </div>
       </div>
 
-      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE (COMMENTED OUT FOR NOW)
-      <MicroVideoCarousel
-        title="⚡ 15-Second Painter Success Guide"
-        subtitle="Swipe to watch how to use PaintIt Studio to win painting clients."
-        steps={[
-          {
-            id: "dash_step_1",
-            stepNumber: 1,
-            title: "1. Share Page on WhatsApp",
-            subtitle: "Post your 3D visualizer business link directly to your WhatsApp Status in 1 tap.",
-            videoUrl: "/videos/painter_share_whatsapp.mp4",
-            badge: "Fast Sales",
-            actionText: "Try Sharing Now",
-            onActionClick: () => handleShareToWhatsAppStatus(),
-          },
-          {
-            id: "dash_step_2",
-            stepNumber: 2,
-            title: "2. Build Your 3D Portfolio",
-            subtitle: "Open 3D Studio to pick rooms, paint wall colors, and test Satin/Emulsion finishes.",
-            videoUrl: "/videos/painter_3d_studio.mp4",
-            badge: "3D Studio",
-            actionText: "Open 3D Studio",
-            onActionClick: () => { window.location.href = "/designs"; },
-          },
-          {
-            id: "dash_step_3",
-            stepNumber: 3,
-            title: "3. Manage Client Leads",
-            subtitle: "Check customer color choices and reply instantly on WhatsApp.",
-            videoUrl: "/videos/painter_leads.mp4",
-            badge: "Client Inbox",
-            actionText: "View Leads & Inbox",
-            onActionClick: () => { window.location.href = "/gigs"; },
-          },
-        ]}
-      />
-      */}
-
       {isBrandNewAccount ? (
         <div className="py-4 flex items-center justify-center">
           <StepOnboarding
-            title="Setup Your Profile Dashboard"
+            title="Setup Your Dashboard"
             subtitle="Your workspace is currently empty. Follow these simple steps to build your profile and start attracting clients."
             steps={dashboardSetupSteps}
             ctaText="Continue Dashboard Setup"
@@ -319,16 +281,18 @@ export default function PainterDashboardPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Quick Actions Hub - 3 Primary Big Touch Buttons */}
+          {/* Quick Actions Hub */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <a
               href="/gigs"
-              className="p-4 bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 rounded-2xl flex items-center gap-3 transition-all group shadow-lg"
+              className={`p-4 border rounded-2xl flex items-center gap-3 transition-all shadow-sm ${
+                isDark ? "bg-neutral-950 border-neutral-800 hover:border-[#FF8C38]/50" : "bg-white border-stone-200 hover:border-[#FF8C38]"
+              }`}
             >
-              <span className="text-2xl group-hover:scale-110 transition-transform">📩</span>
+              <span className="text-2xl">📩</span>
               <div>
-                <h4 className="text-xs font-black uppercase text-emerald-400">Leads & Inbox</h4>
-                <p className="text-[10px] text-neutral-400 font-medium">
+                <h4 className="text-xs font-bold uppercase text-[#FF8C38]">Leads & Inbox</h4>
+                <p className={`text-[10px] ${isDark ? "text-neutral-400" : "text-stone-500"}`}>
                   {leadCount > 0 ? `${leadCount} client inquiries` : "View customer messages"}
                 </p>
               </div>
@@ -336,50 +300,56 @@ export default function PainterDashboardPage() {
 
             <a
               href="/portfolio"
-              className="p-4 bg-neutral-950 border border-neutral-850 hover:border-neutral-700 rounded-2xl flex items-center gap-3 transition-all group shadow-md"
+              className={`p-4 border rounded-2xl flex items-center gap-3 transition-all shadow-sm ${
+                isDark ? "bg-neutral-950 border-neutral-800 hover:border-neutral-700" : "bg-white border-stone-200 hover:border-stone-300"
+              }`}
             >
-              <span className="text-2xl group-hover:scale-110 transition-transform">📸</span>
+              <span className="text-2xl">📸</span>
               <div>
-                <h4 className="text-xs font-black uppercase text-neutral-100">My Work Photos</h4>
-                <p className="text-[10px] text-neutral-500 font-medium">{contentMetrics.totalImages} photos uploaded</p>
+                <h4 className={`text-xs font-bold uppercase ${isDark ? "text-white" : "text-stone-900"}`}>My Work Photos</h4>
+                <p className={`text-[10px] ${isDark ? "text-neutral-500" : "text-stone-500"}`}>{contentMetrics.totalImages} photos uploaded</p>
               </div>
             </a>
 
             <a
               href="/profile"
-              className="p-4 bg-neutral-950 border border-neutral-850 hover:border-neutral-700 rounded-2xl flex items-center gap-3 transition-all group shadow-md"
+              className={`p-4 border rounded-2xl flex items-center gap-3 transition-all shadow-sm ${
+                isDark ? "bg-neutral-950 border-neutral-800 hover:border-neutral-700" : "bg-white border-stone-200 hover:border-stone-300"
+              }`}
             >
-              <span className="text-2xl group-hover:scale-110 transition-transform">⚙️</span>
+              <span className="text-2xl">⚙️</span>
               <div>
-                <h4 className="text-xs font-black uppercase text-neutral-100">Edit Profile</h4>
-                <p className="text-[10px] text-neutral-500 font-medium">{profileCompletenessScore}% profile score</p>
+                <h4 className={`text-xs font-bold uppercase ${isDark ? "text-white" : "text-stone-900"}`}>Edit Profile</h4>
+                <p className={`text-[10px] ${isDark ? "text-neutral-500" : "text-stone-500"}`}>{profileCompletenessScore}% profile score</p>
               </div>
             </a>
           </div>
 
-          
-
           {/* Profile Completeness Notice */}
           {pendingOnboardingTasks.length > 0 && (
-            <div className="p-5 border border-amber-500/10 bg-gradient-to-br from-amber-500/5 via-neutral-950 to-neutral-950 rounded-2xl space-y-4 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-900 pb-3">
+            <div className={`p-5 border rounded-2xl space-y-4 shadow-md ${
+              isDark ? "bg-neutral-950 border-neutral-800" : "bg-white border-stone-200"
+            }`}>
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 ${
+                isDark ? "border-neutral-900" : "border-stone-200"
+              }`}>
                 <div className="space-y-1">
-                  <h3 className="text-xs font-black text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-[#FF8C38] uppercase tracking-wide flex items-center gap-1.5">
                     <span>⚠️ Complete Your Business Profile</span>
                   </h3>
-                  <p className="text-[11px] text-neutral-400 leading-relaxed font-medium">
-                    Complete profiles appear higher on the painter search directory, making it easier for local homeowners to find and contact you.
+                  <p className={`text-xs leading-relaxed ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+                    Complete profiles appear higher on the painter search directory, making it easier for homeowners to find and contact you.
                   </p>
                 </div>
                 <div className="text-left sm:text-right shrink-0">
-                  <span className="text-[9px] font-mono font-bold text-neutral-500 uppercase tracking-wider block">Completeness</span>
-                  <span className="text-lg font-mono font-black text-amber-400">{profileCompletenessScore}%</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Completeness</span>
+                  <span className="text-lg font-bold text-[#FF8C38]">{profileCompletenessScore}%</span>
                 </div>
               </div>
 
-              <div className="w-full bg-neutral-900 rounded-full h-1 overflow-hidden">
+              <div className={`w-full rounded-full h-1.5 overflow-hidden ${isDark ? "bg-neutral-900" : "bg-stone-200"}`}>
                 <div
-                  className="bg-amber-400 h-1 rounded-full transition-all duration-500"
+                  className="bg-[#FF8C38] h-1.5 rounded-full transition-all duration-500"
                   style={{ width: `${profileCompletenessScore}%` }}
                 />
               </div>
@@ -388,14 +358,16 @@ export default function PainterDashboardPage() {
                 {pendingOnboardingTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="p-3.5 bg-neutral-950 border border-neutral-900 rounded-xl flex items-start gap-3 transition-colors hover:border-neutral-850"
+                    className={`p-3.5 border rounded-xl flex items-start gap-3 transition-colors ${
+                      isDark ? "bg-black border-neutral-900" : "bg-[#FAF8F5] border-stone-200"
+                    }`}
                   >
-                    <div className="w-4 h-4 rounded bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-mono text-[9px] font-black text-amber-400 mt-0.5 shrink-0">
+                    <div className="w-4 h-4 rounded bg-[#FF8C38]/15 border border-[#FF8C38]/30 flex items-center justify-center font-bold text-[9px] text-[#FF8C38] mt-0.5 shrink-0">
                       !
                     </div>
                     <div>
-                      <h4 className="text-[11px] font-black text-neutral-200 uppercase tracking-wide">{task.label}</h4>
-                      <p className="text-[10px] text-neutral-500 leading-relaxed mt-0.5 font-medium">{task.nudgeText}</p>
+                      <h4 className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>{task.label}</h4>
+                      <p className={`text-[11px] leading-relaxed mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>{task.nudgeText}</p>
                     </div>
                   </div>
                 ))}
@@ -405,7 +377,7 @@ export default function PainterDashboardPage() {
                 <button
                   type="button"
                   onClick={handleTriggerProfileWizard}
-                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md"
+                  className="px-4 py-2 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm"
                 >
                   Update Profile Now ➔
                 </button>
@@ -415,21 +387,21 @@ export default function PainterDashboardPage() {
 
           {/* Quick Business Overview Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-              <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Page Views</span>
-              <span className="text-xl font-black text-white block mt-0.5">{stats?.profileViews || 0}</span>
+            <div className={`p-4 border rounded-2xl shadow-xs ${isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Page Views</span>
+              <span className={`text-xl font-bold block mt-0.5 ${isDark ? "text-white" : "text-stone-900"}`}>{stats?.profileViews || 0}</span>
             </div>
-            <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-              <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Customer Leads</span>
-              <span className="text-xl font-black text-emerald-400 block mt-0.5">{leadCount}</span>
+            <div className={`p-4 border rounded-2xl shadow-xs ${isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Customer Leads</span>
+              <span className="text-xl font-bold text-[#FF8C38] block mt-0.5">{leadCount}</span>
             </div>
-            <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-              <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Work Photos</span>
-              <span className="text-xl font-black text-white block mt-0.5">{contentMetrics.totalImages}</span>
+            <div className={`p-4 border rounded-2xl shadow-xs ${isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Work Photos</span>
+              <span className={`text-xl font-bold block mt-0.5 ${isDark ? "text-white" : "text-stone-900"}`}>{contentMetrics.totalImages}</span>
             </div>
-            <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-              <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Response Rate</span>
-              <span className="text-xl font-black text-white block mt-0.5">100%</span>
+            <div className={`p-4 border rounded-2xl shadow-xs ${isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Response Rate</span>
+              <span className={`text-xl font-bold block mt-0.5 ${isDark ? "text-white" : "text-stone-900"}`}>100%</span>
             </div>
           </div>
         </div>

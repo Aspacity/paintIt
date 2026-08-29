@@ -11,8 +11,8 @@ interface FAQItem {
 
 const FAQS: FAQItem[] = [
   {
-    question: "What is PaintIT Studio?",
-    answer: "PaintIT Studio is a specialized paint and interior visualization platform designed to let you see room color ideas, lighting shifts, and surface finishes in realistic context before committing money, time, or labor.",
+    question: "What is PaintIT?",
+    answer: "PaintIT is a specialized paint and interior visualization platform designed to let you see room color ideas, lighting shifts, and surface finishes in realistic context before committing money, time, or labor.",
   },
   {
     question: "Who is PaintIT built for?",
@@ -32,7 +32,7 @@ const FAQS: FAQItem[] = [
   },
   {
     question: "Is PaintIT free to use?",
-    answer: "PaintIT offers a free interactive demo studio mode so you can explore room swatches and features. Advanced team workspace features for high-volume contractor portfolios are available under early access plans.",
+    answer: "PaintIT offers a free interactive demo mode so you can explore room swatches and features. Advanced team workspace features for high-volume contractor portfolios are available under early access plans.",
   },
 ];
 

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useTheme } from "@/context/ThemeContext";
+import Logo from "@/components/common/Logo";
 
 export default function AuthenticationLayoutShell({
   children,
@@ -40,14 +40,7 @@ export default function AuthenticationLayoutShell({
 
       {/* Shared Header Context Brand Mark */}
       <div className="mb-5 text-center z-10">
-        <Link href="/" className="inline-flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-[#FF8C38] text-black flex items-center justify-center font-bold text-sm tracking-widest shadow-sm group-hover:scale-105 transition-transform">
-            P
-          </div>
-          <span className={`font-bold text-2xl tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
-            PaintIT<span className="text-[#FF8C38]">.</span> <span className="text-xs font-semibold uppercase tracking-widest text-[#FF8C38]">Studio OS</span>
-          </span>
-        </Link>
+        <Logo size="lg" textColor={isDark ? "text-white" : "text-stone-900"} />
       </div>
 
       {/* Main Structural Authorization Card Viewport */}
@@ -64,7 +57,7 @@ export default function AuthenticationLayoutShell({
       <footer className={`mt-6 text-[10px] font-medium tracking-widest uppercase select-none z-10 ${
         isDark ? "text-neutral-500" : "text-stone-400"
       }`}>
-        Secure Auth Protocol • PaintIT Studio Engine
+        Secure Auth Protocol • PaintIT Engine
       </footer>
     </div>
   );

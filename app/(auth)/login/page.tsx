@@ -87,10 +87,10 @@ function LoginContent() {
     <div className="space-y-5 animate-fade-in">
       <div className="text-center">
         <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
-          Sign In to PaintIT Studio
+          Sign In with Aspacity
         </h2>
         <p className={`text-xs mt-1 leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
-          Access your saved 3D room projects, portfolios, and contractor tools.
+          Your Aspacity account gives you access to PAINTIT and other Aspacity products.
         </p>
       </div>
 

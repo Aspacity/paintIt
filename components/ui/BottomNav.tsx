@@ -1,11 +1,12 @@
-// components/shared/BottomNav.tsx
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { triggerGlobalFeedbackModal } from "@/components/ui/FeedbackModalPopup";
+import Logo from "@/components/common/Logo";
 
 export interface NavItem {
   label: string;
@@ -17,16 +18,18 @@ interface NavigationProps {
   items: NavItem[];
 }
 
-export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
+export const BottomNav: React.FC<NavigationProps> = () => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const targetName = user?.fullName || user?.full_name || "";
   const nameInitialLetter = targetName.trim() ? targetName.trim().charAt(0).toUpperCase() : "P";
   const userAvatarImageSrc = user?.avatarUrl || user?.avatar_url || null;
 
-  // Primary workspace navigation list (Profile is managed via dedicated profile card at bottom)
+  // Primary workspace navigation list
   const mainWorkspaceNavItems = [
     {
       label: "Dashboard",
@@ -80,18 +83,18 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
       {/* ========================================================== */}
       {/* 🖥️ DESKTOP LEFT SIDEBAR LAYOUT                            */}
       {/* ========================================================== */}
-      <aside className="hidden md:flex fixed top-0 left-0 bottom-0 w-64 bg-neutral-950 border-r border-neutral-900/80 flex-col justify-between p-5 z-30 font-sans">
+      <aside className={`hidden md:flex fixed top-0 left-0 bottom-0 w-64 border-r flex-col justify-between p-5 z-30 font-sans transition-colors ${
+        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+      }`}>
         <div className="w-full">
-          <div className="mb-8 px-2">
-            <Link href="/dashboard" className="inline-block">
-              <span className="text-emerald-500 text-lg font-black tracking-wider uppercase">
-                PaintIt <span className="text-white text-xs font-medium lowercase">Studio OS</span>
-              </span>
-            </Link>
+          <div className="mb-6 px-1 pt-1">
+            <Logo size="sm" subtitle="Contractor OS" textColor={isDark ? "text-white" : "text-stone-900"} />
           </div>
 
-          <nav className="space-y-2">
-            <div className="text-[10px] text-neutral-600 uppercase font-black tracking-widest px-2 mb-3">
+          <nav className="space-y-1">
+            <div className={`text-[10px] uppercase font-bold tracking-widest px-2 mb-2 ${
+              isDark ? "text-neutral-500" : "text-stone-400"
+            }`}>
               Workspace Panels
             </div>
 
@@ -101,13 +104,15 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 ${
+                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 ${
                     isActive
-                      ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
-                      : "text-neutral-500 hover:text-neutral-300 border border-transparent hover:bg-neutral-900/40"
+                      ? "bg-[#FF8C38] text-black shadow-md"
+                      : isDark
+                      ? "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                   }`}
                 >
-                  <div className={isActive ? "text-emerald-400" : "text-neutral-600"}>
+                  <div className={isActive ? "text-black" : isDark ? "text-neutral-400" : "text-stone-500"}>
                     {item.icon}
                   </div>
                   {item.label}
@@ -117,27 +122,49 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           </nav>
         </div>
 
-        {/* 💬 DESKTOP FEEDBACK BUTTON & PROFILE FOOTER SECTION */}
-        <div className="border-t border-neutral-900 pt-4 space-y-3">
-          {/* 💬 FEEDBACK BUTTON DIRECTLY IN SIDEBAR (RIGHT ABOVE PROFILE CARD) */}
+        {/* FOOTER SECTION WITH THEME SWITCHER, FEEDBACK, PROFILE CARD */}
+        <div className={`border-t pt-4 space-y-2 ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+          {/* Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              isDark
+                ? "bg-neutral-900 border-neutral-800 text-amber-300 hover:bg-neutral-800"
+                : "bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <span>{isDark ? "🌙" : "☀️"}</span>
+              <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF8C38]">Toggle</span>
+          </button>
+
+          {/* Feedback Button */}
           <button
             type="button"
             onClick={triggerGlobalFeedbackModal}
-            className="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className={`w-full py-2.5 px-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 border ${
+              isDark
+                ? "bg-neutral-900 border-neutral-800 text-[#FF8C38] hover:bg-neutral-800"
+                : "bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200"
+            }`}
           >
             <span>💬 Drop Feedback</span>
           </button>
 
-          {/* DEDICATED PROFILE CARD AT BOTTOM */}
+          {/* Profile Card */}
           <Link
             href="/profile"
-            className={`flex items-center gap-3 p-2.5 rounded-xl transition-all border ${
+            className={`flex items-center gap-3 p-2 rounded-xl transition-all border ${
               pathname === "/profile"
-                ? "bg-neutral-900 border-neutral-800"
-                : "border-transparent hover:bg-neutral-900/40"
+                ? "bg-[#FF8C38]/15 border-[#FF8C38]/40"
+                : isDark
+                ? "border-transparent hover:bg-neutral-900"
+                : "border-transparent hover:bg-stone-100"
             }`}
           >
-            <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-black uppercase text-emerald-400 shrink-0 overflow-hidden shadow-inner select-none">
+            <div className="w-8 h-8 rounded-full bg-[#FF8C38] text-black flex items-center justify-center text-xs font-bold uppercase shrink-0 overflow-hidden shadow-xs">
               {userAvatarImageSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -151,10 +178,10 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
             </div>
 
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-neutral-200 truncate leading-tight">
-                {targetName || "Active Painter"}
+              <h4 className={`text-xs font-bold truncate leading-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+                {targetName || "Painter Account"}
               </h4>
-              <span className="text-[9px] text-neutral-500 font-bold tracking-wider uppercase truncate block mt-0.5">
+              <span className="text-[9px] text-[#FF8C38] font-semibold tracking-wider uppercase truncate block mt-0.5">
                 Profile & Settings
               </span>
             </div>
@@ -163,7 +190,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           <button
             type="button"
             onClick={logout}
-            className="w-full py-2.5 bg-neutral-950 hover:bg-red-950/20 border border-neutral-900 hover:border-red-900/30 text-neutral-500 hover:text-red-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+            className="w-full py-2 text-xs font-bold uppercase tracking-wider text-red-500 hover:bg-red-500/10 rounded-xl transition-all text-center"
           >
             LOG OUT
           </button>
@@ -171,39 +198,52 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
       </aside>
 
       {/* ========================================================== */}
-      {/* 📱 MOBILE TOP HEADER WITH HAMBURGER DRAWER TRIGGER          */}
+      {/* 📱 MOBILE TOP HEADER                                       */}
       {/* ========================================================== */}
-      <header className="md:hidden sticky top-0 left-0 right-0 h-14 bg-neutral-950/90 border-b border-neutral-900/90 z-40 px-4 flex items-center justify-between backdrop-blur-xl select-none">
+      <header className={`md:hidden sticky top-0 left-0 right-0 h-14 border-b z-40 px-4 flex items-center justify-between backdrop-blur-xl select-none ${
+        isDark ? "bg-neutral-950/90 border-neutral-900" : "bg-white/90 border-stone-200"
+      }`}>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(true)}
-            className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 hover:text-white transition-all active:scale-95 cursor-pointer"
+            className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-white" : "bg-stone-100 border-stone-300 text-stone-800"
+            }`}
             aria-label="Open Navigation Menu"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-sm font-black text-white uppercase tracking-wider">
-            PaintIt <span className="text-emerald-400">Studio</span>
-          </span>
+          <Logo size="sm" textColor={isDark ? "text-white" : "text-stone-900"} />
         </div>
 
-        <Link href="/profile" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-black uppercase text-emerald-400 overflow-hidden shadow-inner">
-            {userAvatarImageSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span>{nameInitialLetter}</span>
-            )}
-          </div>
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-lg border text-xs font-bold ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
+            }`}
+          >
+            {isDark ? "🌙" : "☀️"}
+          </button>
+
+          <Link href="/profile" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#FF8C38] text-black flex items-center justify-center text-xs font-bold uppercase overflow-hidden shadow-xs">
+              {userAvatarImageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span>{nameInitialLetter}</span>
+              )}
+            </div>
+          </Link>
+        </div>
       </header>
 
       {/* ========================================================== */}
-      {/* 📱 MOBILE SLIDE-OUT LEFT DRAWER OVERLAY                    */}
+      {/* 📱 MOBILE SLIDE-OUT DRAWER OVERLAY                        */}
       {/* ========================================================== */}
       {mobileDrawerOpen && (
         <div
@@ -213,27 +253,23 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
       )}
 
       <aside
-        className={`md:hidden fixed top-0 bottom-0 left-0 w-72 bg-neutral-950 border-r border-neutral-850 z-[120] flex flex-col justify-between p-5 transition-transform duration-300 ease-out font-sans shadow-2xl ${
-          mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`md:hidden fixed top-0 bottom-0 left-0 w-72 border-r z-[120] flex flex-col justify-between p-5 transition-transform duration-300 ease-out font-sans shadow-2xl ${
+          isDark ? "bg-neutral-950 border-neutral-800 text-white" : "bg-white border-stone-200 text-stone-900"
+        } ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="w-full space-y-6 overflow-y-auto">
-          {/* Drawer Header with Close Button */}
-          <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
-            <span className="text-sm font-black uppercase tracking-wider text-emerald-400">
-              Navigation Menu
-            </span>
+          <div className="flex items-center justify-between border-b pb-3">
+            <Logo size="sm" textColor={isDark ? "text-white" : "text-stone-900"} />
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(false)}
-              className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white"
+              className="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-400 hover:text-white flex items-center justify-center"
             >
               ✕
             </button>
           </div>
 
-          {/* Drawer Navigation List with Spacious Padding */}
-          <nav className="space-y-2">
+          <nav className="space-y-1.5">
             {mainWorkspaceNavItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -241,15 +277,15 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
-                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                     isActive
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                      : "text-neutral-400 hover:text-white border border-transparent hover:bg-neutral-900/40"
+                      ? "bg-[#FF8C38] text-black shadow-md"
+                      : isDark
+                      ? "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                   }`}
                 >
-                  <div className={isActive ? "text-emerald-400" : "text-neutral-500"}>
-                    {item.icon}
-                  </div>
+                  <div>{item.icon}</div>
                   <span>{item.label}</span>
                 </Link>
               );
@@ -257,39 +293,29 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
           </nav>
         </div>
 
-        {/* Drawer Footer with FEEDBACK BUTTON & DEDICATED PROFILE CARD */}
-        <div className="border-t border-neutral-900 pt-4 space-y-3">
-          {/* 💬 FEEDBACK BUTTON DIRECTLY INSIDE DRAWER (ABOVE PROFILE CARD) */}
+        <div className="border-t pt-4 space-y-2">
           <button
             type="button"
             onClick={() => {
               setMobileDrawerOpen(false);
               triggerGlobalFeedbackModal();
             }}
-            className="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-[#FF8C38]/15 border border-[#FF8C38]/40 text-[#FF8C38] text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
           >
             <span>💬 Drop Feedback</span>
           </button>
 
-          {/* MOBILE PROFILE CARD IN DRAWER FOOTER */}
           <Link
             href="/profile"
             onClick={() => setMobileDrawerOpen(false)}
-            className={`flex items-center gap-3 p-3 bg-neutral-900/70 border border-neutral-850 rounded-2xl transition-all ${
-              pathname === "/profile" ? "border-emerald-500/40" : ""
-            }`}
+            className="flex items-center gap-3 p-2.5 rounded-xl border border-[#FF8C38]/30 bg-[#FF8C38]/10"
           >
-            <div className="w-9 h-9 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-center text-xs font-black uppercase text-emerald-400 overflow-hidden shadow-inner shrink-0">
-              {userAvatarImageSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={userAvatarImageSrc} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span>{nameInitialLetter}</span>
-              )}
+            <div className="w-8 h-8 rounded-full bg-[#FF8C38] text-black flex items-center justify-center text-xs font-bold shrink-0">
+              {nameInitialLetter}
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-white truncate">{targetName || "Painter Account"}</h4>
-              <span className="text-[10px] text-emerald-400 font-mono">Profile & Settings ➔</span>
+              <h4 className="text-xs font-bold truncate">{targetName || "Painter Account"}</h4>
+              <span className="text-[10px] text-[#FF8C38]">Profile & Settings ➔</span>
             </div>
           </Link>
 
@@ -299,7 +325,7 @@ export const BottomNav: React.FC<NavigationProps> = ({ items }) => {
               setMobileDrawerOpen(false);
               logout();
             }}
-            className="w-full py-2 bg-neutral-950 hover:bg-red-950/30 border border-neutral-900 hover:border-red-900/40 text-neutral-500 hover:text-red-400 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+            className="w-full py-2 text-xs font-bold uppercase tracking-wider text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
           >
             🚪 Log Out
           </button>

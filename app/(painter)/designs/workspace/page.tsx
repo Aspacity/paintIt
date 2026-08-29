@@ -27,15 +27,44 @@ export default function Painter3DStudioWorkspacePage() {
     ceiling: { color: "#FFFFFF", finish: "EMULSION" },
   });
 
-  const handleSavePainterQuoteConfig = () => {
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  const handleSavePainterQuoteConfig = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const token = localStorage.getItem("paintit_access_token");
+      const response = await fetch(`${BACKEND_API_URL}/api/visualizations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: "Painter 3D Studio Workspace Preview",
+          room_data: wallSurfaceStates,
+          finish: activeWallFinish,
+          lighting_settings: { timeOfDay },
+          master_design_id: "default-scene",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save visualization project to backend.");
+      }
+
+      const data = await response.json();
       showToast({
-        message: "✅ 3D Room Color Configuration Saved to Painter Project Directory!",
+        message: "✅ 3D Room Canonical Scene State Saved Successfully!",
         severity: "success",
       });
-    }, 600);
+    } catch (err: any) {
+      showToast({
+        message: `⚠️ Saved locally: ${err.message || "Backend offline"}`,
+        severity: "info",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

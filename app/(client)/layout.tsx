@@ -1,21 +1,23 @@
-// app/(client)/layout.tsx
 "use client";
 
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/common/Logo";
 
 export default function ClientGroupDashboardLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   // Core exploratory features navigation links list
   const coreNavigationTabs = [
     { name: "Design Hub", path: "/hub", icon: "🏠" },
     { name: "Explore Painters", path: "/search/painters", icon: "🔍" },
-    { name: "Explore 3D Designs", path: "/search/designs", icon: "🎨" },
-    // { name: "Visualizer Canvas", path: "/design", icon: "🎨" },
+    { name: "3D Room Designs", path: "/search/designs", icon: "🎨" },
   ];
 
   // Dedicated single node configuration reference for profile settings
@@ -25,19 +27,22 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
   const mobileNavigationTabs = [...coreNavigationTabs, profileTab];
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row">
+    <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300 ${
+      isDark ? "bg-black text-white" : "bg-[#FAF8F5] text-stone-900"
+    }`}>
 
       {/* ========================================================== */}
       {/* 🖥️ DESKTOP SIDEBAR NAVIGATION FRAME                          */}
       {/* ========================================================== */}
-      <aside className="hidden md:flex flex-col w-64 bg-neutral-950 border-r border-neutral-900 p-5 shrink-0 justify-between">
+      <aside className={`hidden md:flex flex-col w-64 border-r p-5 shrink-0 justify-between transition-colors ${
+        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+      }`}>
 
         {/* Top Section: Branding Identity & Exploratory Links */}
         <div className="space-y-6">
           {/* Platform Identity Branding */}
-          <div className="px-2">
-            <span className="text-sm font-black tracking-widest text-emerald-400 uppercase">PAINTIT</span>
-            <span className="text-[10px] font-bold text-neutral-500 ml-1.5 uppercase tracking-wide">Client Portal</span>
+          <div className="px-2 pt-1 flex items-center justify-between">
+            <Logo size="sm" subtitle="Client Portal" textColor={isDark ? "text-white" : "text-stone-900"} />
           </div>
 
           {/* Main Core Links Stack */}
@@ -48,10 +53,13 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
                 <Link
                   key={tab.path}
                   href={tab.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${isActive
-                      ? "bg-emerald-500 text-black shadow-lg"
-                      : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
-                    }`}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                    isActive
+                      ? "bg-[#FF8C38] text-black shadow-md"
+                      : isDark
+                      ? "text-neutral-400 hover:bg-neutral-900 hover:text-white"
+                      : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+                  }`}
                 >
                   <span className="text-sm">{tab.icon}</span>
                   {tab.name}
@@ -62,28 +70,46 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
         </div>
 
         {/* Bottom Sidebar Container Section */}
-        <div className="border-t border-neutral-900 pt-4 space-y-1.5">
+        <div className={`border-t pt-4 space-y-2 ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              isDark
+                ? "bg-neutral-900 border-neutral-800 text-amber-300 hover:bg-neutral-800"
+                : "bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <span>{isDark ? "🌙" : "☀️"}</span>
+              <span>{isDark ? "Dark Theme" : "Light Theme"}</span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF8C38]">Switch</span>
+          </button>
 
-          {/* ✅ FIXED: Profile action link anchor isolated at the bottom above logout link component */}
+          {/* Profile Action Link */}
           <Link
             href={profileTab.path}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${pathname === profileTab.path
-                ? "bg-emerald-500 text-black shadow-lg"
-                : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
-              }`}
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              pathname === profileTab.path
+                ? "bg-[#FF8C38] text-black shadow-md"
+                : isDark
+                ? "text-neutral-400 hover:bg-neutral-900 hover:text-white"
+                : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+            }`}
           >
             <span className="text-sm">{profileTab.icon}</span>
             {profileTab.name}
           </Link>
 
-          {/* Log Out Button Trigger */}
+          {/* Log Out Button */}
           <button
             type="button"
             onClick={logout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-950/20 rounded-xl transition-all"
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
           >
             <span>🚪</span>
-            Log Out Account
+            Log Out
           </button>
         </div>
       </aside>
@@ -91,18 +117,29 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
       {/* ========================================================== */}
       {/* 📱 MOBILE TOP HEADER CONTROLLER PANEL                      */}
       {/* ========================================================== */}
-      <header className="md:hidden w-full bg-neutral-950 border-b border-neutral-900 px-5 py-4 flex items-center justify-between z-40">
-        <div>
-          <span className="text-xs font-black tracking-widest text-emerald-400 uppercase">PAINTIT</span>
-          <span className="text-[9px] font-bold text-neutral-500 ml-1 uppercase tracking-wide">Hub</span>
+      <header className={`md:hidden w-full border-b px-4 py-3 flex items-center justify-between z-40 ${
+        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+      }`}>
+        <Logo size="sm" subtitle="Hub" textColor={isDark ? "text-white" : "text-stone-900"} />
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-lg border text-xs font-bold ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
+            }`}
+          >
+            {isDark ? "🌙" : "☀️"}
+          </button>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="text-[10px] font-bold uppercase tracking-wider text-red-500 px-2.5 py-1 bg-red-500/10 border border-red-500/20 rounded-lg"
+          >
+            Exit
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={logout}
-          className="text-[10px] font-black uppercase tracking-wider text-red-400 px-2 py-1 bg-red-950/10 border border-red-900/30 rounded-lg"
-        >
-          Exit
-        </button>
       </header>
 
       {/* ========================================================== */}
@@ -115,18 +152,25 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
       {/* ========================================================== */}
       {/* 📱 MOBILE FLOATING BOTTOM FLOATING DOCK                    */}
       {/* ========================================================== */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 h-16 bg-neutral-950/80 backdrop-blur-md border border-neutral-900 rounded-2xl flex items-center justify-around px-2 z-40 shadow-2xl">
+      <nav className={`md:hidden fixed bottom-4 left-4 right-4 h-16 backdrop-blur-md border rounded-2xl flex items-center justify-around px-2 z-40 shadow-2xl ${
+        isDark ? "bg-neutral-950/90 border-neutral-900 text-white" : "bg-white/90 border-stone-300 text-stone-900"
+      }`}>
         {mobileNavigationTabs.map((tab) => {
           const isActive = pathname === tab.path;
           return (
             <Link
               key={tab.path}
               href={tab.path}
-              className={`flex flex-col items-center justify-center w-14 h-12 rounded-xl transition-all ${isActive ? "text-emerald-400 font-black scale-105" : "text-neutral-500"
-                }`}
+              className={`flex flex-col items-center justify-center w-14 h-12 rounded-xl transition-all ${
+                isActive
+                  ? "text-[#FF8C38] font-bold scale-105"
+                  : isDark
+                  ? "text-neutral-500"
+                  : "text-stone-400"
+              }`}
             >
               <span className="text-base">{tab.icon}</span>
-              <span className="text-[7px] font-black uppercase tracking-widest mt-0.5 text-center truncate max-w-full px-0.5">
+              <span className="text-[8px] font-bold uppercase tracking-widest mt-0.5 text-center truncate max-w-full px-0.5">
                 {tab.name.split(" ")[0]}
               </span>
             </Link>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 interface CatalogTemplate {
   id: string;
@@ -19,10 +20,12 @@ export default function PublicDesignTemplatesDirectoryPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // 🎯 FETCH DYNAMIC CATALOG DIRECTLY FROM BACKEND API
+  // FETCH DYNAMIC CATALOG FROM BACKEND API
   useEffect(() => {
     let isMounted = true;
 
@@ -60,28 +63,39 @@ export default function PublicDesignTemplatesDirectoryPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-white selection:bg-emerald-500 selection:text-black animate-fade-in pb-16">
+    <div className={`space-y-6 max-w-7xl mx-auto animate-fade-in pb-16 transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
 
-      {/* 🏷️ CONTROL LAYER: HEADERS & PARAMETER FILTERS */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
+      {/* CONTROL LAYER: HEADERS & PARAMETER FILTERS */}
+      <div className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-6 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100">3D Architecture Catalog</h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
+          <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+            3D Architecture Catalog
+          </h1>
+          <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
             Explore interactive 3D room concepts and preview color swatches right in your browser.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-xl">
           {/* Category Quick Filter Segments */}
-          <div className="flex bg-neutral-950 border border-neutral-900 p-1 rounded-xl w-full sm:w-auto shrink-0">
+          <div className={`flex p-1 rounded-xl w-full sm:w-auto shrink-0 border ${
+            isDark ? "bg-neutral-950 border-neutral-900" : "bg-stone-100 border-stone-300"
+          }`}>
             {["ALL", "INTERIOR", "COMMERCIAL", "ACCENT"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all w-full sm:w-auto text-center ${selectedCategory === cat
-                    ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
-                    : "text-neutral-500 hover:text-neutral-300"
-                  }`}
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all w-full sm:w-auto text-center ${
+                  selectedCategory === cat
+                    ? "bg-[#FF8C38] text-black font-extrabold shadow-sm"
+                    : isDark
+                    ? "text-neutral-400 hover:text-white"
+                    : "text-stone-600 hover:text-stone-900"
+                }`}
               >
                 {cat}
               </button>
@@ -90,28 +104,38 @@ export default function PublicDesignTemplatesDirectoryPage() {
 
           <input
             type="text"
-            placeholder="Search spatial templates (e.g., Luxury, Ambient)..."
+            placeholder="Search 3D templates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2.5 bg-neutral-950 border border-neutral-900 rounded-xl text-xs w-full focus:outline-none focus:border-emerald-500/30 transition-all text-neutral-200 font-medium"
+            className={`px-4 py-2.5 border rounded-xl text-xs w-full transition-all font-medium focus:outline-none focus:border-[#FF8C38] ${
+              isDark
+                ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                : "bg-white border-stone-300 text-stone-900 placeholder:text-stone-400"
+            }`}
           />
         </div>
       </div>
 
-      {/* 📦 GRID CONTAINER / LOADING STATES */}
+      {/* GRID CONTAINER / LOADING STATES */}
       {isLoading ? (
         <div className="min-h-[40vh] w-full flex flex-col items-center justify-center gap-3">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] text-neutral-500 font-bold tracking-widest uppercase">
+          <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
+          <span className={`text-[10px] font-bold tracking-widest uppercase ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>
             Loading Catalog Concepts...
           </span>
         </div>
       ) : filteredTemplates.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-neutral-900 rounded-3xl max-w-md mx-auto bg-neutral-950/10 space-y-3">
-          <span className="text-xl">📐</span>
-          <h3 className="text-xs font-black uppercase tracking-wide text-neutral-300">No Environment Matches</h3>
-          <p className="text-[11px] text-neutral-500 max-w-xs mx-auto">
-            We couldn&apos;t find any 3D layout geometries matching your active search string parameters.
+        <div className={`text-center py-16 border border-dashed rounded-3xl max-w-md mx-auto space-y-3 ${
+          isDark ? "border-neutral-800 bg-neutral-950/30" : "border-stone-300 bg-white"
+        }`}>
+          <span className="text-2xl">📐</span>
+          <h3 className={`text-xs font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>
+            No Environment Matches
+          </h3>
+          <p className={`text-xs max-w-xs mx-auto ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            We couldn&apos;t find any 3D layout geometries matching your active search string.
           </p>
         </div>
       ) : (
@@ -120,13 +144,17 @@ export default function PublicDesignTemplatesDirectoryPage() {
             <Link
               key={template.id}
               href={`/workspace?template=${template.id}`}
-              className="group bg-neutral-950 border border-neutral-900 hover:border-emerald-500/50 rounded-2xl p-5 flex flex-col justify-between shadow-xl transition-all duration-200 cursor-pointer"
+              className={`group border rounded-2xl p-5 flex flex-col justify-between shadow-md transition-all duration-200 cursor-pointer ${
+                isDark
+                  ? "bg-neutral-950 border-neutral-900 hover:border-[#FF8C38]/50"
+                  : "bg-white border-stone-200 hover:border-[#FF8C38]"
+              }`}
             >
               <div className="space-y-4">
-                {/* 3D Scene Interactive Mock Canvas Box */}
-                <div className="w-full h-40 bg-neutral-900 border border-neutral-850 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group-hover:border-emerald-500/30 transition-colors shadow-inner select-none">
+                {/* 3D Scene Mock Canvas Box */}
+                <div className="w-full h-40 bg-black/90 border border-neutral-800 rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-inner select-none">
                   <div className="absolute top-0 right-0 p-2.5">
-                    <span className="text-[9px] font-mono bg-neutral-950/80 backdrop-blur-md border border-neutral-800 text-emerald-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                    <span className="text-[9px] font-mono bg-black/80 text-[#FF8C38] border border-neutral-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
                       {template.category || "INTERIOR"}
                     </span>
                   </div>
@@ -135,33 +163,37 @@ export default function PublicDesignTemplatesDirectoryPage() {
                     {template.thumbnail_icon || "🛋️"}
                   </span>
 
-                  <span className="text-[9px] font-mono tracking-widest uppercase font-black text-emerald-400 mt-3 block">
+                  <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-[#FF8C38] mt-3 block">
                     [ Tap to Launch 3D Canvas 🚀 ]
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-black text-neutral-200 group-hover:text-emerald-400 transition-colors uppercase tracking-wide">
+                  <h3 className={`text-sm font-bold uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors ${
+                    isDark ? "text-white" : "text-stone-900"
+                  }`}>
                     {template.title}
                   </h3>
 
-                  {/* Performance Specs & Parameters */}
-                  <div className="flex items-center gap-2 mt-2 text-[10px] font-bold text-neutral-500 select-none">
-                    <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 rounded-md">
+                  {/* Specs */}
+                  <div className="flex items-center gap-2 mt-2 text-[10px] font-medium select-none">
+                    <span className={`px-2 py-0.5 border rounded-md ${
+                      isDark ? "bg-black border-neutral-800 text-neutral-400" : "bg-stone-100 border-stone-200 text-stone-600"
+                    }`}>
                       ⚙️ {template.polygons_count || "Standard Mesh"}
                     </span>
-                    <span className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 rounded-md">
+                    <span className={`px-2 py-0.5 border rounded-md ${
+                      isDark ? "bg-black border-neutral-800 text-neutral-400" : "bg-stone-100 border-stone-200 text-stone-600"
+                    }`}>
                       💡 {template.lighting_setup || "Dynamic Point Lights"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* 🎯 ROUTE DIRECTLY TO PUBLIC CANVAS WORKSPACE PAGE */}
-              <div className="pt-5 mt-4 border-t border-neutral-900/60">
-                <div
-                  className="w-full py-2.5 bg-emerald-500/10 group-hover:bg-emerald-500 border border-emerald-500/20 group-hover:border-emerald-500 text-center text-xs font-black uppercase tracking-wider text-emerald-400 group-hover:text-black rounded-xl transition-all shadow-inner"
-                >
+              {/* ROUTE DIRECTLY TO WORKSPACE */}
+              <div className={`pt-4 mt-4 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+                <div className="w-full py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-center text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm transition-all">
                   Open 3D Canvas Workspace ➔
                 </div>
               </div>

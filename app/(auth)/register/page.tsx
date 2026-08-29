@@ -89,12 +89,10 @@ function RegisterFormContent() {
         )}
 
         <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
-          {isPainterParam ? "Grow Your Painting Business" : "Create Your Account"}
+          Create Your Aspacity Account
         </h2>
         <p className={`text-xs mt-1 leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
-          {isPainterParam
-            ? "Present visual room concepts, win more client bids, and close projects faster."
-            : "See your colors before the first brush stroke."}
+          Your Aspacity account gives you access to PAINTIT and other Aspacity products.
         </p>
       </div>
 

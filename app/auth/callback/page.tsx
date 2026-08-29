@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
+import { UserRole } from "@/types";
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -17,7 +18,8 @@ function GoogleCallbackContent() {
   useEffect(() => {
     const token = searchParams.get("token");
     const refreshToken = searchParams.get("refreshToken");
-    const role = searchParams.get("role") || "CONSUMER";
+    const roleParam = searchParams.get("role");
+    const role: UserRole = (roleParam === "PAINTER" || roleParam === "ADMIN") ? (roleParam as UserRole) : "CONSUMER";
     const email = searchParams.get("email") || "";
     const name = searchParams.get("name") || "User Account";
     const error = searchParams.get("error");
@@ -60,7 +62,7 @@ function GoogleCallbackContent() {
       <div className="space-y-4 max-w-sm">
         <div className="w-12 h-12 border-4 border-[#FF8C38] border-t-transparent rounded-full animate-spin mx-auto" />
         <h2 className="text-lg font-bold">Completing Google Sign-In</h2>
-        <p className="text-xs text-neutral-400">Authenticating credentials with PaintIT Studio OS...</p>
+        <p className="text-xs text-neutral-400">Authenticating credentials with PaintIT...</p>
       </div>
     </div>
   );

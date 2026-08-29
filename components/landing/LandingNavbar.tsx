@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
+import Logo from "@/components/common/Logo";
 
 export default function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -40,20 +41,8 @@ export default function LandingNavbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo Mark */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#FF8C38] text-black flex items-center justify-center font-bold text-sm tracking-widest transition-transform group-hover:scale-105 shadow-sm">
-              P
-            </div>
-            <div className="flex flex-col">
-              <span className={`font-semibold tracking-tight text-base sm:text-lg leading-tight font-sans ${isDark ? "text-white" : "text-stone-900"}`}>
-                PaintIT<span className="text-[#FF8C38] font-bold">.</span>
-              </span>
-              <span className={`text-[10px] tracking-widest uppercase font-medium ${isDark ? "text-neutral-400" : "text-stone-500"}`}>
-                Studio
-              </span>
-            </div>
-          </Link>
+          {/* Centralized Logo Mark */}
+          <Logo size="md" textColor={isDark ? "text-white" : "text-stone-900"} />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
