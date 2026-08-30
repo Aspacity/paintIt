@@ -19,7 +19,7 @@ export default function PainterInsightsAnalyticsPage() {
 
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchPerformanceMetrics = async () => {

@@ -22,6 +22,26 @@ function LoginContent() {
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+  React.useEffect(() => {
+    const urlToken = searchParams?.get("token");
+    const urlRefresh = searchParams?.get("refresh");
+    const urlEmail = searchParams?.get("email");
+    const urlName = searchParams?.get("name");
+
+    if (urlToken && urlRefresh) {
+      showToast({ message: "Google Sign-In successful! Logging you in...", severity: "success" });
+      login(urlToken, urlRefresh, {
+        id: "oauth-user",
+        email: urlEmail || "member@aspacity.com",
+        fullName: urlName || "Aspacity Member",
+        role: "CONSUMER",
+      });
+      setTimeout(() => {
+        window.location.href = redirect || "/dashboard";
+      }, 150);
+    }
+  }, [searchParams, login, redirect, showToast]);
+
   const handleExecuteLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 

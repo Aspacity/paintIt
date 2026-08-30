@@ -35,7 +35,7 @@ export default function PainterPortfolioPage() {
   const [activeLightboxProject, setActiveLightboxProject] = useState<Project | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   const fetchContractorProjects = useCallback(async () => {
     setErrorBanner(null);

@@ -42,7 +42,7 @@ export default function AccountProfileWorkspacePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchActiveProfileSettings = async () => {
