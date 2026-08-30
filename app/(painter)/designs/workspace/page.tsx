@@ -74,62 +74,64 @@ export default function Painter3DStudioWorkspacePage() {
       isDark ? "bg-black text-white" : "bg-[#FAF8F5] text-stone-900"
     }`}>
       {/* PAINTER WORKSPACE TOP NAVIGATION BAR */}
-      <header className={`h-14 border-b px-4 sm:px-6 flex items-center justify-between z-40 shrink-0 ${
+      <header className={`h-auto py-2.5 px-3 sm:px-6 border-b flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 z-40 shrink-0 ${
         isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
       }`}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/designs"
-            className={`w-8 h-8 rounded-xl border flex items-center justify-center text-xs transition-all ${
+            className={`w-7 h-7 rounded-xl border flex items-center justify-center text-xs transition-all shrink-0 ${
               isDark ? "bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white" : "bg-stone-100 border-stone-300 text-stone-700 hover:text-stone-900"
             }`}
             title="Back to Designs Hub"
           >
             ◀
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
-              <h1 className={`text-sm font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>
-                Painter 3D Studio Workspace
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse shrink-0" />
+              <h1 className={`text-xs sm:text-sm font-bold uppercase tracking-wide truncate ${isDark ? "text-white" : "text-stone-900"}`}>
+                Painter 3D Studio
               </h1>
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/20 text-[#FF8C38] border border-[#FF8C38]/40">
-                PRO WORKFLOW
+              <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/20 text-[#FF8C38] border border-[#FF8C38]/40 shrink-0">
+                PRO
               </span>
             </div>
-            <p className={`text-[10px] font-mono ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            <p className={`text-[10px] font-mono truncate hidden sm:block ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
               Contractor: <span className="font-bold">{user?.fullName || "Painter Pro"}</span> • Client Preview Studio
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={toggleTheme}
-            className={`px-3 py-1.5 font-bold border text-xs rounded-xl transition-all flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 font-bold border text-[10px] sm:text-xs rounded-xl transition-all flex items-center gap-1 ${
               isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
             }`}
             title="Toggle Theme"
           >
-            <span>{isDark ? "🌙 Dark" : "☀️ Light"}</span>
+            <span>{isDark ? "🌙" : "☀️"}</span>
           </button>
 
           <button
             onClick={() => setTimeOfDay((prev) => (prev === "day" ? "night" : "day"))}
-            className={`px-3 py-1.5 font-bold border text-xs rounded-xl transition-all flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 font-bold border text-[10px] sm:text-xs rounded-xl transition-all flex items-center gap-1 ${
               isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
             }`}
           >
-            <span>{timeOfDay === "day" ? "☀️ Day Scene" : "🌙 Night Scene"}</span>
+            <span>{timeOfDay === "day" ? "☀️ Day" : "🌙 Night"}</span>
           </button>
 
           <button
             onClick={handleSavePainterQuoteConfig}
             disabled={isSaving}
-            className="px-4 py-1.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2"
+            className="px-3 py-1.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-[10px] sm:text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
           >
-            <span>{isSaving ? "Saving..." : "💾 Save Client Preview"}</span>
+            <span>💾</span>
+            <span className="hidden sm:inline">{isSaving ? "Saving..." : "Save Client Preview"}</span>
+            <span className="inline sm:hidden font-bold">{isSaving ? "Saving..." : "Save"}</span>
           </button>
         </div>
       </header>

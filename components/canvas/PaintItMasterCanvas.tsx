@@ -1048,7 +1048,7 @@ export default function PaintItMasterCanvas({
         </Canvas>
 
         {/* 📱 TOP CENTER FLOATING CAMERA & STATUS BAR */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+        <div className="absolute top-14 md:top-3 left-2 right-2 md:left-3 md:right-3 flex flex-wrap sm:flex-nowrap items-center justify-between pointer-events-none z-10 gap-2">
           {/* Active Wall Status Pill & Offline Sync Indicator */}
           <div className="flex items-center gap-2 pointer-events-auto">
             <div className="bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-2xl">

@@ -82,10 +82,8 @@ function WorkspaceContent() {
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
-  // Saved DB Camera Configuration State
   const [savedCameraConfig, setSavedCameraConfig] = useState<CameraConfigPayload | null>(null);
 
-  // 📥 Comprehensive DB Hydration Pipeline (Loads Model URL, Camera Settings, Lighting & Paints from DB)
   useEffect(() => {
     let isMounted = true;
 
@@ -97,7 +95,6 @@ function WorkspaceContent() {
       }
 
       try {
-        // Try fetching visualization record or catalog record from PostgreSQL backend
         let endpoint = `${BACKEND_API_URL}/api/visualizations/${targetId}`;
         if (urlTemplateId && !urlDesignId) {
           endpoint = `${BACKEND_API_URL}/api/visualizations/catalog/${urlTemplateId}`;
@@ -121,7 +118,6 @@ function WorkspaceContent() {
             setModelUrl(vis.model_url || vis.modelUrl);
           }
 
-          // Hydrate DB Saved Camera Configuration (FOV, Position, Target, Zoom Boundaries)
           if (vis.camera_settings || vis.cameraSettings || vis.camera_data) {
             const cam = vis.camera_settings || vis.cameraSettings || vis.camera_data;
             setSavedCameraConfig({
@@ -135,7 +131,6 @@ function WorkspaceContent() {
             });
           }
 
-          // Hydrate DB Saved Lighting Configuration (Day/Night, Sun Azimuth/Elevation, Light Sliders)
           if (vis.lighting_settings || vis.lightingSettings || vis.light_data) {
             let ls = vis.lighting_settings || vis.lightingSettings || vis.light_data;
             if (typeof ls === "string") {
@@ -151,12 +146,10 @@ function WorkspaceContent() {
             }
           }
 
-          // Hydrate DB Environment & Night Mode
           if (vis.global_environment?.isNightMode !== undefined) {
             setIsNightMode(vis.global_environment.isNightMode);
           }
 
-          // Hydrate DB Wall Paints, Finishes & Floor Texture
           const roomObj = vis.room_data || vis.roomData || vis.default_room_data;
           if (roomObj) {
             if (roomObj.wallColors || roomObj.wall_colors) {
@@ -185,7 +178,6 @@ function WorkspaceContent() {
     };
   }, [urlDesignId, urlTemplateId, accessToken, BACKEND_API_URL]);
 
-  // 🔄 Automatic Network Reconnect DB Sync Listener
   useEffect(() => {
     const cleanup = initOfflineOnlineListener(accessToken);
     return () => cleanup();
@@ -246,8 +238,8 @@ function WorkspaceContent() {
     return (
       <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 text-white font-mono">
         <div className="w-8 h-8 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs uppercase font-black tracking-widest text-[#FF8C38]">
-          Loading Spatial Master Canvas...
+        <span className="text-xs uppercase font-bold tracking-widest text-[#FF8C38]">
+          Loading Master Canvas...
         </span>
       </div>
     );
@@ -255,42 +247,49 @@ function WorkspaceContent() {
 
   return (
     <div className="fixed inset-0 z-[100] w-screen h-screen bg-neutral-950 overflow-hidden select-none">
-      {/* 🚀 FLOATING FULL-SCREEN HEADER OVERLAY */}
-      <div className="absolute top-4 left-4 z-50 pointer-events-auto flex items-center gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-neutral-800 px-4 py-2 rounded-2xl shadow-2xl">
-        <button
-          onClick={() => router.back()}
-          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
-          title="Exit Workspace"
-        >
-          ◀
-        </button>
-        <div>
-          <h1 className="text-xs font-black uppercase text-white tracking-wide truncate max-w-[160px] sm:max-w-xs">
-            {designTitle}
-          </h1>
-          <span className="text-[9px] font-mono text-[#FF8C38] block leading-none">
-            Painter Workspace • Full Screen
-          </span>
+      {/* MOBILE-RESPONSIVE FLOATING HEADER OVERLAY */}
+      <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-auto z-50 pointer-events-auto flex items-center justify-between sm:justify-start gap-2 sm:gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-neutral-800 p-2 sm:px-4 sm:py-2 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={() => router.back()}
+            className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all shrink-0"
+            title="Exit Workspace"
+          >
+            ◀
+          </button>
+          <div className="min-w-0 truncate">
+            <h1 className="text-xs font-bold uppercase text-white tracking-wide truncate max-w-[110px] sm:max-w-xs">
+              {designTitle}
+            </h1>
+            <span className="text-[9px] font-mono text-[#FF8C38] block leading-none truncate hidden sm:block">
+              PaintIT 3D Studio • Workspace
+            </span>
+          </div>
         </div>
-        <button
-          onClick={() => {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-              document.exitFullscreen().catch(() => {});
-            }
-          }}
-          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
-          title="Toggle Native Fullscreen"
-        >
-          ⛶
-        </button>
-        <button
-          onClick={() => setSaveModalOpen(true)}
-          className="px-3.5 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
-        >
-          <span>💾 SAVE CONCEPT</span>
-        </button>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => {
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+              } else {
+                document.exitFullscreen().catch(() => {});
+              }
+            }}
+            className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+            title="Toggle Native Fullscreen"
+          >
+            ⛶
+          </button>
+          <button
+            onClick={() => setSaveModalOpen(true)}
+            className="px-3 py-1.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
+          >
+            <span>💾</span>
+            <span className="hidden sm:inline">SAVE CONCEPT</span>
+            <span className="inline sm:hidden font-bold">SAVE</span>
+          </button>
+        </div>
       </div>
 
       {/* 🟢 100% FULL-SCREEN UNIFIED MASTER CANVAS VIEWPORT */}
@@ -337,7 +336,7 @@ function WorkspaceContent() {
               },
             },
             enableAutoCutaway: true,
-            isAdmin: false, // 🔒 Painter mode: hides raw lighting glides!
+            isAdmin: false,
             hideLightingTab: false,
           }}
           savedCameraConfig={savedCameraConfig}
@@ -397,13 +396,13 @@ function WorkspaceContent() {
 
       {/* SAVE CONCEPT MODAL */}
       {saveModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
-          <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 p-6 rounded-3xl shadow-2xl space-y-4 text-white">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm sm:max-w-md bg-neutral-900 border border-neutral-800 p-5 sm:p-6 rounded-3xl shadow-2xl space-y-4 text-white">
             <div className="space-y-1">
-              <h3 className="text-sm font-black uppercase tracking-wider text-neutral-100">
-                Save Color Concept
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                <span>💾 Save Color Concept</span>
               </h3>
-              <p className="text-[11px] text-neutral-400 font-sans">
+              <p className="text-xs text-neutral-400">
                 Specify a name to register this design concept in your 3D portfolio.
               </p>
             </div>
@@ -416,7 +415,7 @@ function WorkspaceContent() {
                 placeholder="e.g. Executive Minimalist Living Room"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 focus:border-[#FF8C38] rounded-2xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-sans"
+                className="w-full bg-neutral-950 border border-neutral-800 focus:border-[#FF8C38] rounded-2xl px-4 py-3 text-xs text-white placeholder-neutral-500 focus:outline-none transition-all"
               />
 
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -424,14 +423,14 @@ function WorkspaceContent() {
                   type="button"
                   disabled={isSaving}
                   onClick={() => setSaveModalOpen(false)}
-                  className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-neutral-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-[#FF8C38] disabled:bg-orange-800 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] disabled:bg-stone-600 text-black text-xs font-bold uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center gap-2"
                 >
                   {isSaving ? "Saving..." : "Confirm Save ➔"}
                 </button>
@@ -450,7 +449,7 @@ export default function WorkspacePage() {
       fallback={
         <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 font-mono text-white">
           <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-black">
+          <span className="text-xs tracking-widest text-neutral-500 uppercase font-bold">
             Loading Spatial Parameters...
           </span>
         </div>
