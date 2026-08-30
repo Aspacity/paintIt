@@ -27,6 +27,7 @@ function LoginContent() {
     const urlRefresh = searchParams?.get("refresh");
     const urlEmail = searchParams?.get("email");
     const urlName = searchParams?.get("name");
+    const urlRole = searchParams?.get("role") || "PAINTER";
 
     if (urlToken && urlRefresh) {
       showToast({ message: "Google Sign-In successful! Logging you in...", severity: "success" });
@@ -34,7 +35,7 @@ function LoginContent() {
         id: "oauth-user",
         email: urlEmail || "member@aspacity.com",
         fullName: urlName || "Aspacity Member",
-        role: "CONSUMER",
+        role: (urlRole.toUpperCase() === "PAINTER" ? "PAINTER" : "CONSUMER"),
       });
       setTimeout(() => {
         window.location.href = redirect || "/dashboard";

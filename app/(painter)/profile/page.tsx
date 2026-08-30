@@ -42,7 +42,7 @@ export default function AccountProfileWorkspacePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     const fetchActiveProfileSettings = async () => {
@@ -194,12 +194,12 @@ export default function AccountProfileWorkspacePage() {
       isDark ? "text-white" : "text-stone-900"
     }`}>
 
-      {/* Header Bar */}
-      <div className={`flex items-center justify-between border-b pb-5 ${
+      {/* MOBILE-RESPONSIVE TOP HEADER BAR */}
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 ${
         isDark ? "border-neutral-900" : "border-stone-200"
       }`}>
         <div>
-          <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          <h1 className={`text-lg sm:text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
             Painter Business Profile
           </h1>
           <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
@@ -207,11 +207,11 @@ export default function AccountProfileWorkspacePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => router.push("/settings")}
-            className="px-3.5 py-2 bg-[#FF8C38]/15 hover:bg-[#FF8C38] border border-[#FF8C38]/30 text-[#FF8C38] hover:text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+            className="flex-1 sm:flex-none px-3.5 py-2 bg-[#FF8C38]/15 hover:bg-[#FF8C38] border border-[#FF8C38]/30 text-[#FF8C38] hover:text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs text-center"
           >
             ⚙️ Password & Security
           </button>
@@ -219,7 +219,7 @@ export default function AccountProfileWorkspacePage() {
           <button
             type="button"
             onClick={logout}
-            className="block sm:hidden px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+            className="block sm:hidden px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs text-center"
           >
             Logout 👋
           </button>
@@ -237,7 +237,7 @@ export default function AccountProfileWorkspacePage() {
       )}
 
       {/* AVATAR MANAGEMENT BLOCK */}
-      <div className={`p-6 border rounded-2xl flex flex-col sm:flex-row items-center gap-5 shadow-md relative overflow-hidden ${
+      <div className={`p-5 sm:p-6 border rounded-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-5 shadow-md relative overflow-hidden ${
         isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
       }`}>
         <div className="w-16 h-16 rounded-2xl bg-[#FF8C38] text-black font-bold text-2xl flex items-center justify-center tracking-widest relative overflow-hidden shrink-0 shadow-xs select-none">
@@ -280,7 +280,7 @@ export default function AccountProfileWorkspacePage() {
         </div>
       </div>
 
-      <form onSubmit={handleProfileSave} className={`space-y-5 border rounded-2xl p-6 shadow-md ${
+      <form onSubmit={handleProfileSave} className={`space-y-5 border rounded-2xl p-5 sm:p-6 shadow-md ${
         isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
       }`}>
 
@@ -290,14 +290,14 @@ export default function AccountProfileWorkspacePage() {
             <label className={`text-[10px] uppercase font-bold tracking-wider block mb-1.5 ${
               isDark ? "text-neutral-500" : "text-stone-500"
             }`}>Email Address</label>
-            <div className={`w-full px-3.5 py-2.5 border rounded-xl text-xs select-all cursor-not-allowed font-medium ${
+            <div className={`w-full px-3.5 py-2.5 border rounded-xl text-xs select-all cursor-not-allowed font-medium truncate ${
               isDark ? "bg-neutral-900/40 border-neutral-900 text-neutral-400" : "bg-stone-100 border-stone-200 text-stone-600"
             }`}>
               {profile?.email}
             </div>
           </div>
           <div>
-            <label className={`text-[10px] uppercase font-bold tracking-wider block mb-1.5 text-center ${
+            <label className={`text-[10px] uppercase font-bold tracking-wider block mb-1.5 text-left sm:text-center ${
               isDark ? "text-neutral-500" : "text-stone-500"
             }`}>Account Tier</label>
             <div className="w-full px-3.5 py-2.5 bg-[#FF8C38]/15 border border-[#FF8C38]/30 rounded-xl text-xs text-[#FF8C38] font-bold uppercase tracking-wider text-center select-none cursor-not-allowed">
