@@ -80,7 +80,7 @@ function WorkspaceContent() {
   const [saveName, setSaveName] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // Saved DB Camera Configuration State
   const [savedCameraConfig, setSavedCameraConfig] = useState<CameraConfigPayload | null>(null);

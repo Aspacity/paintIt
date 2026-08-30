@@ -409,7 +409,7 @@ export default function PublicProfileAndConceptPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [importing, setImporting] = useState<boolean>(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   const startDrag = () => {
     isDragging.current = true;

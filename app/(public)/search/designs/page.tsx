@@ -23,7 +23,7 @@ export default function PublicDesignTemplatesDirectoryPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // FETCH DYNAMIC CATALOG FROM BACKEND API
   useEffect(() => {

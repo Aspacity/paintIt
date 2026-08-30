@@ -52,7 +52,7 @@ export default function PaintPicker({
   const [newColorHex, setNewColorHex] = useState("#10B981");
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   const combinedPaintDeck = [
     ...REAL_PAINTS_CATALOG.map(p => ({ name: p.name, hex: p.code, brand: p.brand })),

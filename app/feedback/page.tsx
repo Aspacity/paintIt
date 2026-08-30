@@ -24,7 +24,7 @@ export default function UserFeedbackHubPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
   const userRole = (user?.role || "GUEST").toUpperCase();
 
   const roleCategoriesMap: Record<string, string[]> = {
