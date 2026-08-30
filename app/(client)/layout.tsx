@@ -35,7 +35,7 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
 
       {/* MOBILE TOP HEADER BAR */}
       <header className={`md:hidden w-full border-b px-4 py-3 flex items-center justify-between z-40 sticky top-0 ${
-        isDark ? "bg-black/90 border-neutral-900" : "bg-white/90 border-stone-200"
+        isDark ? "bg-black/90 border-neutral-900 text-white" : "bg-white/90 border-stone-200 text-stone-900"
       }`}>
         <Logo size="sm" subtitle="Client" textColor={isDark ? "text-white" : "text-stone-900"} />
 
@@ -53,22 +53,32 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
           <button
             type="button"
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className={`p-2 rounded-xl text-xs font-bold border ${
+            className={`p-2 rounded-xl text-xs font-bold border transition-all ${
               isDark ? "bg-neutral-900 border-neutral-800 text-white" : "bg-stone-100 border-stone-300 text-stone-900"
             }`}
+            aria-label="Toggle menu"
           >
             {isMobileOpen ? "✕" : "☰"}
           </button>
         </div>
       </header>
 
-      {/* DESKTOP & MOBILE SIDEBAR NAVIGATION */}
-      <aside className={`border-r p-4 shrink-0 flex flex-col justify-between transition-all duration-300 ${
-        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
-      } ${
-        isMobileOpen ? "block fixed inset-0 z-50 w-full p-6" : "hidden md:flex"
-      } ${isCollapsed ? "md:w-20" : "md:w-64"}`}>
+      {/* MOBILE BACKDROP OVERLAY */}
+      {isMobileOpen && (
+        <div
+          onClick={() => setIsMobileOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300 animate-fade-in"
+        />
+      )}
 
+      {/* DESKTOP & SLIDING MOBILE SIDEBAR NAVIGATION */}
+      <aside
+        className={`fixed md:static top-0 bottom-0 left-0 z-50 p-4 shrink-0 flex flex-col justify-between border-r transition-all duration-300 ease-in-out ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        } ${
+          isMobileOpen ? "translate-x-0 w-72 shadow-2xl" : "-translate-x-full md:translate-x-0"
+        } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
+      >
         {/* Top Section: Identity & Navigation */}
         <div className="space-y-6">
           {/* Header Brand & Desktop Collapse Toggle */}
@@ -90,7 +100,7 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
             {isMobileOpen && (
               <button
                 onClick={() => setIsMobileOpen(false)}
-                className="md:hidden text-xs font-bold uppercase text-stone-500"
+                className="md:hidden text-xs font-bold uppercase text-stone-400 hover:text-stone-900"
               >
                 ✕ Close
               </button>
@@ -172,36 +182,9 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
       </aside>
 
       {/* MAIN VIEWPORT DISPLAY AREA */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-8 max-w-5xl w-full mx-auto">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-12 max-w-5xl w-full mx-auto">
         {children}
       </main>
-
-      {/* MOBILE FLOATING BOTTOM DOCK */}
-      <nav className={`md:hidden fixed bottom-4 left-4 right-4 h-16 backdrop-blur-md border rounded-2xl flex items-center justify-around px-2 z-40 shadow-2xl ${
-        isDark ? "bg-black/90 border-neutral-900 text-white" : "bg-white/90 border-stone-300 text-stone-900"
-      }`}>
-        {coreNavigationTabs.map((tab) => {
-          const isActive = pathname === tab.path;
-          return (
-            <Link
-              key={tab.path}
-              href={tab.path}
-              className={`flex flex-col items-center justify-center w-14 h-12 rounded-xl transition-all ${
-                isActive
-                  ? "text-[#FF8C38] font-bold scale-105"
-                  : isDark
-                  ? "text-neutral-500"
-                  : "text-stone-400"
-              }`}
-            >
-              <span className="text-base">{tab.icon}</span>
-              <span className="text-[8px] font-bold uppercase tracking-widest mt-0.5 text-center truncate max-w-full px-0.5">
-                {tab.shortName}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
 
     </div>
   );
