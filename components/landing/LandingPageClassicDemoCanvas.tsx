@@ -203,7 +203,7 @@ export default function LandingPageClassicDemoCanvas() {
         <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
           {/* Active Swatch Badge */}
           <div className="pointer-events-auto flex items-center gap-2 bg-neutral-950/85 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-neutral-800 shadow-xl">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FF8C38] animate-pulse" />
             <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">
               {selectedSwatch.name} • {activeFinish}
             </span>
@@ -229,7 +229,7 @@ export default function LandingPageClassicDemoCanvas() {
               onClick={() => setIsLampOn(!isLampOn)}
               className={`px-3 py-1 text-[10px] font-mono font-bold uppercase rounded-xl border transition-all ${
                 isLampOn
-                  ? "bg-emerald-950 text-emerald-300 border-emerald-500/50"
+                  ? "bg-neutral-950 text-orange-300 border-[#FF8C38]/60"
                   : "bg-neutral-900 text-neutral-500 border-neutral-800"
               }`}
               title="Toggle Interior Lamp ON / OFF"
@@ -248,13 +248,13 @@ export default function LandingPageClassicDemoCanvas() {
         </div>
 
         {/* 📢 REGISTER CTA BENCHMARK BANNER */}
-        <div className="absolute bottom-16 left-4 right-4 z-10 pointer-events-auto flex items-center justify-between bg-emerald-500/10 backdrop-blur-xl border border-emerald-500/30 px-3.5 py-2 rounded-2xl shadow-2xl">
-          <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider truncate">
+        <div className="absolute bottom-16 left-4 right-4 z-10 pointer-events-auto flex items-center justify-between bg-[#FF8C38]/15 backdrop-blur-xl border border-[#FF8C38]/40 px-3.5 py-2 rounded-2xl shadow-2xl">
+          <span className="text-[10px] font-bold text-orange-300 uppercase tracking-wider truncate">
             ⚡ Full Studio Workspace: PBR Textures, Color Mixer & 3D Assembly
           </span>
           <Link
             href="/register"
-            className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow transition-all shrink-0 active:scale-95"
+            className="px-3 py-1 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow transition-all shrink-0 active:scale-95"
           >
             Register for Free ➔
           </Link>
@@ -276,7 +276,7 @@ export default function LandingPageClassicDemoCanvas() {
                 onClick={() => setActiveColor(swatch.hex)}
                 className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border transition-all shrink-0 ${
                   isSelected
-                    ? "bg-neutral-800 border-emerald-400 ring-2 ring-emerald-400/20 shadow-lg scale-105"
+                    ? "bg-neutral-800 border-[#FF8C38] ring-2 ring-orange-400/20 shadow-lg scale-105"
                     : "bg-neutral-950/60 border-neutral-800 hover:border-neutral-700"
                 }`}
               >
@@ -298,7 +298,7 @@ export default function LandingPageClassicDemoCanvas() {
               onClick={() => setActiveFinish(finish)}
               className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg transition-all ${
                 activeFinish === finish
-                  ? "bg-emerald-500 text-neutral-950 font-black shadow"
+                  ? "bg-[#FF8C38] text-neutral-950 font-black shadow"
                   : "text-neutral-400 hover:text-white"
               }`}
             >

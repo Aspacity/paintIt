@@ -142,7 +142,7 @@ export default function PainterLeadsAndGigsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider">
+          <span className="text-[10px] bg-[#FF8C38]/15 border border-[#FF8C38]/40 text-[#FF8C38] px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider">
             {leads.length} Total Leads
           </span>
         </div>
@@ -156,7 +156,7 @@ export default function PainterLeadsAndGigsPage() {
         </div>
         <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
           <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">WhatsApp Direct</span>
-          <span className="text-xl font-black text-emerald-400 block mt-0.5">
+          <span className="text-xl font-black text-[#FF8C38] block mt-0.5">
             {leads.filter((l) => !!l.client_phone).length}
           </span>
         </div>
@@ -180,7 +180,7 @@ export default function PainterLeadsAndGigsPage() {
             onClick={() => setFilterSource(source)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterSource === source
-                ? "bg-emerald-500 text-neutral-950 font-black shadow-md"
+                ? "bg-[#FF8C38] text-neutral-950 font-black shadow-md"
                 : "bg-neutral-950 border border-neutral-850 text-neutral-400 hover:text-white"
             }`}
           >
@@ -192,7 +192,7 @@ export default function PainterLeadsAndGigsPage() {
       {/* Main Inbox Feed */}
       {loading ? (
         <div className="py-16 text-center">
-          <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
           <p className="text-xs text-neutral-500">Loading your client inquiries...</p>
         </div>
       ) : filteredLeads.length === 0 ? (
@@ -208,7 +208,7 @@ export default function PainterLeadsAndGigsPage() {
               navigator.clipboard.writeText(link);
               showToast({ message: "Profile link copied to clipboard!", severity: "success" });
             }}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase rounded-xl shadow-md transition-all"
+            className="px-4 py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-xs font-black uppercase rounded-xl shadow-md transition-all"
           >
             🔗 Copy Profile Link
           </button>

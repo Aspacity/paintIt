@@ -6,22 +6,22 @@ export default function FutureVision() {
   return (
     <section id="roadmap" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
           OUR BIG VISION
         </span>
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white">
           Building the Platform for Physical Spaces
         </h2>
         <p className="text-xs sm:text-sm text-neutral-300 font-normal">
-          PaintIT Studio is expanding step-by-step into a complete 3D spatial design engine. Here is what we are building.
+          PaintIT is expanding step-by-step into a complete 3D spatial design engine. Here is what we are building.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-6 rounded-2xl bg-neutral-900/80 border border-emerald-500/40 space-y-4 relative overflow-hidden">
+        <div className="p-6 rounded-2xl bg-neutral-900/80 border border-[#FF8C38]/50 space-y-4 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-2xl">🎨</span>
-            <span className="px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-[#FF8C38]/25 text-orange-300 border border-[#FF8C38]/40">
               AVAILABLE NOW
             </span>
           </div>

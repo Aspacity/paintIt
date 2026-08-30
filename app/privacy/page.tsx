@@ -4,8 +4,8 @@ import LandingNavbar from "@/components/landing/LandingNavbar";
 import FooterSection from "@/components/landing/FooterSection";
 
 export const metadata = {
-  title: "Privacy Policy | PaintIT Studio",
-  description: "Privacy Policy for PaintIT Studio visualization platform.",
+  title: "Privacy Policy | PaintIT",
+  description: "Privacy Policy for PaintIT visualization platform.",
 };
 
 export default function PrivacyPage() {
@@ -16,13 +16,13 @@ export default function PrivacyPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="mb-8">
           <Link href="/" className="text-xs font-bold text-[#C86D51] uppercase tracking-wider hover:underline">
-            ← Back to PaintIT Studio
+            ← Back to PaintIT
           </Link>
           <h1 className="text-4xl font-bold tracking-tight mt-3 text-stone-900">
             Privacy Policy
           </h1>
           <p className="text-xs text-stone-500 mt-1 font-mono">
-            Last Updated: August 2026 • PaintIT Studio Legal Placeholder Structure
+            Last Updated: August 2026 • PaintIT Legal Placeholder Structure
           </p>
         </div>
 
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="text-lg font-bold text-stone-900">1. Information We Collect</h2>
             <p>
-              PaintIT Studio collects minimal technical and session data necessary to provide room visualization previews. This may include uploaded room photos, custom wall color selections, and basic analytics metrics to improve performance.
+              PaintIT collects minimal technical and session data necessary to provide room visualization previews. This may include uploaded room photos, custom wall color selections, and basic analytics metrics to improve performance.
             </p>
           </section>
 

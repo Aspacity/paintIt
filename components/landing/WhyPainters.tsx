@@ -11,7 +11,7 @@ export default function WhyPainters() {
             <span className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider">
               Painters & Contractors Workflow
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF8C38] bg-[#FF8C38]/15 px-2.5 py-0.5 rounded border border-[#FF8C38]/30">
               For Painters
             </span>
           </div>
@@ -44,7 +44,7 @@ export default function WhyPainters() {
         </div>
 
         <div className="lg:col-span-6 space-y-5 order-1 lg:order-2">
-          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
             FOR PAINTERS & CONTRACTORS
           </span>
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
@@ -62,7 +62,7 @@ export default function WhyPainters() {
               "Build a verified portfolio of 3D transformed rooms to attract new clients",
             ].map((benefit, idx) => (
               <div key={idx} className="flex items-center gap-3 text-xs text-neutral-300 font-medium">
-                <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-[10px] shrink-0">
+                <div className="w-5 h-5 rounded-full bg-[#FF8C38]/15 border border-[#FF8C38]/40 text-[#FF8C38] flex items-center justify-center text-[10px] shrink-0">
                   ✓
                 </div>
                 <span>{benefit}</span>

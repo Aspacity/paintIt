@@ -181,7 +181,7 @@ export default function AdminPlaygroundCatalog() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/admin/modular-sandbox')}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] active:scale-95 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2"
             >
               <span>🧱 3D Room Assembling Studio</span>
             </button>

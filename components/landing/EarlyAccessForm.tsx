@@ -28,14 +28,14 @@ export default function EarlyAccessForm() {
   return (
     <section id="early-access" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
       <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-950 border border-neutral-800 shadow-2xl text-center space-y-6 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-emerald-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[#FF8C38]/15 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-3">
-          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+          <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
             EARLY ACCESS PROGRAM
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-            Experience PaintIT Studio First.
+            Experience PaintIT First.
           </h2>
           <p className="text-xs sm:text-sm text-neutral-400 max-w-xl mx-auto font-normal leading-relaxed">
             Join property owners, professional painters, and interior designers who are transforming how physical spaces are visualized and built.
@@ -51,7 +51,7 @@ export default function EarlyAccessForm() {
                   type="button"
                   onClick={() => setRole(r)}
                   className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
-                    role === r ? "bg-emerald-500 text-neutral-950 font-black shadow-md" : "text-neutral-400 hover:text-white"
+                    role === r ? "bg-[#FF8C38] text-neutral-950 font-black shadow-md" : "text-neutral-400 hover:text-white"
                   }`}
                 >
                   {r}
@@ -67,12 +67,12 @@ export default function EarlyAccessForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
-                className="flex-1 h-12 px-4 bg-neutral-950 border border-neutral-800 rounded-xl text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500 transition"
+                className="flex-1 h-12 px-4 bg-neutral-950 border border-neutral-800 rounded-xl text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#FF8C38] transition"
               />
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-12 px-6 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/15 active:scale-95 transition-all shrink-0 flex items-center justify-center"
+                className="h-12 px-6 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20/15 active:scale-95 transition-all shrink-0 flex items-center justify-center"
               >
                 {isSubmitting ? "Securing Access..." : "Request Early Access"}
               </button>
@@ -84,12 +84,12 @@ export default function EarlyAccessForm() {
           </form>
         ) : (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 flex items-center justify-center mx-auto text-xl font-bold">
+            <div className="w-12 h-12 rounded-full bg-[#FF8C38]/25 border border-[#FF8C38] text-[#FF8C38] flex items-center justify-center mx-auto text-xl font-bold">
               ✓
             </div>
             <h3 className="text-xl font-bold text-white">You&apos;re On The Early Access List</h3>
             <p className="text-xs text-neutral-400">
-              Thank you for registering as a <strong className="text-emerald-400 uppercase">{role}</strong>. We&apos;ll notify you directly as new spatial modules launch.
+              Thank you for registering as a <strong className="text-[#FF8C38] uppercase">{role}</strong>. We&apos;ll notify you directly as new spatial modules launch.
             </p>
           </motion.div>
         )}

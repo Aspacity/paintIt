@@ -23,10 +23,10 @@ export const StepOnboarding: React.FC<StepOnboardingProps> = ({
 }) => {
   return (
     <div className="w-full max-w-sm mx-auto p-5 bg-neutral-900 border border-neutral-800/60 rounded-2xl shadow-xl text-white text-left relative overflow-hidden animate-fade-in">
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-emerald-500 via-transparent to-transparent" />
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-orange-500 via-transparent to-transparent" />
 
       <div className="text-center mb-5">
-        <h3 className="text-base font-black tracking-tight text-emerald-400">{title}</h3>
+        <h3 className="text-base font-black tracking-tight text-[#FF8C38]">{title}</h3>
         <p className="text-xs text-neutral-400 mt-1 leading-relaxed px-1">{subtitle}</p>
       </div>
 
@@ -37,7 +37,7 @@ export const StepOnboarding: React.FC<StepOnboardingProps> = ({
             key={step.id}
             className="flex items-center gap-3 p-3 bg-neutral-950 border border-neutral-800/30 rounded-xl"
           >
-            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold shrink-0">
+            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] text-[10px] font-bold shrink-0">
               {step.id}
             </div>
             <div>
@@ -51,7 +51,7 @@ export const StepOnboarding: React.FC<StepOnboardingProps> = ({
       <button
         type="button"
         onClick={onCtaClick}
-        className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-neutral-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all active:scale-[0.99] shadow-md shadow-emerald-500/5"
+        className="w-full py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-neutral-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all active:scale-[0.99] shadow-md shadow-orange-500/10"
       >
         {ctaText}
       </button>

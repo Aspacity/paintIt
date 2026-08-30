@@ -20,7 +20,7 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: {
     default: "PaintIt // Interactive 3D Room Studio & Color Customizer",
-    template: "%s | PaintIt Studio",
+    template: "%s | PaintIT",
   },
   manifest: "/manifest.json",
   description: "See your colors before the first brush stroke. The premium architectural visualization tool designed for modern interior designers, decorators, and painters to close bids faster.",
@@ -32,17 +32,17 @@ export const metadata: Metadata = {
     "Hostel painting portfolio",
     "Architectural paint visualizer"
   ],
-  authors: [{ name: "PaintIt Studio Team" }],
-  creator: "PaintIt Studio",
-  publisher: "PaintIt Studio",
+  authors: [{ name: "PaintIT Team" }],
+  creator: "PaintIT",
+  publisher: "PaintIT",
 
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://paintit-six.vercel.app",
-    title: "See Your Room Colors Instantly in 3D | PaintIt Studio",
+    title: "See Your Room Colors Instantly in 3D | PaintIT",
     description: "Eradicate paint choice guesswork. Let clients customize walls, view ambient daylight shifts, and finalize space aesthetics interactively before buying paint.",
-    siteName: "PaintIt Studio",
+    siteName: "PaintIT",
     images: [
       {
         url: "/og-image.png",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "PaintIt Studio // Immersive Spatial Finishes Preview Engine",
+    title: "PaintIT // Immersive Spatial Finishes Preview Engine",
     description: "Stop carrying paper color swatches to client briefs. Win your project contracts using interactive 3D visualization.",
     images: ["/og-image.png"],
   },

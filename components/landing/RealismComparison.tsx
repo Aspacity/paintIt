@@ -28,7 +28,7 @@ export default function RealismComparison() {
     <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none border-t border-neutral-900">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 space-y-2 sm:space-y-3">
-        <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+        <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
           REAL-WORLD ACCURACY
         </span>
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
@@ -60,7 +60,7 @@ export default function RealismComparison() {
           />
           {/* Badge */}
           <div className="absolute top-3 right-3 z-10">
-            <span className="px-2.5 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-lg bg-emerald-500 text-neutral-950 shadow-lg">
+            <span className="px-2.5 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-lg bg-[#FF8C38] text-neutral-950 shadow-lg">
               ✨ 3D Painted Preview
             </span>
           </div>
@@ -68,7 +68,7 @@ export default function RealismComparison() {
 
         {/* LEFT IMAGE: Raw Unpainted Concrete Shell */}
         <div
-          className="absolute inset-y-0 left-0 bg-neutral-950 overflow-hidden border-r-2 border-emerald-400"
+          className="absolute inset-y-0 left-0 bg-neutral-950 overflow-hidden border-r-2 border-[#FF8C38]"
           style={{ width: `${sliderPosition}%` }}
         >
           <div className="relative w-full h-full min-w-[260px] sm:min-w-[500px]">
@@ -91,10 +91,10 @@ export default function RealismComparison() {
 
         {/* SLIDER DRAG HANDLE */}
         <div
-          className="absolute top-0 bottom-0 w-1 bg-emerald-400 shadow-2xl pointer-events-none"
+          className="absolute top-0 bottom-0 w-1 bg-[#FF8C38] shadow-2xl pointer-events-none"
           style={{ left: `${sliderPosition}%` }}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-neutral-900 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center text-xs font-bold shadow-2xl">
+          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-neutral-900 border-2 border-[#FF8C38] text-[#FF8C38] flex items-center justify-center text-xs font-bold shadow-2xl">
             ↔
           </div>
         </div>

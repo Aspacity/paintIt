@@ -242,8 +242,8 @@ function PlaygroundCanvasContent() {
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 text-white font-mono">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
+        <div className="w-8 h-8 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs uppercase font-black tracking-widest text-[#FF8C38]">
           Loading Master Studio Playground...
         </span>
       </div>
@@ -256,7 +256,7 @@ function PlaygroundCanvasContent() {
       <div className="absolute top-20 left-4 z-40 pointer-events-auto flex items-center gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-neutral-800 px-4 py-2.5 rounded-2xl shadow-2xl">
         <button
           onClick={() => router.back()}
-          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
           title="Go Back"
         >
           ◀
@@ -265,7 +265,7 @@ function PlaygroundCanvasContent() {
           <h1 className="text-xs font-black uppercase text-white tracking-wide truncate max-w-[200px] sm:max-w-xs">
             {designTitle}
           </h1>
-          <span className="text-[9px] font-mono text-emerald-400 block leading-none font-bold">
+          <span className="text-[9px] font-mono text-[#FF8C38] block leading-none font-bold">
             👑 MASTER ADMIN PLAYGROUND STUDIO
           </span>
         </div>
@@ -281,7 +281,7 @@ function PlaygroundCanvasContent() {
           <button
             onClick={handleSavePlaygroundSetup}
             disabled={isSaving}
-            className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
+            className="px-4 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] disabled:bg-orange-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
           >
             <span>{isSaving ? 'SAVING...' : '💾 SAVE CONFIG TO DB'}</span>
           </button>
@@ -431,8 +431,8 @@ export default function DedicatedPlaygroundPage() {
     <Suspense
       fallback={
         <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 font-mono text-white">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] tracking-widest text-emerald-400 uppercase font-black">
+          <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
+          <span className="text-[10px] tracking-widest text-[#FF8C38] uppercase font-black">
             Mounting Master Studio Playground...
           </span>
         </div>

@@ -4,8 +4,8 @@ import LandingNavbar from "@/components/landing/LandingNavbar";
 import FooterSection from "@/components/landing/FooterSection";
 
 export const metadata = {
-  title: "Terms of Service | PaintIT Studio",
-  description: "Terms of Service for PaintIT Studio visualization platform.",
+  title: "Terms of Service | PaintIT",
+  description: "Terms of Service for PaintIT visualization platform.",
 };
 
 export default function TermsPage() {
@@ -16,13 +16,13 @@ export default function TermsPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="mb-8">
           <Link href="/" className="text-xs font-bold text-[#C86D51] uppercase tracking-wider hover:underline">
-            ← Back to PaintIT Studio
+            ← Back to PaintIT
           </Link>
           <h1 className="text-4xl font-bold tracking-tight mt-3 text-stone-900">
             Terms of Service
           </h1>
           <p className="text-xs text-stone-500 mt-1 font-mono">
-            Last Updated: August 2026 • PaintIT Studio Legal Terms Placeholder
+            Last Updated: August 2026 • PaintIT Legal Terms Placeholder
           </p>
         </div>
 
@@ -30,14 +30,14 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-lg font-bold text-stone-900">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using PaintIT Studio, you agree to comply with these Terms of Service. PaintIT Studio provides interior paint simulation and spatial visualization tools.
+              By accessing or using PaintIT, you agree to comply with these Terms of Service. PaintIT provides interior paint simulation and spatial visualization tools.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-lg font-bold text-stone-900">2. Visualization Disclaimer</h2>
             <p>
-              PaintIT Studio renderings are digital simulations intended to assist in spatial decisions. Actual physical paint performance depends on ambient lighting, paint manufacturer formulas, surface preparation, and contractor application.
+              PaintIT renderings are digital simulations intended to assist in spatial decisions. Actual physical paint performance depends on ambient lighting, paint manufacturer formulas, surface preparation, and contractor application.
             </p>
           </section>
 

@@ -53,9 +53,9 @@ export function QuickLeadPopup({ painterId }: QuickLeadPopupProps) {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 max-w-xs w-full bg-neutral-950 border border-neutral-800 p-4 rounded-2xl shadow-2xl animate-slide-up text-white selection:bg-emerald-500 selection:text-black">
+    <div className="fixed bottom-6 right-6 z-50 max-w-xs w-full bg-neutral-950 border border-neutral-800 p-4 rounded-2xl shadow-2xl animate-slide-up text-white selection:bg-[#FF8C38] selection:text-black">
       <div className="flex items-center justify-between border-b border-neutral-900 pb-2 mb-2">
-        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">⚡ PaintIt Insider Updates</span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-[#FF8C38]">⚡ PaintIt Insider Updates</span>
         <button
           onClick={() => { setIsVisible(false); sessionStorage.setItem(`paintit_popup_subscribed_${painterId}`, "dismissed"); }}
           className="text-neutral-500 hover:text-neutral-300 text-xs font-bold px-1"
@@ -65,7 +65,7 @@ export function QuickLeadPopup({ painterId }: QuickLeadPopupProps) {
       </div>
 
       {submitted ? (
-        <p className="text-[11px] text-emerald-400 font-bold py-4 text-center">🎉 Locked in! Thanks for joining o!</p>
+        <p className="text-[11px] text-[#FF8C38] font-bold py-4 text-center">🎉 Locked in! Thanks for joining o!</p>
       ) : (
         <form onSubmit={handleQuickSubmit} className="space-y-2">
           <p className="text-[10px] text-neutral-400 leading-relaxed">
@@ -76,7 +76,7 @@ export function QuickLeadPopup({ painterId }: QuickLeadPopupProps) {
             placeholder="Your First Name (Optional)"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-850 rounded-xl text-[11px] text-white focus:outline-none focus:border-emerald-500/30"
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-850 rounded-xl text-[11px] text-white focus:outline-none focus:border-[#FF8C38]/40"
           />
           <input
             type="email"
@@ -84,11 +84,11 @@ export function QuickLeadPopup({ painterId }: QuickLeadPopupProps) {
             placeholder="Enter Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-850 rounded-xl text-[11px] text-white focus:outline-none focus:border-emerald-500/30"
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-850 rounded-xl text-[11px] text-white focus:outline-none focus:border-[#FF8C38]/40"
           />
           <button
             type="submit"
-            className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+            className="w-full py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
           >
             Get Updates
           </button>

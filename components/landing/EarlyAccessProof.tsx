@@ -23,7 +23,7 @@ export default function EarlyAccessProof() {
     <section id="early-access" className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="bg-neutral-900/70 border border-neutral-850 rounded-3xl p-8 sm:p-14 relative overflow-hidden">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38]">
             EARLY-STAGE COMMITMENT
           </span>
 
@@ -32,7 +32,7 @@ export default function EarlyAccessProof() {
           </h2>
 
           <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl mx-auto font-normal">
-            PaintIT Studio is actively being shaped through direct conversations and feedback from professional painters, homeowners, and interior specialists.
+            PaintIT is actively being shaped through direct conversations and feedback from professional painters, homeowners, and interior specialists.
           </p>
 
           <div className="pt-4 max-w-md mx-auto">
@@ -46,7 +46,7 @@ export default function EarlyAccessProof() {
                       value="painter"
                       checked={role === "painter"}
                       onChange={() => setRole("painter")}
-                      className="accent-emerald-400"
+                      className="accent-orange-400"
                     />
                     <span>I am a Professional Painter</span>
                   </label>
@@ -57,7 +57,7 @@ export default function EarlyAccessProof() {
                       value="homeowner"
                       checked={role === "homeowner"}
                       onChange={() => setRole("homeowner")}
-                      className="accent-emerald-400"
+                      className="accent-orange-400"
                     />
                     <span>I am a Homeowner / Designer</span>
                   </label>
@@ -70,12 +70,12 @@ export default function EarlyAccessProof() {
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="flex-1 bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[#FF8C38] transition-colors"
                   />
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all"
+                    className="px-6 py-3 bg-[#FF8C38] hover:bg-[#FF8C38] disabled:bg-neutral-800 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all"
                   >
                     {submitting ? "Submitting..." : "Join Early Access"}
                   </button>
@@ -89,14 +89,14 @@ export default function EarlyAccessProof() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-neutral-950 border border-emerald-500/30 p-6 rounded-2xl space-y-2 text-center"
+                className="bg-neutral-950 border border-[#FF8C38]/40 p-6 rounded-2xl space-y-2 text-center"
               >
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 font-bold mx-auto flex items-center justify-center text-sm">
+                <div className="w-8 h-8 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] font-bold mx-auto flex items-center justify-center text-sm">
                   ✓
                 </div>
                 <h4 className="text-sm font-bold text-white">Thank you for joining!</h4>
                 <p className="text-xs text-neutral-400 leading-relaxed">
-                  We&apos;ll keep you updated as PaintIT Studio evolves.
+                  We&apos;ll keep you updated as PaintIT evolves.
                 </p>
               </motion.div>
             )}

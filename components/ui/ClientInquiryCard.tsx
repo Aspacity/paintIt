@@ -54,14 +54,14 @@ export function ClientInquiryCard({ lead, isPlanQualified = true }: InquiryCardP
               is3DFeedback
                 ? "bg-cyan-950/40 border-cyan-800/60 text-cyan-400"
                 : isPopupLead
-                ? "bg-emerald-950/30 border-emerald-900/50 text-emerald-400"
+                ? "bg-neutral-950/30 border-[#FF8C38]/40 text-[#FF8C38]"
                 : "bg-neutral-950 border-neutral-850 text-neutral-400"
             }`}
           >
             {is3DFeedback ? "🎨 3D Color Selection" : isPopupLead ? "🎯 Subscriber" : "💼 Job Request"}
           </span>
           {lead.finish && (
-            <span className="text-[9px] uppercase tracking-wider bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 px-2 py-0.5 rounded font-bold">
+            <span className="text-[9px] uppercase tracking-wider bg-neutral-950/60 border border-orange-800/80 text-orange-300 px-2 py-0.5 rounded font-bold">
               ✨ {lead.finish}
             </span>
           )}
@@ -82,7 +82,7 @@ export function ClientInquiryCard({ lead, isPlanQualified = true }: InquiryCardP
       {extractedColors && Object.keys(extractedColors).length > 0 && (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-1">
               🎨 Selected 3D Room Colors ({Object.keys(extractedColors).length} Surfaces)
             </span>
             <button
@@ -128,24 +128,24 @@ export function ClientInquiryCard({ lead, isPlanQualified = true }: InquiryCardP
         ) : (
           <div className="flex flex-wrap items-center gap-2.5 w-full justify-between">
             <a
-              href={`mailto:${displayEmail}?subject=${encodeURIComponent(`PaintIT Studio - Project Inquiry for ${lead.client_name || 'Client'}`)}&body=${encodeURIComponent(`Hi ${lead.client_name || 'there'},\n\nI reviewed your inquiry on PaintIT Studio${extractedColors ? ` and your 3D color selections (${Object.keys(extractedColors).length} surfaces${lead.finish ? ` in ${lead.finish} finish` : ''})` : ''}.\n\nI would be delighted to provide a quote and assist with your project!\n\nBest regards,`)}`}
+              href={`mailto:${displayEmail}?subject=${encodeURIComponent(`PaintIT - Project Inquiry for ${lead.client_name || 'Client'}`)}&body=${encodeURIComponent(`Hi ${lead.client_name || 'there'},\n\nI reviewed your inquiry on PaintIT${extractedColors ? ` and your 3D color selections (${Object.keys(extractedColors).length} surfaces${lead.finish ? ` in ${lead.finish} finish` : ''})` : ''}.\n\nI would be delighted to provide a quote and assist with your project!\n\nBest regards,`)}`}
               className="text-neutral-300 hover:text-white font-medium flex items-center gap-1.5 transition-colors group"
             >
-              ✉️ Real Email: <span className="select-all text-emerald-300 font-mono font-bold bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800 group-hover:border-emerald-500/50">{displayEmail}</span>
+              ✉️ Real Email: <span className="select-all text-orange-300 font-mono font-bold bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800 group-hover:border-[#FF8C38]/60">{displayEmail}</span>
             </a>
 
             {lead.client_phone ? (
               <a
-                href={`https://wa.me/${lead.client_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hello ${lead.client_name || 'there'}! I'm reviewing your inquiry on PaintIT Studio${extractedColors ? ` regarding your 3D color selection (${Object.keys(extractedColors).length} surfaces${lead.finish ? ` in ${lead.finish} finish` : ''})` : ''}. I'd love to assist with your project and provide a quote!`)}`}
+                href={`https://wa.me/${lead.client_phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hello ${lead.client_name || 'there'}! I'm reviewing your inquiry on PaintIT${extractedColors ? ` regarding your 3D color selection (${Object.keys(extractedColors).length} surfaces${lead.finish ? ` in ${lead.finish} finish` : ''})` : ''}. I'd love to assist with your project and provide a quote!`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1.5 text-[10px] uppercase tracking-wider bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-800/60 px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-95"
+                className="text-[#FF8C38] hover:text-orange-300 font-bold hover:underline flex items-center gap-1.5 text-[10px] uppercase tracking-wider bg-[#FF8C38]/15 hover:bg-[#FF8C38]/20/40 border border-orange-800/60 px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-95"
               >
                 💬 WhatsApp Client ➔
               </a>
             ) : (
               <a
-                href={`mailto:${displayEmail}?subject=${encodeURIComponent(`PaintIT Studio - Project Inquiry`)}`}
+                href={`mailto:${displayEmail}?subject=${encodeURIComponent(`PaintIT - Project Inquiry`)}`}
                 className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline flex items-center gap-1 text-[10px] uppercase tracking-wider bg-cyan-950/40 border border-cyan-800/60 px-2.5 py-1 rounded-lg transition-all"
               >
                 ✉️ Email Client ➔

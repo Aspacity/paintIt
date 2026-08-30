@@ -147,7 +147,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Modern Duplex Interior"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
@@ -158,7 +158,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Bodija, Ibadan"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
@@ -172,7 +172,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
               value={colorInput}
               onChange={(e) => setColorInput(e.target.value)}
               placeholder="Hex Emerald Green, Charcoal White, Satin Trim"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
@@ -187,7 +187,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
 
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="group w-full h-24 border border-dashed border-neutral-800 hover:border-emerald-500/40 rounded-xl bg-neutral-900/30 flex flex-col items-center justify-center cursor-pointer transition-colors"
+              className="group w-full h-24 border border-dashed border-neutral-800 hover:border-[#FF8C38]/50 rounded-xl bg-neutral-900/30 flex flex-col items-center justify-center cursor-pointer transition-colors"
             >
               <input
                 type="file"
@@ -197,7 +197,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
                 onChange={handleFileSelectionChange}
                 className="hidden"
               />
-              <span className="text-[11px] font-bold text-neutral-400 group-hover:text-emerald-400 transition-colors">
+              <span className="text-[11px] font-bold text-neutral-400 group-hover:text-[#FF8C38] transition-colors">
                 📸 Click to select site pictures
               </span>
               <span className="text-[9px] text-neutral-500 font-medium block mt-0.5">Supports PNG, JPG up to 4 images total</span>
@@ -233,7 +233,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Provide premium details about wall prep work, finishing gloss texturing choices, etc."
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors resize-none"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors resize-none"
             />
           </div>
 
@@ -249,7 +249,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-800 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg"
+              className="flex-1 py-3 bg-[#FF8C38] hover:bg-[#FF8C38] disabled:bg-neutral-800 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg"
             >
               {isSaving ? "Uploading & Saving Project..." : "Save Project"}
             </button>

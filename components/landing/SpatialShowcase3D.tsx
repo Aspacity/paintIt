@@ -8,7 +8,7 @@ export default function SpatialShowcase3D() {
     <section id="showcase-3d" className="relative py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
           INTERACTIVE SPATIAL ENGINE
         </span>
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white">

@@ -120,7 +120,7 @@ export default function Painter3DStudioDashboardHub() {
       if (res.ok) {
         const data = await res.json();
         const whatsappText = encodeURIComponent(
-          `Hello! Check out the custom 3D wall color scheme layout I designed for your property on PaintIt Studio: ${window.location.origin}/view/${data.shareId}`
+          `Hello! Check out the custom 3D wall color scheme layout I designed for your property on PaintIT: ${window.location.origin}/view/${data.shareId}`
         );
         window.open(`https://wa.me/?text=${whatsappText}`, "_blank");
         showToast({ message: "WhatsApp link generated successfully.", severity: "success" });
@@ -181,21 +181,21 @@ export default function Painter3DStudioDashboardHub() {
   if (isLoading) {
     return (
       <div className="min-h-[50vh] w-full flex flex-col items-center justify-center gap-3">
-        <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
         <span className="text-[10px] uppercase text-neutral-600 font-bold tracking-widest">Opening 3D Workspace Engine...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-emerald-500 selection:text-black">
+    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-[#FF8C38] selection:text-black">
 
       {/* HEADER SECTION */}
       <div className="border-b border-neutral-900 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
             <span>3D Design Studio</span>
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40">
               PAINTER PRO
             </span>
           </h1>
@@ -206,7 +206,7 @@ export default function Painter3DStudioDashboardHub() {
 
         <Link
           href="/designs/workspace"
-          className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0"
+          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0"
         >
           <span>🎨 Open Painter 3D Studio Workspace ➔</span>
         </Link>
@@ -276,7 +276,7 @@ export default function Painter3DStudioDashboardHub() {
             <button
               type="button"
               onClick={() => document.getElementById("catalog-section-scroller")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-4 py-2 bg-neutral-900 border border-neutral-800 text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+              className="px-4 py-2 bg-neutral-900 border border-neutral-800 text-[#FF8C38] text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
             >
               ↓ View Room Catalog
             </button>
@@ -299,7 +299,7 @@ export default function Painter3DStudioDashboardHub() {
 
                 <div className="space-y-3 pr-12">
                   <div>
-                    <h4 className="text-sm font-black text-neutral-100 uppercase tracking-wide group-hover:text-emerald-400 transition-colors truncate">
+                    <h4 className="text-sm font-black text-neutral-100 uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate">
                       {design.name}
                     </h4>
                     <p className="text-[10px] text-neutral-500 mt-0.5 font-medium">
@@ -322,7 +322,7 @@ export default function Painter3DStudioDashboardHub() {
                   <button
                     type="button"
                     onClick={() => shareToWhatsAppStream(design)}
-                    className="px-3.5 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 border border-emerald-500/20 hover:text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center"
+                    className="px-3.5 py-2 bg-[#FF8C38]/15 text-[#FF8C38] hover:bg-[#FF8C38] border border-[#FF8C38]/30 hover:text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center"
                   >
                     💬 Share
                   </button>
@@ -351,7 +351,7 @@ export default function Painter3DStudioDashboardHub() {
                 type="button"
                 onClick={() => setActiveTab(categoryKey)}
                 className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === categoryKey
-                  ? "bg-neutral-900 text-emerald-400 border border-neutral-800"
+                  ? "bg-neutral-900 text-[#FF8C38] border border-neutral-800"
                   : "text-neutral-500 hover:text-neutral-300"
                   }`}
               >
@@ -392,14 +392,14 @@ export default function Painter3DStudioDashboardHub() {
                   </div>
 
                   <div>
-                    <h3 className="text-xs font-black text-neutral-200 uppercase tracking-wide group-hover:text-emerald-400 transition-colors truncate">
+                    <h3 className="text-xs font-black text-neutral-200 uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate">
                       {template.title}
                     </h3>
                     <div className="mt-1 text-[11px] text-neutral-500 font-medium">
                       {isPremiumPlan ? (
                         <p>Cost to Unlock: <span className="text-amber-400 font-mono font-bold">₦{Number(template.price).toLocaleString()}</span></p>
                       ) : (
-                        <p className="text-emerald-500/80 font-bold">Included Free</p>
+                        <p className="text-[#FF8C38]/80 font-bold">Included Free</p>
                       )}
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export default function Painter3DStudioDashboardHub() {
                     onClick={() => handleLaunchRequest(template)}
                     className={`w-full py-2 text-center text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border ${isPremiumPlan
                       ? "bg-neutral-900/40 border-neutral-850 text-amber-400 hover:bg-neutral-900 hover:border-amber-500/20"
-                      : "bg-neutral-900 hover:bg-emerald-500 border-neutral-850 hover:border-emerald-500 text-neutral-300 hover:text-black shadow-inner"
+                      : "bg-neutral-900 hover:bg-[#FF8C38] border-neutral-850 hover:border-[#FF8C38] text-neutral-300 hover:text-black shadow-inner"
                       }`}
                   >
                     {isPremiumPlan ? "Launch Trial Mode ➔" : "Load Room Studio ➔"}

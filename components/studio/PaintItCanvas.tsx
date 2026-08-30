@@ -55,7 +55,7 @@
 //   };
 
 //   return (
-//     <div className="w-full h-full relative bg-neutral-950 rounded-3xl overflow-hidden border border-neutral-900 flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+//     <div className="w-full h-full relative bg-neutral-950 rounded-3xl overflow-hidden border border-neutral-900 flex flex-col justify-between selection:bg-[#FF8C38] selection:text-black">
 
 //       {/* 🏙️ THE 3D VIEWPORT LAYER */}
 //       <div className="absolute inset-0 z-0 flex flex-col items-center justify-center p-4 transition-colors duration-700 select-none overflow-hidden"
@@ -72,7 +72,7 @@
 //           <div
 //             onClick={() => setActiveSurface("CEILING")}
 //             style={{ backgroundColor: surfaceColors.CEILING.hex }}
-//             className={`absolute top-0 w-[80%] h-[25%] rounded-t-xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center transform -skew-x-12 ${activeSurface === "CEILING" ? "border-emerald-400 shadow-lg scale-[102%] z-20" : "border-neutral-800/40 opacity-70 z-10"
+//             className={`absolute top-0 w-[80%] h-[25%] rounded-t-xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center transform -skew-x-12 ${activeSurface === "CEILING" ? "border-[#FF8C38] shadow-lg scale-[102%] z-20" : "border-neutral-800/40 opacity-70 z-10"
 //               }`}
 //           >
 //             <span className="text-[9px] font-mono font-black uppercase text-black bg-white/85 px-1.5 py-0.5 rounded backdrop-blur-sm shadow-md">
@@ -84,7 +84,7 @@
 //           <div
 //             onClick={() => setActiveSurface("WALL_A")}
 //             style={{ backgroundColor: surfaceColors.WALL_A.hex }}
-//             className={`absolute left-0 bottom-0 w-[48%] h-[72%] rounded-bl-2xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center ${activeSurface === "WALL_A" ? "border-emerald-400 shadow-2xl scale-[102%] z-20" : "border-neutral-800/40 opacity-80 z-10"
+//             className={`absolute left-0 bottom-0 w-[48%] h-[72%] rounded-bl-2xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center ${activeSurface === "WALL_A" ? "border-[#FF8C38] shadow-2xl scale-[102%] z-20" : "border-neutral-800/40 opacity-80 z-10"
 //               }`}
 //           >
 //             <span className="text-[9px] font-mono font-black uppercase text-black bg-white/85 px-1.5 py-0.5 rounded backdrop-blur-sm shadow-md text-center max-w-[85%] truncate">
@@ -96,7 +96,7 @@
 //           <div
 //             onClick={() => setActiveSurface("WALL_B")}
 //             style={{ backgroundColor: surfaceColors.WALL_B.hex }}
-//             className={`absolute right-0 bottom-0 w-[48%] h-[72%] rounded-br-2xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center ${activeSurface === "WALL_B" ? "border-emerald-400 shadow-2xl scale-[102%] z-20" : "border-neutral-800/40 opacity-80 z-10"
+//             className={`absolute right-0 bottom-0 w-[48%] h-[72%] rounded-br-2xl border transition-all duration-500 cursor-pointer flex flex-col items-center justify-center ${activeSurface === "WALL_B" ? "border-[#FF8C38] shadow-2xl scale-[102%] z-20" : "border-neutral-800/40 opacity-80 z-10"
 //               }`}
 //           >
 //             <span className="text-[9px] font-mono font-black uppercase text-black bg-white/85 px-1.5 py-0.5 rounded backdrop-blur-sm shadow-md text-center max-w-[85%] truncate">
@@ -135,7 +135,7 @@
 //             <div>
 //               <span className="text-[8px] font-mono font-black text-neutral-600 uppercase tracking-widest block">Mesh Selection Target</span>
 //               <h4 className="text-xs font-black uppercase text-neutral-200 tracking-wide mt-0.5">
-//                 Active Surface: <span className="text-emerald-400 font-mono">{activeSurface}</span>
+//                 Active Surface: <span className="text-[#FF8C38] font-mono">{activeSurface}</span>
 //               </h4>
 //             </div>
 
@@ -146,7 +146,7 @@
 //                   type="button"
 //                   onClick={() => setActiveSurface(surf)}
 //                   className={`px-3 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all w-full sm:w-auto text-center ${activeSurface === surf
-//                       ? "bg-neutral-950 text-emerald-400 border border-neutral-800"
+//                       ? "bg-neutral-950 text-[#FF8C38] border border-neutral-800"
 //                       : "text-neutral-500 hover:text-neutral-400"
 //                     }`}
 //                 >
@@ -166,7 +166,7 @@
 //                   type="button"
 //                   onClick={() => applyColorToActiveSurface(color)}
 //                   className={`aspect-square rounded-xl relative border transition-all duration-150 transform active:scale-95 flex items-center justify-center shadow-lg group/btn ${surfaceColors[activeSurface].name === color.name
-//                       ? "border-emerald-400 ring-2 ring-emerald-500/20 scale-105"
+//                       ? "border-[#FF8C38] ring-2 ring-orange-500/20 scale-105"
 //                       : "border-neutral-850 hover:border-neutral-700"
 //                     }`}
 //                   style={{ backgroundColor: color.hex }}
@@ -188,7 +188,7 @@
 //             <div className="text-left w-full sm:w-auto">
 //               <span className="text-[9px] font-medium text-neutral-500 block">Active Specification Profile:</span>
 //               <span className="text-[11px] font-bold text-neutral-300 uppercase tracking-wide">
-//                 🎨 {surfaceColors[activeSurface].name} — <span className="text-emerald-400 font-mono text-[10px]">{surfaceColors[activeSurface].finish} ({surfaceColors[activeSurface].priceModifier})</span>
+//                 🎨 {surfaceColors[activeSurface].name} — <span className="text-[#FF8C38] font-mono text-[10px]">{surfaceColors[activeSurface].finish} ({surfaceColors[activeSurface].priceModifier})</span>
 //               </span>
 //             </div>
 
@@ -196,7 +196,7 @@
 //               <button
 //                 type="button"
 //                 onClick={() => onActionTrigger?.("UPSELL_CLICK", surfaceColors)}
-//                 className="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-[99%]"
+//                 className="w-full sm:w-auto px-4 py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-[99%]"
 //               >
 //                 Save Scheme Structure ➔
 //               </button>
@@ -443,7 +443,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
   };
 
   return (
-    <div className="w-full h-full relative bg-neutral-950 rounded-3xl overflow-hidden border border-neutral-900 flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+    <div className="w-full h-full relative bg-neutral-950 rounded-3xl overflow-hidden border border-neutral-900 flex flex-col justify-between selection:bg-[#FF8C38] selection:text-black">
 
       {/* 🏙️ THE REAL-TIME 3D WEBGL VIEWPORT */}
       <div className="absolute inset-0 z-0 select-none">
@@ -507,7 +507,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
                 Mesh Selection Target
               </span>
               <h4 className="text-xs font-black uppercase text-neutral-200 tracking-wide mt-0.5">
-                Active Surface: <span className="text-emerald-400 font-mono">{activeSurface}</span>
+                Active Surface: <span className="text-[#FF8C38] font-mono">{activeSurface}</span>
               </h4>
             </div>
 
@@ -518,7 +518,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
                   type="button"
                   onClick={() => setActiveSurface(surf)}
                   className={`px-3 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all w-full sm:w-auto text-center ${activeSurface === surf
-                      ? "bg-neutral-950 text-emerald-400 border border-neutral-800"
+                      ? "bg-neutral-950 text-[#FF8C38] border border-neutral-800"
                       : "text-neutral-500 hover:text-neutral-400"
                     }`}
                 >
@@ -540,7 +540,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
                   type="button"
                   onClick={() => applyColorToActiveSurface(color)}
                   className={`aspect-square rounded-xl relative border transition-all duration-150 transform active:scale-95 flex items-center justify-center shadow-lg group/btn ${surfaceColors[activeSurface].name === color.name
-                      ? "border-emerald-400 ring-2 ring-emerald-500/20 scale-105"
+                      ? "border-[#FF8C38] ring-2 ring-orange-500/20 scale-105"
                       : "border-neutral-850 hover:border-neutral-700"
                     }`}
                   style={{ backgroundColor: color.hex }}
@@ -567,7 +567,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
               </span>
               <span className="text-[11px] font-bold text-neutral-300 uppercase tracking-wide">
                 🎨 {surfaceColors[activeSurface].name} —{" "}
-                <span className="text-emerald-400 font-mono text-[10px]">
+                <span className="text-[#FF8C38] font-mono text-[10px]">
                   {surfaceColors[activeSurface].finish} ({surfaceColors[activeSurface].priceModifier})
                 </span>
               </span>
@@ -577,7 +577,7 @@ export default function PaintItCanvas({ mode, onActionTrigger }: PaintItCanvasPr
               <button
                 type="button"
                 onClick={() => onActionTrigger?.("UPSELL_CLICK", surfaceColors)}
-                className="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-[99%]"
+                className="w-full sm:w-auto px-4 py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all active:scale-[99%]"
               >
                 Save Scheme Structure ➔
               </button>

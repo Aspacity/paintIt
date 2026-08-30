@@ -168,7 +168,7 @@ export function FloatingAdminPanel({
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={onToggleCleanView} className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg p-1 px-2 text-[10px] font-black text-neutral-300 uppercase flex items-center gap-1 transition-all">🕶️ Hide</button>
-              <span className={`text-[9px] px-2 py-0.5 rounded font-black uppercase ${isLocked ? 'bg-red-950 text-red-400 border border-red-900/30' : 'bg-emerald-950 text-emerald-400 border border-emerald-900/30'}`}>
+              <span className={`text-[9px] px-2 py-0.5 rounded font-black uppercase ${isLocked ? 'bg-red-950 text-red-400 border border-red-900/30' : 'bg-neutral-950 text-[#FF8C38] border border-orange-900/30'}`}>
                 {isLocked ? '🔒' : '🔓'}
               </span>
             </div>

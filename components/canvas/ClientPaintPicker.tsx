@@ -117,7 +117,7 @@ export default function PaintPicker({
       <div className="bg-neutral-900 border border-neutral-800/80 rounded-xl p-3 flex items-center justify-between">
         <div>
           <span className="text-[8px] uppercase font-black text-neutral-500 tracking-wider block">Currently Painting</span>
-          <span className="text-xs font-black uppercase text-emerald-400 tracking-wide">
+          <span className="text-xs font-black uppercase text-[#FF8C38] tracking-wide">
             {formatSurfaceName(activeSurface)}
           </span>
         </div>
@@ -166,7 +166,7 @@ export default function PaintPicker({
               >
                 <div className="w-5 h-5 rounded-full border border-neutral-800/20" style={{ backgroundColor: paint.hex }} />
                 <div className="mt-2">
-                  <span className="text-[8px] uppercase font-bold text-emerald-500 block truncate leading-none mb-0.5">{paint.brand}</span>
+                  <span className="text-[8px] uppercase font-bold text-[#FF8C38] block truncate leading-none mb-0.5">{paint.brand}</span>
                   <span className="text-[9px] font-black truncate block leading-tight">{paint.name}</span>
                 </div>
                 <span className="text-[8px] font-mono mt-1 opacity-60">{paint.hex.toUpperCase()}</span>
@@ -196,7 +196,7 @@ export default function PaintPicker({
                   placeholder="Color Name (e.g. Custom Amber Glow)"
                   value={newColorName}
                   onChange={(e) => setNewColorName(e.target.value)}
-                  className="flex-1 bg-neutral-900 border border-neutral-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-white"
+                  className="flex-1 bg-neutral-900 border border-neutral-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FF8C38] text-white"
                 />
                 <input
                   type="color"
@@ -215,12 +215,12 @@ export default function PaintPicker({
                     value={newColorHex.replace("#", "")}
                     onChange={(e) => setNewColorHex(`#${e.target.value}`)}
                     maxLength={6}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-6 pr-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-white font-mono uppercase tracking-wider"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-6 pr-3 py-2 text-xs focus:outline-none focus:border-[#FF8C38] text-white font-mono uppercase tracking-wider"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-5 bg-emerald-500 text-neutral-950 font-black rounded-xl text-[10px] uppercase tracking-wider"
+                  className="px-5 bg-[#FF8C38] text-neutral-950 font-black rounded-xl text-[10px] uppercase tracking-wider"
                 >
                   Add & Save
                 </button>

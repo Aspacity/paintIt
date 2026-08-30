@@ -117,7 +117,7 @@ export default function LightControls({
           <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">
             Natural Sun & Sky Mode
           </span>
-          <span className="text-[9px] font-mono text-emerald-400 font-bold uppercase">
+          <span className="text-[9px] font-mono text-[#FF8C38] font-bold uppercase">
             {isNightMode ? "🌙 Night Ambient" : "☀️ Natural Day"}
           </span>
         </div>
@@ -158,7 +158,7 @@ export default function LightControls({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => handleAddBulb("spot")}
-                className="px-2 py-1 bg-emerald-500 hover:bg-emerald-400 text-black text-[9px] font-black uppercase rounded-lg transition-all"
+                className="px-2 py-1 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-[9px] font-black uppercase rounded-lg transition-all"
               >
                 + Spot Bulb
               </button>
@@ -187,12 +187,12 @@ export default function LightControls({
                 }}
                 className={`px-3 py-1.5 rounded-xl border shrink-0 text-left flex items-center gap-2 transition-all ${
                   isSelected
-                    ? "bg-neutral-800 border-emerald-500 text-white shadow-md"
+                    ? "bg-neutral-800 border-[#FF8C38] text-white shadow-md"
                     : "bg-neutral-900 border-neutral-850 text-neutral-400"
                 }`}
                 title="Tap to toggle ON / OFF"
               >
-                <span className={`w-2.5 h-2.5 rounded-full ${isOn ? "bg-emerald-400 animate-pulse" : "bg-neutral-600"}`} />
+                <span className={`w-2.5 h-2.5 rounded-full ${isOn ? "bg-[#FF8C38] animate-pulse" : "bg-neutral-600"}`} />
                 <span className="text-[10px] font-bold uppercase">
                   {b.type === "spot" ? `🎯 Spot #${idx + 1}` : `💡 Point #${idx + 1}`} ({isOn ? "ON" : "OFF"})
                 </span>
@@ -211,7 +211,7 @@ export default function LightControls({
                 onClick={() => toggleBulb(currentBulb.id)}
                 className={`px-2 py-0.5 text-[9px] font-black uppercase rounded-md ${
                   (currentBulb.visible !== undefined ? currentBulb.visible : currentBulb.enabled)
-                    ? "bg-emerald-500 text-black"
+                    ? "bg-[#FF8C38] text-black"
                     : "bg-neutral-800 text-neutral-400"
                 }`}
               >
@@ -231,7 +231,7 @@ export default function LightControls({
           <div className="space-y-1">
             <div className="flex justify-between text-[9px] font-mono text-neutral-400">
               <span>INTENSITY</span>
-              <span className="text-emerald-400 font-bold">{currentBulb.intensity.toFixed(1)}</span>
+              <span className="text-[#FF8C38] font-bold">{currentBulb.intensity.toFixed(1)}</span>
             </div>
             <input
               type="range"
@@ -240,7 +240,7 @@ export default function LightControls({
               step="0.1"
               value={currentBulb.intensity}
               onChange={(e) => updateBulbProperty(currentBulb.id, { intensity: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
             />
           </div>
 
@@ -248,7 +248,7 @@ export default function LightControls({
           <div className="space-y-1">
             <div className="flex justify-between text-[9px] font-mono text-neutral-400">
               <span>RADIUS / DISTANCE</span>
-              <span className="text-emerald-400 font-bold">{(currentBulb.distance || 12).toFixed(1)}m</span>
+              <span className="text-[#FF8C38] font-bold">{(currentBulb.distance || 12).toFixed(1)}m</span>
             </div>
             <input
               type="range"
@@ -257,7 +257,7 @@ export default function LightControls({
               step="0.5"
               value={currentBulb.distance || 12}
               onChange={(e) => updateBulbProperty(currentBulb.id, { distance: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
             />
           </div>
 
@@ -284,13 +284,13 @@ export default function LightControls({
                 step="0.1"
                 value={currentBulb.position[0]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 0, parseFloat(e.target.value) || 0)}
-                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-[#FF8C38] text-right focus:outline-none"
               />
             </div>
 
             {/* Position Y (Height) */}
             <div className="flex items-center gap-2">
-              <span className="text-[9px] font-mono text-emerald-400 w-4 font-bold">Y:</span>
+              <span className="text-[9px] font-mono text-[#FF8C38] w-4 font-bold">Y:</span>
               <input
                 type="range"
                 min="0.1"
@@ -298,14 +298,14 @@ export default function LightControls({
                 step="0.05"
                 value={currentBulb.position[1]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 1, parseFloat(e.target.value))}
-                className="flex-1 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                className="flex-1 h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
               />
               <input
                 type="number"
                 step="0.1"
                 value={currentBulb.position[1]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 1, parseFloat(e.target.value) || 0)}
-                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-[#FF8C38] text-right focus:outline-none"
               />
             </div>
 
@@ -326,7 +326,7 @@ export default function LightControls({
                 step="0.1"
                 value={currentBulb.position[2]}
                 onChange={(e) => updateBulbPosition(currentBulb.id, 2, parseFloat(e.target.value) || 0)}
-                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-emerald-400 text-right focus:outline-none"
+                className="w-12 h-6 px-1 bg-neutral-950 border border-neutral-800 rounded text-[9px] font-mono text-[#FF8C38] text-right focus:outline-none"
               />
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function LightControls({
                   onClick={() => updateBulbProperty(currentBulb.id, { color: c.hex })}
                   className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
                     currentBulb.color.toLowerCase() === c.hex.toLowerCase()
-                      ? "border-emerald-400 scale-110 shadow-md"
+                      ? "border-[#FF8C38] scale-110 shadow-md"
                       : "border-neutral-700"
                   }`}
                   style={{ backgroundColor: c.hex }}

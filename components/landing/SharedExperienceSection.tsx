@@ -35,7 +35,7 @@ export default function SharedExperienceSection() {
   return (
     <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38]">
           SHARED VISUAL EXPERIENCE
         </span>
         <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -58,7 +58,7 @@ export default function SharedExperienceSection() {
             className="bg-neutral-900/60 border border-neutral-850 p-5 rounded-2xl space-y-3 relative flex flex-col justify-between"
           >
             <div className="space-y-2">
-              <span className="text-xs font-mono font-bold text-emerald-400 block">
+              <span className="text-xs font-mono font-bold text-[#FF8C38] block">
                 {step.num}
               </span>
               <h3 className="text-sm font-bold text-white tracking-tight">

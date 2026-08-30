@@ -42,7 +42,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
   // Helper styles mapping for toast severity signals
   const severityStyles = {
-    success: 'border-emerald-500/20 bg-emerald-950/90 text-emerald-400',
+    success: 'border-[#FF8C38]/30 bg-neutral-950/90 text-[#FF8C38]',
     error: 'border-red-500/20 bg-red-950/90 text-red-400',
     info: 'border-neutral-800 bg-neutral-900/95 text-neutral-200'
   };
@@ -65,7 +65,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             className={`fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 p-4 border rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-3 ${severityStyles[toast.severity]}`}
           >
             {/* Visual Micro-Indicator Dot */}
-            <span className={`w-2 h-2 rounded-full shrink-0 ${toast.severity === 'success' ? 'bg-emerald-400 animate-pulse' :
+            <span className={`w-2 h-2 rounded-full shrink-0 ${toast.severity === 'success' ? 'bg-[#FF8C38] animate-pulse' :
                 toast.severity === 'error' ? 'bg-red-400 animate-pulse' : 'bg-neutral-400'
               }`} />
             <p className="text-xs sm:text-sm font-medium leading-snug">{toast.message}</p>

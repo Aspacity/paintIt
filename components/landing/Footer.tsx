@@ -10,7 +10,7 @@ export default function Footer() {
         {/* Brand & Aspacity Attribution */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white font-black text-xs">
-            P<span className="text-emerald-400">IT</span>
+            P<span className="text-[#FF8C38]">IT</span>
           </div>
           <div>
             <span className="text-xs font-black uppercase tracking-wider text-white block">
@@ -22,7 +22,7 @@ export default function Footer() {
                 href="https://aspacity.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-neutral-300 hover:text-emerald-400 underline underline-offset-2 transition-colors font-semibold"
+                className="text-neutral-300 hover:text-[#FF8C38] underline underline-offset-2 transition-colors font-semibold"
               >
                 Aspacity
               </a>
@@ -48,7 +48,7 @@ export default function Footer() {
             href="https://aspacity.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-emerald-400 hover:underline transition-colors flex items-center gap-1 font-mono"
+            className="text-[#FF8C38] hover:underline transition-colors flex items-center gap-1 font-mono"
           >
             <span>Aspacity Company</span>
             <span>↗</span>
@@ -57,7 +57,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <p className="text-[10px] font-mono text-neutral-400">
-          © {new Date().getFullYear()} PaintIT — A product by <a href="https://aspacity.vercel.app" target="_blank" rel="noopener noreferrer" className="text-neutral-300 hover:text-emerald-400 underline">Aspacity</a>. All rights reserved.
+          © {new Date().getFullYear()} PaintIT — A product by <a href="https://aspacity.vercel.app" target="_blank" rel="noopener noreferrer" className="text-neutral-300 hover:text-[#FF8C38] underline">Aspacity</a>. All rights reserved.
         </p>
       </div>
     </footer>

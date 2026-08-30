@@ -71,13 +71,13 @@ export function OfflineSyncBanner({
         <div
           className={`px-3 py-1 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 backdrop-blur-xl shadow-lg transition-all ${
             isOnline
-              ? "bg-neutral-950/80 border-emerald-500/30 text-emerald-400"
+              ? "bg-neutral-950/80 border-[#FF8C38]/40 text-[#FF8C38]"
               : "bg-amber-950/90 border-amber-500/50 text-amber-300 animate-pulse"
           }`}
         >
           <span
             className={`w-2 h-2 rounded-full ${
-              isOnline ? "bg-emerald-400" : "bg-amber-400"
+              isOnline ? "bg-[#FF8C38]" : "bg-amber-400"
             }`}
           />
           <span>{isOnline ? "Live Sync Active" : "⚡ Offline Mode"}</span>
@@ -108,11 +108,11 @@ export function OfflineSyncBanner({
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 max-w-md w-[calc(100vw-32px)] bg-neutral-950/95 backdrop-blur-2xl border border-emerald-500/40 rounded-3xl p-5 shadow-2xl space-y-4"
+            className="fixed bottom-6 right-6 z-50 max-w-md w-[calc(100vw-32px)] bg-neutral-950/95 backdrop-blur-2xl border border-[#FF8C38]/50 rounded-3xl p-5 shadow-2xl space-y-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF8C38]/25 border border-[#FF8C38]/50 flex items-center justify-center text-[#FF8C38] text-lg shrink-0">
                   🌐
                 </div>
                 <div>
@@ -144,7 +144,7 @@ export function OfflineSyncBanner({
               <button
                 onClick={handlePushSync}
                 disabled={isSyncing}
-                className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {isSyncing ? (
                   <span>Syncing...</span>

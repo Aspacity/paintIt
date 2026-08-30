@@ -132,7 +132,7 @@ export default function PaintPicker({
       <div className="bg-neutral-900 border border-neutral-800/80 rounded-xl p-3 flex items-center justify-between">
         <div>
           <span className="text-[8px] uppercase font-black text-neutral-500 tracking-wider block">Currently Painting</span>
-          <span className="text-xs font-black uppercase text-emerald-400 tracking-wide">
+          <span className="text-xs font-black uppercase text-[#FF8C38] tracking-wide">
             {formatSurfaceName(activeSurface)}
           </span>
         </div>
@@ -171,7 +171,7 @@ export default function PaintPicker({
           <span className="text-[9px] uppercase font-black tracking-widest text-neutral-400">
             Paint Finish & Sheen Type
           </span>
-          <span className="text-[9px] font-mono text-emerald-400 font-bold">
+          <span className="text-[9px] font-mono text-[#FF8C38] font-bold">
             {PAINT_FINISH_PRESETS.find(f => f.id === currentFinishId)?.name || "Emulsion"}
           </span>
         </div>
@@ -186,7 +186,7 @@ export default function PaintPicker({
                 onClick={() => handleFinishChange(finish.id)}
                 className={`py-2 px-1 rounded-xl border text-[8px] font-black uppercase tracking-wider transition-all text-center flex flex-col items-center justify-center gap-0.5 ${
                   isSelected
-                    ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md"
+                    ? "bg-[#FF8C38]/25 border-[#FF8C38] text-orange-300 shadow-md"
                     : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
                 }`}
                 title={finish.desc}
@@ -216,7 +216,7 @@ export default function PaintPicker({
               >
                 <div className="w-5 h-5 rounded-full border border-neutral-800/20" style={{ backgroundColor: paint.hex }} />
                 <div className="mt-2">
-                  <span className="text-[8px] uppercase font-bold text-emerald-500 block truncate leading-none mb-0.5">{paint.brand}</span>
+                  <span className="text-[8px] uppercase font-bold text-[#FF8C38] block truncate leading-none mb-0.5">{paint.brand}</span>
                   <span className="text-[9px] font-black truncate block leading-tight">{paint.name}</span>
                 </div>
                 <span className="text-[8px] font-mono mt-1 opacity-60">{paint.hex.toUpperCase()}</span>
@@ -232,7 +232,7 @@ export default function PaintPicker({
           <form onSubmit={handleAddCustomColor} className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black uppercase text-neutral-400">Custom Color Mixer</span>
-              {isSyncing && <span className="text-[8px] font-mono text-emerald-400 animate-pulse">Syncing...</span>}
+              {isSyncing && <span className="text-[8px] font-mono text-[#FF8C38] animate-pulse">Syncing...</span>}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -262,7 +262,7 @@ export default function PaintPicker({
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95"
+              className="w-full py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all active:scale-95"
             >
               + Add Custom Paint Color
             </button>

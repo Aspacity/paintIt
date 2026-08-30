@@ -215,7 +215,7 @@ export function MasterModelAssemblyPanel({
                 onClick={() => onSelectStudioMode("PAINT")}
                 className={`py-1.5 px-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                   activeStudioMode === "PAINT"
-                    ? "bg-emerald-500 text-neutral-950 shadow-lg font-black"
+                    ? "bg-[#FF8C38] text-neutral-950 shadow-lg font-black"
                     : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
                 }`}
               >

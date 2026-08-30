@@ -47,7 +47,7 @@ export default function HowItWorks() {
     <section id="how-it-works" className="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
           HOW IT WORKS
         </span>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
@@ -71,14 +71,14 @@ export default function HowItWorks() {
           >
             <div className="flex items-center justify-between">
               <span className="text-3xl">{step.icon}</span>
-              <span className="text-xs font-mono font-bold text-neutral-400 group-hover:text-emerald-400 transition-colors">
+              <span className="text-xs font-mono font-bold text-neutral-400 group-hover:text-[#FF8C38] transition-colors">
                 {step.number}
               </span>
             </div>
 
             <div className="space-y-1">
               <h3 className="text-base font-bold text-white tracking-tight">{step.title}</h3>
-              <p className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider">{step.subtitle}</p>
+              <p className="text-[10px] font-mono text-orange-300 uppercase tracking-wider">{step.subtitle}</p>
             </div>
 
             <p className="text-xs text-neutral-400 leading-relaxed font-normal">{step.description}</p>

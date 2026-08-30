@@ -160,7 +160,7 @@ export default function AdminAnalyticsDashboard() {
         </div>
         <button
           onClick={fetchAdminData}
-          className="px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-emerald-400 font-bold rounded-xl transition-all"
+          className="px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-[#FF8C38] font-bold rounded-xl transition-all"
         >
           🔄 Refresh Directory
         </button>
@@ -171,12 +171,12 @@ export default function AdminAnalyticsDashboard() {
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Total Site Visits</span>
           <span className="text-3xl font-black text-neutral-100 mt-2">{summary.totalVisits}</span>
-          <span className="text-[9px] text-emerald-400 mt-1 font-mono">⚡ Running sessions</span>
+          <span className="text-[9px] text-[#FF8C38] mt-1 font-mono">⚡ Running sessions</span>
         </div>
 
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">User Feedbacks</span>
-          <span className="text-3xl font-black text-emerald-400 mt-2">{feedbacks.length}</span>
+          <span className="text-3xl font-black text-[#FF8C38] mt-2">{feedbacks.length}</span>
           <span className="text-[9px] text-cyan-400 mt-1 font-mono">💬 Submitted across roles</span>
         </div>
 
@@ -202,7 +202,7 @@ export default function AdminAnalyticsDashboard() {
       <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-5 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-850 pb-4">
           <div>
-            <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider flex items-center gap-2">
+            <h3 className="text-sm font-black uppercase text-[#FF8C38] tracking-wider flex items-center gap-2">
               <span>💬 Master Admin User Feedback Hub ({feedbacks.length})</span>
             </h3>
             <p className="text-[11px] text-neutral-500 mt-0.5">
@@ -216,7 +216,7 @@ export default function AdminAnalyticsDashboard() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-neutral-950 border border-neutral-800 text-xs font-bold text-emerald-400 rounded-xl px-3 py-1.5 focus:outline-none"
+              className="bg-neutral-950 border border-neutral-800 text-xs font-bold text-[#FF8C38] rounded-xl px-3 py-1.5 focus:outline-none"
             >
               <option value="ALL">All User Roles</option>
               <option value="PAINTER">Painters</option>
@@ -250,7 +250,7 @@ export default function AdminAnalyticsDashboard() {
             {filteredFeedbacks.map((fb) => {
               const roleColorClass =
                 fb.user_role === "PAINTER"
-                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                  ? "bg-[#FF8C38]/25 text-orange-300 border-[#FF8C38]/40"
                   : fb.user_role === "DESIGNER"
                   ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30"
                   : fb.user_role === "ADMIN"
@@ -295,13 +295,13 @@ export default function AdminAnalyticsDashboard() {
                     </span>
 
                     {fb.status === "RESOLVED" ? (
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <span className="text-[#FF8C38] font-bold flex items-center gap-1">
                         ✓ Resolved
                       </span>
                     ) : (
                       <button
                         onClick={() => handleMarkResolved(fb.id)}
-                        className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-lg border border-emerald-500/30 transition-all"
+                        className="px-2.5 py-1 bg-[#FF8C38]/25 hover:bg-[#FF8C38]/30 text-[#FF8C38] font-bold rounded-lg border border-[#FF8C38]/40 transition-all"
                       >
                         Mark Resolved ✓
                       </button>
@@ -383,7 +383,7 @@ export default function AdminAnalyticsDashboard() {
                 {interactions.map((i) => (
                   <tr key={i.id} className="text-[10px] font-mono text-neutral-300">
                     <td className="py-2.5">
-                      <span className="px-2 py-0.5 bg-neutral-950 border border-neutral-800 rounded text-[9px] uppercase font-bold text-emerald-400">
+                      <span className="px-2 py-0.5 bg-neutral-950 border border-neutral-800 rounded text-[9px] uppercase font-bold text-[#FF8C38]">
                         {i.interaction_type}
                       </span>
                     </td>

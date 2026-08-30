@@ -174,8 +174,8 @@ export default function RealismTestStudioPage() {
       {/* 📱 TOP HEADER RESPONSIVE BAR */}
       <header className="h-14 bg-neutral-950 border-b border-neutral-900 px-4 lg:px-6 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-          <h1 className="text-sm font-black uppercase tracking-wider text-white">PaintIt Studio 2.0 Realism</h1>
+          <div className="w-3 h-3 rounded-full bg-[#FF8C38] animate-pulse" />
+          <h1 className="text-sm font-black uppercase tracking-wider text-white">PaintIT 2.0 Realism</h1>
           <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase bg-neutral-900 border border-neutral-800 text-neutral-400">
             Engine v2.4
           </span>
@@ -184,7 +184,7 @@ export default function RealismTestStudioPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCaptureSnapshot}
-            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
+            className="px-3.5 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
           >
             <span>📸 Capture 4K Photo Render</span>
           </button>

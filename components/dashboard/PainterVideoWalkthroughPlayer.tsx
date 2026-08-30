@@ -40,7 +40,7 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40">
             4K 60FPS
           </span>
         </div>
@@ -88,7 +88,7 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
               {activeStep === 2 && (
                 <div className="space-y-3 animate-fade-in">
                   <span className="text-4xl block">🎨 1-Tap Real-Time Paint Splash</span>
-                  <h3 className="text-base font-black text-emerald-400 uppercase tracking-wider">
+                  <h3 className="text-base font-black text-[#FF8C38] uppercase tracking-wider">
                     Step 2: Instant Wall Color & Sheen Swap
                   </h3>
                   <p className="text-xs font-mono text-neutral-400">
@@ -113,7 +113,7 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
             {/* Voiceover Captions Bar */}
             <div className="z-10 bg-neutral-950/90 backdrop-blur-md p-3 rounded-2xl border border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-300">
               <div className="flex items-center gap-2">
-                <span className="text-emerald-400">🎙️ Voiceover:</span>
+                <span className="text-[#FF8C38]">🎙️ Voiceover:</span>
                 <span className="text-neutral-200 truncate max-w-xs sm:max-w-md">
                   {activeStep === 1
                     ? "&quot;Show your clients exact 3D lighting before opening a single paint bucket...&quot;"
@@ -133,7 +133,7 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
         {!videoUrl && (
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-emerald-500/90 text-neutral-950 flex items-center justify-center text-xl font-bold shadow-2xl hover:scale-110 transition-all opacity-80 group-hover:opacity-100"
+            className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-[#FF8C38]/90 text-neutral-950 flex items-center justify-center text-xl font-bold shadow-2xl hover:scale-110 transition-all opacity-80 group-hover:opacity-100"
           >
             {isPlaying ? "⏸" : "▶"}
           </button>
@@ -145,7 +145,7 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
         {/* Progress Bar */}
         <div className="w-full bg-neutral-850 h-1.5 rounded-full overflow-hidden cursor-pointer">
           <div
-            className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full transition-all duration-200"
+            className="bg-gradient-to-r from-orange-500 to-cyan-400 h-full transition-all duration-200"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -166,11 +166,11 @@ export function PainterVideoWalkthroughPlayer({ videoUrl }: PainterVideoWalkthro
           </div>
 
           <div className="flex items-center gap-2 text-[10px] text-neutral-400">
-            <span className={activeStep === 1 ? "text-emerald-400 font-bold" : ""}>1. 3D Space</span>
+            <span className={activeStep === 1 ? "text-[#FF8C38] font-bold" : ""}>1. 3D Space</span>
             <span>•</span>
-            <span className={activeStep === 2 ? "text-emerald-400 font-bold" : ""}>2. Paint Splash</span>
+            <span className={activeStep === 2 ? "text-[#FF8C38] font-bold" : ""}>2. Paint Splash</span>
             <span>•</span>
-            <span className={activeStep === 3 ? "text-emerald-400 font-bold" : ""}>3. Win Job</span>
+            <span className={activeStep === 3 ? "text-[#FF8C38] font-bold" : ""}>3. Win Job</span>
           </div>
         </div>
       </div>

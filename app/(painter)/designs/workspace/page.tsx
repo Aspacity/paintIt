@@ -74,18 +74,18 @@ export default function Painter3DStudioWorkspacePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/designs"
-            className="w-8 h-8 rounded-xl bg-neutral-950 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+            className="w-8 h-8 rounded-xl bg-neutral-950 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
             title="Back to Designs Hub"
           >
             ◀
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
               <h1 className="text-sm font-black uppercase text-white tracking-wide">
                 Painter 3D Studio Workspace
               </h1>
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40">
                 PRO WORKFLOW
               </span>
             </div>
@@ -107,7 +107,7 @@ export default function Painter3DStudioWorkspacePage() {
           <button
             onClick={handleSavePainterQuoteConfig}
             disabled={isSaving}
-            className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2"
+            className="px-4 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2"
           >
             <span>{isSaving ? "⏳ Saving..." : "💾 Save Client Preview"}</span>
           </button>

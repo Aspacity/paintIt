@@ -14,7 +14,7 @@ export default function Features() {
   return (
     <section className="px-4 max-w-5xl mx-auto">
       <div className="text-center max-w-2xl mx-auto mb-16">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">Core Engine Features</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#FF8C38] mb-3">Core Engine Features</h2>
         <p className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-100">
           Everything Needed To Close Clients Faster
         </p>
@@ -28,9 +28,9 @@ export default function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: idx * 0.05 }}
-            className="p-6 border border-neutral-900 rounded-xl bg-neutral-950 relative overflow-hidden group hover:border-emerald-500/20 transition duration-300"
+            className="p-6 border border-neutral-900 rounded-xl bg-neutral-950 relative overflow-hidden group hover:border-[#FF8C38]/30 transition duration-300"
           >
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
             <h3 className="text-base font-bold text-neutral-200 mb-2">{feat.title}</h3>
             <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">{feat.desc}</p>
           </motion.div>

@@ -925,7 +925,7 @@ export default function PublicProfileAndConceptPage() {
   if (isLoading) {
     return (
       <div className="min-h-[60vh] w-full flex flex-col items-center justify-center gap-3">
-        <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
         <span className="text-[10px] text-neutral-600 font-bold tracking-widest uppercase">
           Compiling Studio Architecture...
         </span>
@@ -944,7 +944,7 @@ export default function PublicProfileAndConceptPage() {
               {sharedConcept.design_name}
             </h1>
             <p className="text-[9px] text-neutral-500 uppercase tracking-widest mt-0.5 font-mono">
-              Painter: <span className="text-emerald-400 font-bold">{sharedConcept.full_name}</span>
+              Painter: <span className="text-[#FF8C38] font-bold">{sharedConcept.full_name}</span>
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -957,7 +957,7 @@ export default function PublicProfileAndConceptPage() {
             <button
               onClick={handleSaveToClientHub}
               disabled={importing}
-              className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-transform active:scale-95"
+              className="px-3.5 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-transform active:scale-95"
             >
               {importing ? "Importing..." : "Save to Hub"}
             </button>
@@ -994,7 +994,7 @@ export default function PublicProfileAndConceptPage() {
             onClick={() => { setActiveTab("paint"); setIsPanelCollapsed(false); }}
             className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-2xl transition-all ${
               activeTab === "paint" && !isPanelCollapsed
-                ? "bg-emerald-500 border-emerald-400 text-neutral-950"
+                ? "bg-[#FF8C38] border-[#FF8C38] text-neutral-950"
                 : "bg-neutral-900/90 border-neutral-800 text-white"
             }`}
             title="Paint Picker"
@@ -1016,7 +1016,7 @@ export default function PublicProfileAndConceptPage() {
             onClick={() => { setActiveTab("lighting"); setIsPanelCollapsed(false); }}
             className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-2xl transition-all ${
               activeTab === "lighting" && !isPanelCollapsed
-                ? "bg-emerald-500 border-emerald-400 text-neutral-950"
+                ? "bg-[#FF8C38] border-[#FF8C38] text-neutral-950"
                 : "bg-neutral-900/90 border-neutral-800 text-white"
             }`}
             title="Bulb Switches"
@@ -1139,7 +1139,7 @@ export default function PublicProfileAndConceptPage() {
                 <>
                   <div className="space-y-2">
                     <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500 block">
-                      PaintIT Studio — Waitlist Portal
+                      PaintIT — Waitlist Portal
                     </span>
                     <h3 className="text-xl font-serif text-neutral-100 leading-tight">
                       See It Before <span className="italic font-light text-amber-300">You Paint It.</span>
@@ -1215,10 +1215,10 @@ export default function PublicProfileAndConceptPage() {
                 </>
               ) : (
                 <div className="py-8 space-y-3 animate-fade-in">
-                  <div className="w-12 h-12 bg-emerald-950 border border-emerald-500 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-xl font-bold">
+                  <div className="w-12 h-12 bg-neutral-950 border border-[#FF8C38] text-[#FF8C38] rounded-full flex items-center justify-center mx-auto text-xl font-bold">
                     ✓
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-emerald-400">Welcome Aboard!</h4>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#FF8C38]">Welcome Aboard!</h4>
                   <p className="text-[11px] text-neutral-400 leading-relaxed max-w-xs mx-auto">
                     You have successfully joined the early access waitlist. We will send your invitation link to <span className="text-white font-bold">{waitlistEmail}</span> shortly.
                   </p>
@@ -1246,7 +1246,7 @@ export default function PublicProfileAndConceptPage() {
       {/* IDENTITY PROFILE HERO HEADER */}
       <div className="p-6 bg-neutral-950 border border-neutral-900 rounded-3xl space-y-4 shadow-xl relative overflow-hidden">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center font-black text-2xl text-emerald-400 relative">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center font-black text-2xl text-[#FF8C38] relative">
             {activeProfile.avatar_url ? (
               <Image src={activeProfile.avatar_url} alt="" fill sizes="64px" unoptimized className="object-cover" />
             ) : (
@@ -1270,8 +1270,8 @@ export default function PublicProfileAndConceptPage() {
               onClick={() => router.push(`/view/${concept.id}`)}
               className="group bg-neutral-950 border border-neutral-900 p-5 rounded-2xl flex flex-col justify-between cursor-pointer shadow-xl"
             >
-              <h4 className="text-xs font-black uppercase text-neutral-200 truncate group-hover:text-emerald-400">{concept.name}</h4>
-              <div className="mt-4 pt-3 border-t border-neutral-900/40 text-[9px] font-black text-neutral-500 group-hover:text-emerald-400 uppercase">
+              <h4 className="text-xs font-black uppercase text-neutral-200 truncate group-hover:text-[#FF8C38]">{concept.name}</h4>
+              <div className="mt-4 pt-3 border-t border-neutral-900/40 text-[9px] font-black text-neutral-500 group-hover:text-[#FF8C38] uppercase">
                 Launch Visualizer &rarr;
               </div>
             </div>

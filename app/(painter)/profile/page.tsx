@@ -189,7 +189,7 @@ export default function AccountProfileWorkspacePage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 space-y-3 text-white">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
         <span className="text-[10px] uppercase font-black tracking-widest text-neutral-600">Hydrating Profile Fields...</span>
       </div>
     );
@@ -212,7 +212,7 @@ export default function AccountProfileWorkspacePage() {
           <button
             type="button"
             onClick={() => router.push("/settings")}
-            className="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 text-emerald-400 hover:text-black font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-md"
+            className="px-3.5 py-2 bg-[#FF8C38]/15 hover:bg-[#FF8C38] border border-[#FF8C38]/30 text-[#FF8C38] hover:text-black font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-md"
           >
             ⚙️ Security Settings
           </button>
@@ -230,7 +230,7 @@ export default function AccountProfileWorkspacePage() {
 
       {feedbackBanner && (
         <div className={`p-3.5 text-xs rounded-xl border font-medium ${feedbackBanner.type === "success"
-          ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-400"
+          ? "bg-[#FF8C38]/10 border-[#FF8C38]/30 text-[#FF8C38]"
           : "bg-red-950/20 border-red-900/40 text-red-400"
           }`}>
           {feedbackBanner.type === "success" ? "✅" : "⚠️"} {feedbackBanner.msg}
@@ -239,7 +239,7 @@ export default function AccountProfileWorkspacePage() {
 
       {/* ✅ HIGH-FIDELITY AVATAR MANAGEMENT COMPONENT BLOCK CARD[cite: 2] */}
       <div className="p-6 bg-neutral-950 border border-neutral-900 rounded-2xl flex flex-col sm:flex-row items-center gap-5 shadow-2xl relative overflow-hidden">
-        <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center font-black text-xl text-emerald-400 tracking-widest relative overflow-hidden shrink-0 group select-none shadow-inner">
+        <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center font-black text-xl text-[#FF8C38] tracking-widest relative overflow-hidden shrink-0 group select-none shadow-inner">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatarUrl} alt="Avatar profile view" className="w-full h-full object-cover" />
@@ -248,7 +248,7 @@ export default function AccountProfileWorkspacePage() {
           )}
           {isUploadingAvatar && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>
@@ -258,7 +258,7 @@ export default function AccountProfileWorkspacePage() {
             <h3 className="text-xs font-black uppercase tracking-wider text-neutral-200">Studio Branding Imagery</h3>
             <p className="text-[11px] text-neutral-500 mt-0.5">Upload a clean high-resolution face portrait photo or company logo vector.[cite: 2]</p>
           </div>
-          <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-300 hover:text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-xl transition-colors select-none">
+          <label className="inline-block cursor-pointer px-4 py-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-300 hover:text-[#FF8C38] text-[10px] font-black uppercase tracking-wider rounded-xl transition-colors select-none">
             {isUploadingAvatar ? "Processing File Stream..." : "Choose Photo Image"}
             <input
               type="file"
@@ -283,7 +283,7 @@ export default function AccountProfileWorkspacePage() {
           </div>
           <div>
             <label className="text-[9px] uppercase font-black tracking-widest text-neutral-600 block mb-1.5">Workspace Role</label>
-            <div className="w-full px-4 py-3 bg-neutral-900/40 border border-neutral-900 rounded-xl text-xs text-emerald-500/70 font-bold uppercase tracking-wider text-center select-none cursor-not-allowed">
+            <div className="w-full px-4 py-3 bg-neutral-900/40 border border-neutral-900 rounded-xl text-xs text-[#FF8C38]/70 font-bold uppercase tracking-wider text-center select-none cursor-not-allowed">
               🛡️ {profile?.role === "painter" ? "Contractor" : "Homeowner"}
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function AccountProfileWorkspacePage() {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="e.g., +234 812 345 6789"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function AccountProfileWorkspacePage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Bodija, Ibadan"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
           <div>
@@ -331,7 +331,7 @@ export default function AccountProfileWorkspacePage() {
               max={50}
               value={experienceYears}
               onChange={(e) => setExperienceYears(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
         </div>
@@ -352,7 +352,7 @@ export default function AccountProfileWorkspacePage() {
               value={skillsInput}
               onChange={(e) => setSkillsInput(e.target.value)}
               placeholder="e.g., Satin Finishes, Matte Coatings, POP Screeding, Stucco Texturing"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
 
             {skillsInput.trim().length > 0 && (
@@ -378,7 +378,7 @@ export default function AccountProfileWorkspacePage() {
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             placeholder="Tell prospective clients about your finish techniques, quality standards, and workspace cleanup guarantees..."
-            className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors resize-none"
+            className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors resize-none"
           />
         </div>
 
@@ -386,7 +386,7 @@ export default function AccountProfileWorkspacePage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-neutral-900 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-[0.99]"
+            className="w-full py-3.5 bg-[#FF8C38] hover:bg-[#FF8C38] disabled:bg-neutral-900 text-black disabled:text-neutral-500 text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-[0.99]"
           >
             {isSaving ? "Syncing Workspace Parameters..." : "Save Profile Configuration"}
           </button>

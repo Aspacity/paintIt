@@ -3,7 +3,7 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "PaintIt Studio 3D Canvas",
+    name: "PaintIT 3D Canvas",
     short_name: "PaintIt",
     description:
       "Premium interactive 3D architectural visualization framework tool.",

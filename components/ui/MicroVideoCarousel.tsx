@@ -76,7 +76,7 @@ export function MicroVideoCarousel({
       {/* Header Title & Dots Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-900 pb-3">
         <div>
-          <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-2">
             <span>{title}</span>
           </h3>
           {subtitle && <p className="text-[10px] text-neutral-400 mt-0.5 font-medium">{subtitle}</p>}
@@ -89,7 +89,7 @@ export function MicroVideoCarousel({
               key={step.id}
               onClick={() => scrollToStep(idx)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                idx === activeIndex ? "w-6 bg-emerald-400" : "w-1.5 bg-neutral-800 hover:bg-neutral-700"
+                idx === activeIndex ? "w-6 bg-[#FF8C38]" : "w-1.5 bg-neutral-800 hover:bg-neutral-700"
               }`}
               title={`Step ${idx + 1}: ${step.title}`}
             />
@@ -112,7 +112,7 @@ export function MicroVideoCarousel({
               key={step.id}
               className={`snap-center shrink-0 w-[270px] sm:w-[320px] bg-neutral-900 border rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all duration-300 ${
                 isActive
-                  ? "border-emerald-500/50 shadow-2xl ring-1 ring-emerald-500/30 scale-[1.01]"
+                  ? "border-[#FF8C38]/60 shadow-2xl ring-1 ring-orange-500/30 scale-[1.01]"
                   : "border-neutral-800 opacity-60 hover:opacity-80"
               }`}
             >
@@ -133,7 +133,7 @@ export function MicroVideoCarousel({
                 ) : (
                   // Animated Mockup Graphic when Video is pending production
                   <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center space-y-2 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-black text-sm animate-pulse">
+                    <div className="w-10 h-10 rounded-full bg-[#FF8C38]/15 border border-[#FF8C38]/40 flex items-center justify-center text-[#FF8C38] font-black text-sm animate-pulse">
                       ▶
                     </div>
                     <span className="text-[9px] font-mono uppercase text-neutral-400 font-bold tracking-wider">
@@ -144,11 +144,11 @@ export function MicroVideoCarousel({
 
                 {/* Top Badge */}
                 <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
-                  <span className="px-2 py-0.5 bg-neutral-950/80 border border-neutral-800 text-emerald-400 text-[9px] font-mono font-bold rounded-md backdrop-blur-md">
+                  <span className="px-2 py-0.5 bg-neutral-950/80 border border-neutral-800 text-[#FF8C38] text-[9px] font-mono font-bold rounded-md backdrop-blur-md">
                     Step {step.stepNumber} of {steps.length}
                   </span>
                   {step.badge && (
-                    <span className="px-2 py-0.5 bg-emerald-500 text-neutral-950 text-[9px] font-black uppercase rounded-md shadow-md">
+                    <span className="px-2 py-0.5 bg-[#FF8C38] text-neutral-950 text-[9px] font-black uppercase rounded-md shadow-md">
                       {step.badge}
                     </span>
                   )}
@@ -166,7 +166,7 @@ export function MicroVideoCarousel({
                 <button
                   type="button"
                   onClick={step.onActionClick}
-                  className="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border border-emerald-500/30 flex items-center justify-center gap-1.5"
+                  className="w-full py-2 bg-[#FF8C38]/15 hover:bg-[#FF8C38] text-[#FF8C38] hover:text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border border-[#FF8C38]/40 flex items-center justify-center gap-1.5"
                 >
                   <span>{step.actionText}</span>
                   <span>➔</span>

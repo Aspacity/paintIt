@@ -38,7 +38,7 @@ export default function SolutionSection() {
   return (
     <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38]">
           THE PAINTIT TRANSFORMATION
         </span>
         <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -58,12 +58,12 @@ export default function SolutionSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: idx * 0.1 }}
-            className="bg-neutral-900/70 border border-neutral-850 p-6 rounded-3xl relative flex flex-col justify-between hover:border-emerald-500/40 transition-colors group"
+            className="bg-neutral-900/70 border border-neutral-850 p-6 rounded-3xl relative flex flex-col justify-between hover:border-[#FF8C38]/50 transition-colors group"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-2xl">{stage.icon}</span>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-neutral-800 text-emerald-400">
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-neutral-800 text-[#FF8C38]">
                   {stage.step}
                 </span>
               </div>
@@ -71,7 +71,7 @@ export default function SolutionSection() {
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500 block mb-1">
                   {stage.label}
                 </span>
-                <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
+                <h3 className="text-base font-bold text-white group-hover:text-orange-300 transition-colors">
                   {stage.title}
                 </h3>
               </div>

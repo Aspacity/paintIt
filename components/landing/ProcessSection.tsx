@@ -142,7 +142,7 @@ export default function ProcessSection() {
           <div className={`flex items-center justify-between text-[11px] font-semibold ${dark ? "text-neutral-400" : "text-stone-600"}`}>
             <span>Concept Approved</span>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-              dark ? "bg-emerald-950 text-emerald-300 border-emerald-800" : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              dark ? "bg-neutral-950 text-orange-300 border-orange-800" : "bg-orange-100 text-orange-800 border-orange-300"
             }`}>
               Ready to Paint
             </span>

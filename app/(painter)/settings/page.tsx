@@ -114,7 +114,7 @@ export default function PainterAccountSettingsPage() {
   };
 
   return (
-    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-emerald-500 selection:text-black">
+    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-[#FF8C38] selection:text-black">
 
       {/* HEADER ROW BAR CONTAINER */}
       <div className="border-b border-neutral-900 pb-5">
@@ -142,7 +142,7 @@ export default function PainterAccountSettingsPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="e.g. Samuel Tijesunimi"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors font-medium"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function PainterAccountSettingsPage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. Ibadan, Nigeria"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors font-medium"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
             />
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function PainterAccountSettingsPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors font-medium"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
             />
           </div>
 
@@ -189,7 +189,7 @@ export default function PainterAccountSettingsPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors font-medium"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
             />
           </div>
 
@@ -202,7 +202,7 @@ export default function PainterAccountSettingsPage() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Required to commit updates..."
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-850 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors font-medium"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-850 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ export default function PainterAccountSettingsPage() {
         <div className="md:col-span-2 flex justify-end pt-2">
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center justify-center"
+            className="w-full sm:w-auto px-6 py-3 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center justify-center"
           >
             Save Account Settings ➔
           </button>

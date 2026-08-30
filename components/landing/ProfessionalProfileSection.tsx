@@ -18,7 +18,7 @@ export default function ProfessionalProfileSection() {
         >
           <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold flex items-center justify-center text-sm">
+              <div className="w-10 h-10 rounded-full bg-[#FF8C38]/25 border border-[#FF8C38]/50 text-[#FF8C38] font-bold flex items-center justify-center text-sm">
                 PRO
               </div>
               <div>
@@ -26,7 +26,7 @@ export default function ProfessionalProfileSection() {
                 <span className="text-[10px] font-mono text-neutral-400">Master Painter • Lagos, Nigeria</span>
               </div>
             </div>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-[9px] font-bold uppercase">
+            <span className="px-2.5 py-1 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] font-mono text-[9px] font-bold uppercase">
               VERIFIED PROFILE
             </span>
           </div>
@@ -54,11 +54,11 @@ export default function ProfessionalProfileSection() {
             </span>
             <div className="grid grid-cols-2 gap-3">
               <div className="h-24 rounded-xl bg-neutral-950 border border-neutral-800 p-3 flex flex-col justify-between">
-                <span className="text-[10px] font-mono text-emerald-400 font-bold">PROJECT #1</span>
+                <span className="text-[10px] font-mono text-[#FF8C38] font-bold">PROJECT #1</span>
                 <span className="text-xs font-bold text-white">Luxury Living Room</span>
               </div>
               <div className="h-24 rounded-xl bg-neutral-950 border border-neutral-800 p-3 flex flex-col justify-between">
-                <span className="text-[10px] font-mono text-emerald-400 font-bold">PROJECT #2</span>
+                <span className="text-[10px] font-mono text-[#FF8C38] font-bold">PROJECT #2</span>
                 <span className="text-xs font-bold text-white">Executive Bedroom Suite</span>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default function ProfessionalProfileSection() {
 
         {/* RIGHT EDITORIAL CONTENT */}
         <div className="lg:col-span-6 space-y-6">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400 block">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38] block">
             PROFESSIONAL PAINTER PROFILES
           </span>
 
@@ -81,15 +81,15 @@ export default function ProfessionalProfileSection() {
 
           <ul className="space-y-3 pt-2">
             <li className="flex items-start gap-3 text-xs sm:text-sm text-neutral-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] shrink-0 mt-1.5" />
               <span>Display your experience years, location, bio, and paint specializations</span>
             </li>
             <li className="flex items-start gap-3 text-xs sm:text-sm text-neutral-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] shrink-0 mt-1.5" />
               <span>Showcase past 3D room design concepts and finished paint projects</span>
             </li>
             <li className="flex items-start gap-3 text-xs sm:text-sm text-neutral-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] shrink-0 mt-1.5" />
               <span>Give potential clients a direct path to reach out and inquire about bookings</span>
             </li>
           </ul>
@@ -97,7 +97,7 @@ export default function ProfessionalProfileSection() {
           <div className="pt-4">
             <a
               href="#early-access"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500/60 text-white font-bold text-xs uppercase tracking-wider transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38]/70 text-white font-bold text-xs uppercase tracking-wider transition-all"
             >
               <span>Build Your Painter Profile</span>
               <span>→</span>

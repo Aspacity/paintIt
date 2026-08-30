@@ -144,7 +144,7 @@ export function FeedbackModalPopup() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                <h3 className="text-sm font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-2">
                   <span>💬 Share Your Feedback</span>
                 </h3>
                 <p className="text-[10px] text-neutral-400 font-mono mt-0.5">
@@ -168,7 +168,7 @@ export function FeedbackModalPopup() {
                 <select
                   value={activeCategory}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-neutral-900 border border-neutral-800 text-xs font-bold text-neutral-200 rounded-xl p-3 focus:border-emerald-500 focus:outline-none"
+                  className="w-full bg-neutral-900 border border-neutral-800 text-xs font-bold text-neutral-200 rounded-xl p-3 focus:border-[#FF8C38] focus:outline-none"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -212,7 +212,7 @@ export function FeedbackModalPopup() {
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}
                   placeholder={`Tell us how we can make PaintIt better for ${userRole.toLowerCase()}s...`}
-                  className="w-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-200 rounded-2xl p-3.5 focus:border-emerald-500 focus:outline-none placeholder:text-neutral-600 leading-relaxed resize-none"
+                  className="w-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-200 rounded-2xl p-3.5 focus:border-[#FF8C38] focus:outline-none placeholder:text-neutral-600 leading-relaxed resize-none"
                 />
               </div>
 
@@ -221,7 +221,7 @@ export function FeedbackModalPopup() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95"
+                  className="w-full py-3 bg-[#FF8C38] hover:bg-[#FF8C38] disabled:opacity-50 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Feedback ➔"}
                 </button>

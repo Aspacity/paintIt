@@ -34,7 +34,7 @@ export default function HowItWorksSection() {
   return (
     <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38]">
           HOW IT WORKS
         </span>
         <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -53,10 +53,10 @@ export default function HowItWorksSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: idx * 0.1 }}
-            className="bg-neutral-900/60 border border-neutral-850 p-6 rounded-3xl space-y-4 relative flex flex-col justify-between hover:border-emerald-500/40 transition-colors"
+            className="bg-neutral-900/60 border border-neutral-850 p-6 rounded-3xl space-y-4 relative flex flex-col justify-between hover:border-[#FF8C38]/50 transition-colors"
           >
             <div className="space-y-3">
-              <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-emerald-400 inline-block">
+              <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-[#FF8C38] inline-block">
                 {step.num} — {step.label}
               </span>
               <h3 className="text-lg font-bold text-white tracking-tight">

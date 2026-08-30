@@ -54,7 +54,7 @@ export default function FeatureStorytelling() {
   return (
     <section id="features" className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-neutral-900">
       <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#FF8C38]">
           FEATURE STORYTELLING
         </span>
         <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -75,7 +75,7 @@ export default function FeatureStorytelling() {
               onClick={() => setActiveTab(feat.id)}
               className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition-all ${
                 isSelected
-                  ? "bg-emerald-500 text-neutral-950 shadow-lg shadow-emerald-500/20"
+                  ? "bg-[#FF8C38] text-neutral-950 shadow-lg shadow-orange-500/20"
                   : "bg-neutral-900/80 text-neutral-400 hover:text-white hover:bg-neutral-850"
               }`}
             >
@@ -98,7 +98,7 @@ export default function FeatureStorytelling() {
           >
             {/* LEFT DETAILS */}
             <div className="lg:col-span-7 space-y-5">
-              <span className="inline-block px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold uppercase rounded-md">
+              <span className="inline-block px-3 py-1 bg-[#FF8C38]/15 border border-[#FF8C38]/30 text-[#FF8C38] text-[10px] font-mono font-bold uppercase rounded-md">
                 {currentFeature.badge}
               </span>
 
@@ -117,7 +117,7 @@ export default function FeatureStorytelling() {
                 <ul className="space-y-2">
                   {currentFeature.details.map((detail, idx) => (
                     <li key={idx} className="flex items-center gap-2.5 text-xs text-neutral-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF8C38]" />
                       <span>{detail}</span>
                     </li>
                   ))}
@@ -131,11 +131,11 @@ export default function FeatureStorytelling() {
                 <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
                   PAINTIT {currentFeature.badge}
                 </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
               </div>
 
               <div className="py-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-800 text-emerald-400 mx-auto flex items-center justify-center font-bold text-lg">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-800 text-[#FF8C38] mx-auto flex items-center justify-center font-bold text-lg">
                   ✓
                 </div>
                 <h4 className="text-sm font-bold text-white tracking-tight">
@@ -148,7 +148,7 @@ export default function FeatureStorytelling() {
 
               <div className="pt-3 border-t border-neutral-900 flex items-center justify-between text-[10px] font-mono text-neutral-500">
                 <span>STATUS</span>
-                <span className="text-emerald-400 font-bold">READY TO USE</span>
+                <span className="text-[#FF8C38] font-bold">READY TO USE</span>
               </div>
             </div>
           </motion.div>

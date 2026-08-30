@@ -4,11 +4,15 @@ import React, { useState } from "react";
 import { RoleGuard } from "@/components/shared/RoleGuard";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import Logo from "@/components/common/Logo";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -22,41 +26,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <RoleGuard allowedRole="ADMIN">
-      <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col md:flex-row font-sans">
+      <div className={`min-h-screen flex flex-col md:flex-row font-sans transition-colors duration-300 ${
+        isDark ? "bg-black text-neutral-100" : "bg-[#FAF8F5] text-stone-900"
+      }`}>
         {/* Mobile Header Bar */}
-        <div className="md:hidden bg-neutral-900 border-b border-neutral-800 p-4 flex items-center justify-between z-50">
-          <div>
-            <h2 className="text-xs font-black tracking-widest uppercase text-emerald-400">PaintIT Studio</h2>
-            <p className="text-[9px] font-mono text-neutral-500 uppercase">Master Admin</p>
+        <div className={`md:hidden p-4 border-b flex items-center justify-between z-50 ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <Logo size="sm" textColor={isDark ? "text-white" : "text-stone-900"} />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className={`p-1.5 rounded-lg border text-xs font-bold ${
+                isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
+              }`}
+            >
+              {isDark ? "🌙" : "☀️"}
+            </button>
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className={`p-2 rounded-xl text-xs font-bold border ${
+                isDark ? "bg-neutral-900 border-neutral-800 text-white" : "bg-stone-100 border-stone-300 text-stone-900"
+              }`}
+            >
+              {isMobileOpen ? "✕ Close" : "☰ Menu"}
+            </button>
           </div>
-          <button
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="p-2 rounded-xl bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 text-xs font-bold"
-          >
-            {isMobileOpen ? "✕ Close" : "☰ Menu"}
-          </button>
         </div>
 
-        {/* Admin Navigation Sidebar (Desktop Collapsible & Mobile Toggleable) */}
+        {/* Admin Navigation Sidebar */}
         <aside
-          className={`bg-neutral-900 border-r border-neutral-800 flex flex-col justify-between shrink-0 transition-all duration-300 ${
+          className={`border-r flex flex-col justify-between shrink-0 transition-all duration-300 ${
+            isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+          } ${
             isMobileOpen ? "block fixed inset-0 z-50 w-full" : "hidden md:flex"
           } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
         >
           <div>
             {/* Header Brand & Desktop Collapse Toggle */}
-            <div className="p-4 sm:p-5 border-b border-neutral-800/60 flex items-center justify-between">
+            <div className={`p-4 sm:p-5 border-b flex items-center justify-between ${
+              isDark ? "border-neutral-900" : "border-stone-200"
+            }`}>
               {!isCollapsed ? (
-                <div>
-                  <h2 className="text-xs font-black tracking-[0.2em] uppercase text-emerald-400 truncate">PaintIT Studio</h2>
-                  <p className="text-[9px] font-mono text-neutral-500 uppercase mt-0.5">Master Admin Hub</p>
-                </div>
+                <Logo size="sm" textColor={isDark ? "text-white" : "text-stone-900"} subtitle="Master Admin" />
               ) : (
-                <span className="text-sm font-black text-emerald-400 mx-auto">PI</span>
+                <span className="text-sm font-bold text-[#FF8C38] mx-auto">PI</span>
               )}
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden md:flex w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-750 text-neutral-400 hover:text-white items-center justify-center text-xs font-bold transition-all border border-neutral-750"
+                className={`hidden md:flex w-7 h-7 rounded-lg items-center justify-center text-xs font-bold transition-all border ${
+                  isDark ? "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white" : "bg-stone-100 border-stone-300 text-stone-600 hover:text-stone-900"
+                }`}
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               >
                 {isCollapsed ? "▶" : "◀"}
@@ -74,10 +94,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       router.push(item.path);
                       setIsMobileOpen(false);
                     }}
-                    className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 ${
+                    className={`w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 border ${
                       isActive
-                        ? "bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 shadow-md"
-                        : "text-neutral-400 hover:text-white hover:bg-neutral-850 border border-transparent"
+                        ? "bg-[#FF8C38] text-black border-[#FF8C38] shadow-md font-extrabold"
+                        : isDark
+                        ? "text-neutral-400 hover:text-white hover:bg-neutral-900 border-transparent"
+                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-100 border-transparent"
                     }`}
                     title={item.name}
                   >
@@ -90,25 +112,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Admin Profile Footer */}
-          <div className="p-3 border-t border-neutral-800/60 bg-neutral-950/40 flex items-center justify-between">
+          <div className={`p-3 border-t flex items-center justify-between ${
+            isDark ? "border-neutral-900 bg-black/40" : "border-stone-200 bg-stone-50"
+          }`}>
             {!isCollapsed && (
               <div className="truncate pr-2">
-                <p className="text-[10px] font-black uppercase text-neutral-300 truncate">{user?.fullName || "Administrator"}</p>
-                <p className="text-[9px] font-mono text-neutral-500 truncate">{user?.email}</p>
+                <p className={`text-[10px] font-bold uppercase truncate ${isDark ? "text-neutral-300" : "text-stone-800"}`}>
+                  {user?.fullName || "Administrator"}
+                </p>
+                <p className={`text-[9px] font-mono truncate ${isDark ? "text-neutral-500" : "text-stone-500"}`}>{user?.email}</p>
               </div>
             )}
-            <button
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className={`py-1.5 bg-neutral-900 hover:bg-red-950/40 hover:text-red-400 border border-neutral-800 hover:border-red-900/50 rounded-lg text-[9px] font-mono uppercase tracking-wider transition-all shrink-0 ${
-                isCollapsed ? "w-full text-center" : "px-2.5"
-              }`}
-              title="Log Out Admin"
-            >
-              {isCollapsed ? "🚪" : "Exit"}
-            </button>
+            <div className="flex items-center gap-1.5">
+              {!isCollapsed && (
+                <button
+                  onClick={toggleTheme}
+                  className={`p-1.5 rounded-lg border text-xs font-bold ${
+                    isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-200 border-stone-300 text-stone-800"
+                  }`}
+                  title="Toggle Theme"
+                >
+                  {isDark ? "🌙" : "☀️"}
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  logout();
+                  router.replace("/login");
+                }}
+                className={`py-1.5 text-[9px] font-mono uppercase tracking-wider transition-all shrink-0 rounded-lg border ${
+                  isDark
+                    ? "bg-neutral-900 hover:bg-red-950/40 hover:text-red-400 border-neutral-800 text-neutral-400"
+                    : "bg-stone-100 hover:bg-red-50 hover:text-red-600 border-stone-300 text-stone-600"
+                } ${isCollapsed ? "w-full text-center" : "px-2.5"}`}
+                title="Log Out Admin"
+              >
+                {isCollapsed ? "🚪" : "Exit"}
+              </button>
+            </div>
           </div>
         </aside>
 

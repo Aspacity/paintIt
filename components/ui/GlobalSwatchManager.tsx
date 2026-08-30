@@ -92,7 +92,7 @@ export default function GlobalSwatchManager({
                   style={{ backgroundColor: color.hex }}
                 />
                 <div className="min-w-0">
-                  <span className="text-[8px] uppercase font-bold text-emerald-400 block tracking-wider leading-none mb-0.5">
+                  <span className="text-[8px] uppercase font-bold text-[#FF8C38] block tracking-wider leading-none mb-0.5">
                     {color.brand || "Custom Mix"}
                   </span>
                   <h4 className="text-xs font-bold truncate text-neutral-100 max-w-[120px] sm:max-w-[160px]">

@@ -62,14 +62,14 @@ function RequestFormWizardContent() {
   if (successState) {
     return (
       <div className="max-w-md mx-auto text-center py-16 bg-neutral-950 border border-neutral-900 rounded-3xl p-8 space-y-4 shadow-2xl animate-fade-in text-white">
-        <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500 flex items-center justify-center text-xl mx-auto">🎉</div>
+        <div className="w-12 h-12 rounded-full bg-[#FF8C38]/15 border border-[#FF8C38] flex items-center justify-center text-xl mx-auto">🎉</div>
         <h2 className="text-base font-black uppercase tracking-wide text-neutral-100">Project Brief Logs Dispatched!</h2>
         <p className="text-xs text-neutral-400 leading-relaxed">
           Your surface remodeling specs have been synchronized straight with the contractor workspace console pipeline o!
         </p>
         <button
           onClick={() => router.push("/search/painters")}
-          className="w-full mt-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+          className="w-full mt-4 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all"
         >
           Return to Marketplace Directory
         </button>
@@ -78,7 +78,7 @@ function RequestFormWizardContent() {
   }
 
   return (
-    <div className="max-w-lg mx-auto text-white space-y-6 animate-fade-in pb-16 selection:bg-emerald-500 selection:text-black">
+    <div className="max-w-lg mx-auto text-white space-y-6 animate-fade-in pb-16 selection:bg-[#FF8C38] selection:text-black">
 
       {/* Structural Stepper Header Tracker */}
       <div className="border-b border-neutral-900 pb-5 text-center sm:text-left flex items-center justify-between">
@@ -102,7 +102,7 @@ function RequestFormWizardContent() {
         {/* STEP 1: CONTACT PIPELINE INFORMATION */}
         {step === 1 && (
           <div className="space-y-4 animate-fade-in">
-            <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400 mb-2">Communication Credentials</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] mb-2">Communication Credentials</h3>
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase font-black text-neutral-400 block">Your Full Name</label>
               <input
@@ -112,7 +112,7 @@ function RequestFormWizardContent() {
                 value={formData.clientName}
                 onChange={handleInputChange}
                 placeholder="e.g., Idowu Tijesunimi"
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white"
+                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -125,7 +125,7 @@ function RequestFormWizardContent() {
                   value={formData.clientEmail}
                   onChange={handleInputChange}
                   placeholder="name@domain.com"
-                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white"
+                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white"
                 />
               </div>
               <div className="space-y-1.5">
@@ -137,7 +137,7 @@ function RequestFormWizardContent() {
                   value={formData.clientPhone}
                   onChange={handleInputChange}
                   placeholder="e.g., +234..."
-                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white"
+                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white"
                 />
               </div>
             </div>
@@ -147,7 +147,7 @@ function RequestFormWizardContent() {
         {/* STEP 2: REMODELING SCOPE SELECTORS */}
         {step === 2 && (
           <div className="space-y-4 animate-fade-in">
-            <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400 mb-2">Workspace & Architectural Matrix</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] mb-2">Workspace & Architectural Matrix</h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -156,7 +156,7 @@ function RequestFormWizardContent() {
                   name="spaceType"
                   value={formData.spaceType}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-neutral-300 focus:outline-none focus:border-emerald-500/30"
+                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-neutral-300 focus:outline-none focus:border-[#FF8C38]/40"
                 >
                   <option value="Residential Living Room">Residential Interior Room</option>
                   <option value="Full Duplex Transformation">Full Duplex Transformation</option>
@@ -171,7 +171,7 @@ function RequestFormWizardContent() {
                   name="finishStyle"
                   value={formData.finishStyle}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-neutral-300 focus:outline-none focus:border-emerald-500/30"
+                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-neutral-300 focus:outline-none focus:border-[#FF8C38]/40"
                 >
                   <option value="Satin Finishes">Premium Satin / Silk Coat</option>
                   <option value="Stucco Texturing">Velvet Stucco Texturing</option>
@@ -190,7 +190,7 @@ function RequestFormWizardContent() {
                 value={formData.projectLocation}
                 onChange={handleInputChange}
                 placeholder="e.g., Akobo, Ibadan, Nigeria"
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white"
+                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white"
               />
             </div>
           </div>
@@ -199,7 +199,7 @@ function RequestFormWizardContent() {
         {/* STEP 3: FINANCIAL ESTIMATION & BRIEF NOTES */}
         {step === 3 && (
           <div className="space-y-4 animate-fade-in">
-            <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400 mb-2">Budgets & Context Notes</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] mb-2">Budgets & Context Notes</h3>
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase font-black text-neutral-400 block">Estimated Allocation Budget (₦)</label>
               <input
@@ -208,7 +208,7 @@ function RequestFormWizardContent() {
                 value={formData.budget}
                 onChange={handleInputChange}
                 placeholder="e.g., 450000"
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white"
+                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white"
               />
             </div>
             <div className="space-y-1.5">
@@ -219,7 +219,7 @@ function RequestFormWizardContent() {
                 value={formData.projectNotes}
                 onChange={handleInputChange}
                 placeholder="Detail spatial layout details, window frame shapes, wall condition errors, or clean-up parameters..."
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-emerald-500/30 text-white resize-none"
+                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs focus:outline-none focus:border-[#FF8C38]/40 text-white resize-none"
               />
             </div>
           </div>
@@ -240,7 +240,7 @@ function RequestFormWizardContent() {
             <button
               type="button"
               onClick={() => setStep(s => s + 1)}
-              className="px-5 py-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-emerald-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+              className="px-5 py-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-[#FF8C38] text-xs font-black uppercase tracking-wider rounded-xl transition-all"
             >
               Continue →
             </button>
@@ -248,7 +248,7 @@ function RequestFormWizardContent() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all disabled:bg-neutral-900 disabled:text-neutral-600"
+              className="px-6 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all disabled:bg-neutral-900 disabled:text-neutral-600"
             >
               {isSubmitting ? "Transmitting Specification Data..." : "Dispatch Brief Request ➔"}
             </button>
@@ -264,7 +264,7 @@ export default function PublicRequestFormWizardPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[40vh] w-full flex flex-col items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <RequestFormWizardContent />

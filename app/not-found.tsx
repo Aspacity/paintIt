@@ -42,7 +42,7 @@ export default function NotFoundPage() {
   return (
     <div className="min-h-screen bg-black font-sans flex flex-col items-center justify-center p-4 relative overflow-hidden text-white">
       {/* Visual Ambient Background Canvas Gradients */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-emerald-500/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#FF8C38]/10 blur-[100px] pointer-events-none" />
 
       <div className="text-center space-y-5 max-w-sm relative z-10 animate-fade-in">
         {/* Error Structural Status Identifier Code badge */}
@@ -66,7 +66,7 @@ export default function NotFoundPage() {
         <div className="py-2">
           <Link
             href={targetPath}
-            className="inline-flex items-center justify-center w-full py-3.5 px-6 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-xl text-xs font-bold uppercase tracking-wider text-emerald-400 transition-all duration-150 active:scale-[0.98]"
+            className="inline-flex items-center justify-center w-full py-3.5 px-6 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-xl text-xs font-bold uppercase tracking-wider text-[#FF8C38] transition-all duration-150 active:scale-[0.98]"
           >
             Return to Safety ({countdown}s)
           </Link>

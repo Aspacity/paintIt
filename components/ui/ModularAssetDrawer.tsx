@@ -242,18 +242,18 @@ export function ModularAssetDrawer({
       {/* VS Code Style Resizable Drag Handle */}
       <div
         onMouseDown={startResizing}
-        className={`absolute top-0 right-0 bottom-0 w-2 cursor-col-resize hover:bg-emerald-500/60 transition-colors z-50 group flex items-center justify-center ${
-          isResizing ? "bg-emerald-500" : "bg-transparent"
+        className={`absolute top-0 right-0 bottom-0 w-2 cursor-col-resize hover:bg-[#FF8C38]/60 transition-colors z-50 group flex items-center justify-center ${
+          isResizing ? "bg-[#FF8C38]" : "bg-transparent"
         }`}
         title="Drag to resize sidebar"
       >
-        <div className="w-0.5 h-8 rounded-full bg-neutral-700 group-hover:bg-emerald-300 transition-colors" />
+        <div className="w-0.5 h-8 rounded-full bg-neutral-700 group-hover:bg-orange-300 transition-colors" />
       </div>
 
       {/* Primary Studio Header */}
       <div className="p-4 border-b border-neutral-900 flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+          <h2 className="text-sm font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-2">
             <span>🧱 Admin Studio Control Panel</span>
           </h2>
           <p className="text-[10px] text-neutral-500 font-medium mt-0.5">
@@ -276,7 +276,7 @@ export function ModularAssetDrawer({
             onClick={() => onTabChange(tab.id)}
             className={`py-2 px-1 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex flex-col items-center justify-center gap-0.5 ${
               activeStudioTab === tab.id
-                ? "bg-emerald-500 text-neutral-950 font-black shadow-md"
+                ? "bg-[#FF8C38] text-neutral-950 font-black shadow-md"
                 : "text-neutral-400 hover:text-white hover:bg-neutral-900"
             }`}
           >
@@ -292,7 +292,7 @@ export function ModularAssetDrawer({
           {/* Room Shell Enlarger Slider Banner */}
           <div className="p-3.5 bg-neutral-900 border-b border-neutral-850 space-y-2">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-emerald-400 font-black flex items-center gap-1.5">
+              <span className="text-[#FF8C38] font-black flex items-center gap-1.5">
                 <span>🏠 Room Shell Expansion:</span>
               </span>
               <span className="text-amber-400 font-mono">{roomShellScale.toFixed(2)}x</span>
@@ -304,7 +304,7 @@ export function ModularAssetDrawer({
               step="0.05"
               value={roomShellScale}
               onChange={(e) => onRoomShellScaleChange(parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-neutral-800 cursor-pointer"
+              className="w-full accent-orange-500 bg-neutral-800 cursor-pointer"
             />
             <div className="flex justify-between text-[9px] font-mono text-neutral-500">
               <span>0.8x (Compact)</span>
@@ -317,7 +317,7 @@ export function ModularAssetDrawer({
           {placedObjects.length > 0 && (
             <div className="p-3 border-b border-neutral-900 bg-neutral-900/60 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">
+                <span className="text-[10px] font-black uppercase text-[#FF8C38] tracking-wider">
                   📋 Placed Room Components ({placedObjects.length})
                 </span>
                 <span className="text-[9px] font-mono text-neutral-500">Click to Select</span>
@@ -332,7 +332,7 @@ export function ModularAssetDrawer({
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap cursor-pointer transition-all flex items-center gap-2 border shrink-0 ${
                       selectedObject?.instance_id === obj.instance_id
-                        ? "bg-emerald-500 text-neutral-950 border-emerald-400 font-black shadow-md"
+                        ? "bg-[#FF8C38] text-neutral-950 border-[#FF8C38] font-black shadow-md"
                         : "bg-neutral-950 border-neutral-800 text-neutral-300 hover:text-white"
                     }`}
                   >
@@ -360,7 +360,7 @@ export function ModularAssetDrawer({
               placeholder="🔍 Search chairs, tables, curtains..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-neutral-900 border border-neutral-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-medium"
+              className="w-full bg-neutral-900 border border-neutral-800 focus:border-[#FF8C38] rounded-xl px-3.5 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-medium"
             />
           </div>
 
@@ -372,7 +372,7 @@ export function ModularAssetDrawer({
                 onClick={() => setActiveAssetCategory(cat.id)}
                 className={`px-3 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
                   activeAssetCategory === cat.id
-                    ? "bg-emerald-500 text-neutral-950 shadow-md font-black"
+                    ? "bg-[#FF8C38] text-neutral-950 shadow-md font-black"
                     : "bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-850"
                 }`}
               >
@@ -396,10 +396,10 @@ export function ModularAssetDrawer({
               filteredAssets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="p-3 bg-neutral-900 border border-neutral-800 hover:border-emerald-500/40 rounded-2xl flex items-center justify-between gap-3 transition-all group"
+                  className="p-3 bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38]/50 rounded-2xl flex items-center justify-between gap-3 transition-all group"
                 >
                   <div className="space-y-1 min-w-0">
-                    <h4 className="text-xs font-bold text-neutral-100 truncate group-hover:text-emerald-400 transition-colors">
+                    <h4 className="text-xs font-bold text-neutral-100 truncate group-hover:text-[#FF8C38] transition-colors">
                       {asset.name}
                     </h4>
                     <span className="text-[9px] font-mono text-neutral-500 block truncate">
@@ -417,7 +417,7 @@ export function ModularAssetDrawer({
                   ) : (
                     <button
                       onClick={() => onAddAsset(asset)}
-                      className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-[10px] font-mono font-bold rounded-xl shadow-md shrink-0"
+                      className="px-3 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-[10px] font-mono font-bold rounded-xl shadow-md shrink-0"
                     >
                       + Add to Room
                     </button>
@@ -433,12 +433,12 @@ export function ModularAssetDrawer({
       {activeStudioTab === "paint" && (
         <div className="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar">
           {/* Active Surface & Applied Color Inspection Banner */}
-          <div className="p-3.5 bg-neutral-900 border border-emerald-500/40 rounded-2xl space-y-2.5 shadow-xl">
+          <div className="p-3.5 bg-neutral-900 border border-[#FF8C38]/50 rounded-2xl space-y-2.5 shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase text-emerald-400 font-black tracking-wider flex items-center gap-1.5">
+              <span className="text-[10px] font-mono uppercase text-[#FF8C38] font-black tracking-wider flex items-center gap-1.5">
                 <span>🎯 Selected Surface:</span>
               </span>
-              <span className="text-xs font-black uppercase text-emerald-300 bg-neutral-950 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+              <span className="text-xs font-black uppercase text-orange-300 bg-neutral-950 px-2.5 py-1 rounded-lg border border-[#FF8C38]/40">
                 {activeSurface.replace(/_/g, " ")}
               </span>
             </div>
@@ -452,7 +452,7 @@ export function ModularAssetDrawer({
                 <span className="text-xs font-black text-white block truncate">
                   {activePaintMeta?.name || "Custom Surface Color"}
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold block truncate">
+                <span className="text-[10px] font-mono text-[#FF8C38] font-bold block truncate">
                   {activePaintMeta?.brand ? `${activePaintMeta.brand} • ` : ""}{currentWallHex}
                 </span>
               </div>
@@ -467,7 +467,7 @@ export function ModularAssetDrawer({
             <select
               value={activeSurface}
               onChange={(e) => onSurfaceSelect(e.target.value)}
-              className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-emerald-400 focus:outline-none"
+              className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-[#FF8C38] focus:outline-none"
             >
               <option value="wallFront">Wall Front</option>
               <option value="wallBack">Wall Back</option>
@@ -490,7 +490,7 @@ export function ModularAssetDrawer({
                   onClick={() => setActiveBrandFilter(brand)}
                   className={`py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all ${
                     activeBrandFilter === brand
-                      ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-400"
+                      ? "bg-[#FF8C38]/25 border border-[#FF8C38]/50 text-[#FF8C38]"
                       : "bg-neutral-900 border border-neutral-850 text-neutral-400 hover:text-white"
                   }`}
                 >
@@ -514,7 +514,7 @@ export function ModularAssetDrawer({
                     onClick={() => onColorChange(activeSurface, paint.code)}
                     className={`p-2 bg-neutral-900 border rounded-xl flex flex-col items-center gap-1.5 text-center group transition-all ${
                       isSelectedPaint
-                        ? "border-emerald-400 bg-emerald-500/10 shadow-lg shadow-emerald-500/20"
+                        ? "border-[#FF8C38] bg-[#FF8C38]/15 shadow-lg shadow-orange-500/20"
                         : "border-neutral-800 hover:border-neutral-700"
                     }`}
                   >
@@ -522,7 +522,7 @@ export function ModularAssetDrawer({
                       className="w-8 h-8 rounded-lg shadow-md border border-white/10 group-hover:scale-105 transition-transform"
                       style={{ backgroundColor: paint.code }}
                     />
-                    <span className={`text-[9px] font-bold truncate max-w-full ${isSelectedPaint ? "text-emerald-300 font-black" : "text-neutral-200"}`}>
+                    <span className={`text-[9px] font-bold truncate max-w-full ${isSelectedPaint ? "text-orange-300 font-black" : "text-neutral-200"}`}>
                       {paint.name}
                     </span>
                   </button>
@@ -562,7 +562,7 @@ export function ModularAssetDrawer({
           {/* Active Room Components Selector Bar */}
           {placedObjects.length > 0 && (
             <div className="p-3 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2">
-              <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider block">
+              <span className="text-[10px] font-black uppercase text-[#FF8C38] tracking-wider block">
                 📋 All Placed Room Components ({placedObjects.length})
               </span>
               <div className="space-y-1.5 max-h-40 overflow-y-auto no-scrollbar">
@@ -574,7 +574,7 @@ export function ModularAssetDrawer({
                       onClick={() => onSelectObject(obj.instance_id)}
                       className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                         isCurSelected
-                          ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold"
+                          ? "bg-[#FF8C38]/25 border-[#FF8C38] text-orange-300 font-bold"
                           : "bg-neutral-950 border-neutral-850 text-neutral-300 hover:text-white"
                       }`}
                     >
@@ -611,7 +611,7 @@ export function ModularAssetDrawer({
               {/* Component Header Metadata Card */}
               <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase text-emerald-400 truncate">
+                  <h3 className="text-xs font-black uppercase text-[#FF8C38] truncate">
                     {selectedObject.name}
                   </h3>
                   <span className="text-[9px] font-mono uppercase bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800 text-neutral-400">
@@ -631,7 +631,7 @@ export function ModularAssetDrawer({
                     onClick={() => onTransformModeChange("translate")}
                     className={`py-2 text-[10px] font-mono font-bold rounded-xl border transition-all ${
                       transformMode === "translate"
-                        ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-black"
+                        ? "bg-[#FF8C38]/25 border-[#FF8C38]/50 text-[#FF8C38] font-black"
                         : "bg-neutral-900 border-neutral-850 text-neutral-400"
                     }`}
                   >
@@ -641,7 +641,7 @@ export function ModularAssetDrawer({
                     onClick={() => onTransformModeChange("rotate")}
                     className={`py-2 text-[10px] font-mono font-bold rounded-xl border transition-all ${
                       transformMode === "rotate"
-                        ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-black"
+                        ? "bg-[#FF8C38]/25 border-[#FF8C38]/50 text-[#FF8C38] font-black"
                         : "bg-neutral-900 border-neutral-850 text-neutral-400"
                     }`}
                   >
@@ -651,7 +651,7 @@ export function ModularAssetDrawer({
                     onClick={() => onTransformModeChange("scale")}
                     className={`py-2 text-[10px] font-mono font-bold rounded-xl border transition-all ${
                       transformMode === "scale"
-                        ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-black"
+                        ? "bg-[#FF8C38]/25 border-[#FF8C38]/50 text-[#FF8C38] font-black"
                         : "bg-neutral-900 border-neutral-850 text-neutral-400"
                     }`}
                   >
@@ -679,7 +679,7 @@ export function ModularAssetDrawer({
                           newScale[axisIdx] = val;
                           onUpdateTransform("scale", newScale);
                         }}
-                        className="bg-neutral-950 border border-neutral-800 text-xs font-mono text-center rounded-xl p-1.5 focus:border-emerald-500 text-white"
+                        className="bg-neutral-950 border border-neutral-800 text-xs font-mono text-center rounded-xl p-1.5 focus:border-[#FF8C38] text-white"
                       />
                     ))}
                   </div>
@@ -700,7 +700,7 @@ export function ModularAssetDrawer({
                           newPos[axisIdx] = val;
                           onUpdateTransform("position", newPos);
                         }}
-                        className="bg-neutral-950 border border-neutral-800 text-xs font-mono text-center rounded-xl p-1.5 focus:border-emerald-500 text-white"
+                        className="bg-neutral-950 border border-neutral-800 text-xs font-mono text-center rounded-xl p-1.5 focus:border-[#FF8C38] text-white"
                       />
                     ))}
                   </div>
@@ -710,7 +710,7 @@ export function ModularAssetDrawer({
               {/* Sub-Mesh Materials & Color Recolor List */}
               {selectedSubMaterials.length > 0 && (
                 <div className="p-3.5 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-3">
-                  <h4 className="text-xs font-black uppercase text-emerald-400">
+                  <h4 className="text-xs font-black uppercase text-[#FF8C38]">
                     🎨 Component Detected Sub-Parts
                   </h4>
 
@@ -767,7 +767,7 @@ export function ModularAssetDrawer({
           {/* Add Light Fixture Button */}
           <button
             onClick={onAddLight}
-            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="w-full py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <span>💡 ➕ Add New Light Fixture</span>
           </button>
@@ -850,7 +850,7 @@ export function ModularAssetDrawer({
                         isSelected
                           ? "bg-neutral-900 border-cyan-400 shadow-lg shadow-cyan-500/10"
                           : isOn
-                          ? "bg-neutral-950 border-emerald-500/40 text-neutral-100"
+                          ? "bg-neutral-950 border-[#FF8C38]/50 text-neutral-100"
                           : "bg-neutral-950/60 border-neutral-850 text-neutral-500"
                       }`}
                     >
@@ -864,7 +864,7 @@ export function ModularAssetDrawer({
                             }}
                             className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded-lg transition-all ${
                               isOn
-                                ? "bg-emerald-500 text-neutral-950"
+                                ? "bg-[#FF8C38] text-neutral-950"
                                 : "bg-neutral-850 text-neutral-400 hover:text-white"
                             }`}
                           >
@@ -913,7 +913,7 @@ export function ModularAssetDrawer({
                         <div className="space-y-2 pt-1 border-t border-neutral-900" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono">
                             <span>Intensity:</span>
-                            <span className="text-emerald-400 font-bold">{bulb.intensity} lm</span>
+                            <span className="text-[#FF8C38] font-bold">{bulb.intensity} lm</span>
                           </div>
                           <input
                             type="range"
@@ -922,7 +922,7 @@ export function ModularAssetDrawer({
                             step="1"
                             value={bulb.intensity}
                             onChange={(e) => onBulbIntensityChange(bulb.id, parseFloat(e.target.value))}
-                            className="w-full accent-emerald-500 bg-neutral-800 cursor-pointer"
+                            className="w-full accent-orange-500 bg-neutral-800 cursor-pointer"
                           />
                           <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono pt-1">
                             <span>Bulb Color Tone:</span>
@@ -950,7 +950,7 @@ export function ModularAssetDrawer({
           {/* Room Shell Expansion Slider */}
           <div className="p-3.5 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-emerald-400 font-black">🏠 Room Shell Expansion:</span>
+              <span className="text-[#FF8C38] font-black">🏠 Room Shell Expansion:</span>
               <span className="text-amber-400 font-mono">{roomShellScale.toFixed(2)}x</span>
             </div>
             <input
@@ -960,7 +960,7 @@ export function ModularAssetDrawer({
               step="0.05"
               value={roomShellScale}
               onChange={(e) => onRoomShellScaleChange(parseFloat(e.target.value))}
-              className="w-full accent-emerald-500 bg-neutral-800 cursor-pointer"
+              className="w-full accent-orange-500 bg-neutral-800 cursor-pointer"
             />
           </div>
 
@@ -969,7 +969,7 @@ export function ModularAssetDrawer({
             <button
               onClick={onSaveTemplate}
               disabled={isSaving}
-              className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <div className="w-4 h-4 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />

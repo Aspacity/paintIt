@@ -41,7 +41,7 @@ export function RoomChangeConfirmationModal({
           className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl p-6 shadow-2xl text-left overflow-hidden space-y-5 select-none"
         >
           {/* Top Decorative Glow Line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-emerald-400 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-orange-400 to-transparent" />
 
           {/* Header */}
           <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export function RoomChangeConfirmationModal({
           <div className="space-y-2 pt-1">
             <button
               onClick={onKeepChanges}
-              className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
             >
               <span>🎨 Keep Paint Changes & Apply to New Room</span>
             </button>

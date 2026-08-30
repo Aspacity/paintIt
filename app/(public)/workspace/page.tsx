@@ -245,8 +245,8 @@ function WorkspaceContent() {
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 text-white font-mono">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs uppercase font-black tracking-widest text-emerald-400">
+        <div className="w-8 h-8 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs uppercase font-black tracking-widest text-[#FF8C38]">
           Loading Spatial Master Canvas...
         </span>
       </div>
@@ -259,7 +259,7 @@ function WorkspaceContent() {
       <div className="absolute top-4 left-4 z-50 pointer-events-auto flex items-center gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-neutral-800 px-4 py-2 rounded-2xl shadow-2xl">
         <button
           onClick={() => router.back()}
-          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
           title="Exit Workspace"
         >
           ◀
@@ -268,7 +268,7 @@ function WorkspaceContent() {
           <h1 className="text-xs font-black uppercase text-white tracking-wide truncate max-w-[160px] sm:max-w-xs">
             {designTitle}
           </h1>
-          <span className="text-[9px] font-mono text-emerald-400 block leading-none">
+          <span className="text-[9px] font-mono text-[#FF8C38] block leading-none">
             Painter Workspace • Full Screen
           </span>
         </div>
@@ -280,14 +280,14 @@ function WorkspaceContent() {
               document.exitFullscreen().catch(() => {});
             }
           }}
-          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+          className="w-7 h-7 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
           title="Toggle Native Fullscreen"
         >
           ⛶
         </button>
         <button
           onClick={() => setSaveModalOpen(true)}
-          className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
+          className="px-3.5 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-1.5 shrink-0"
         >
           <span>💾 SAVE CONCEPT</span>
         </button>
@@ -416,7 +416,7 @@ function WorkspaceContent() {
                 placeholder="e.g. Executive Minimalist Living Room"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 focus:border-emerald-500 rounded-2xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-sans"
+                className="w-full bg-neutral-950 border border-neutral-800 focus:border-[#FF8C38] rounded-2xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none transition-all font-sans"
               />
 
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -431,7 +431,7 @@ function WorkspaceContent() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 disabled:bg-emerald-800 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#FF8C38] disabled:bg-orange-800 text-neutral-950 text-[10px] font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2"
                 >
                   {isSaving ? "Saving..." : "Confirm Save ➔"}
                 </button>
@@ -449,7 +449,7 @@ export default function WorkspacePage() {
     <Suspense
       fallback={
         <div className="fixed inset-0 bg-neutral-950 flex flex-col items-center justify-center gap-3 z-50 font-mono text-white">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
           <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-black">
             Loading Spatial Parameters...
           </span>

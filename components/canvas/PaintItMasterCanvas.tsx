@@ -1052,8 +1052,8 @@ export default function PaintItMasterCanvas({
           {/* Active Wall Status Pill & Offline Sync Indicator */}
           <div className="flex items-center gap-2 pointer-events-auto">
             <div className="bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-2xl">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
+              <span className="text-[10px] font-mono text-[#FF8C38] font-bold uppercase tracking-wide">
                 {activeSelectedWall ? activeSelectedWall.toUpperCase() : "SELECT SURFACE"}
                 {activeSelectedWall &&
                 (activeSelectedWall.toLowerCase().includes("curtain") ||
@@ -1175,7 +1175,7 @@ export default function PaintItMasterCanvas({
             >
               <span className="text-neutral-500 font-bold">⋮⋮</span>
               <span>🎨 Paint & Finishes</span>
-              <span className="text-emerald-400">▶</span>
+              <span className="text-[#FF8C38]">▶</span>
             </button>
           ) : (
             <div className="pointer-events-auto w-[calc(100vw-28px)] max-w-xs sm:w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
@@ -1192,7 +1192,7 @@ export default function PaintItMasterCanvas({
                 </span>
                 <button
                   onClick={() => setIsLeftCollapsed(true)}
-                  className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+                  className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
                   title="Collapse Left Dock"
                 >
                   ◀
@@ -1204,7 +1204,7 @@ export default function PaintItMasterCanvas({
                 <button
                   onClick={() => setLeftTab("colors")}
                   className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                    leftTab === "colors" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                    leftTab === "colors" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
                   }`}
                 >
                   🎨 Paints
@@ -1212,7 +1212,7 @@ export default function PaintItMasterCanvas({
                 <button
                   onClick={() => setLeftTab("finishes")}
                   className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                    leftTab === "finishes" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                    leftTab === "finishes" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
                   }`}
                 >
                   ✨ Sheen
@@ -1221,7 +1221,7 @@ export default function PaintItMasterCanvas({
                   <button
                     onClick={() => setLeftTab("textures")}
                     className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      leftTab === "textures" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                      leftTab === "textures" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
                     }`}
                   >
                     🪵 Floor
@@ -1237,12 +1237,12 @@ export default function PaintItMasterCanvas({
                     {!config.hideColorMixer && (
                       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-2.5 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase text-emerald-400 flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold uppercase text-[#FF8C38] flex items-center gap-1.5">
                             <span>🎨 Color Mixer & Upload</span>
                           </span>
                           <button
                             onClick={() => setShowPaintMixer(!showPaintMixer)}
-                            className="text-[9px] font-black uppercase text-emerald-400 hover:underline px-2 py-0.5 bg-emerald-500/10 rounded"
+                            className="text-[9px] font-black uppercase text-[#FF8C38] hover:underline px-2 py-0.5 bg-[#FF8C38]/15 rounded"
                           >
                             {showPaintMixer ? "Close Mixer" : "➕ Custom Paint"}
                           </button>
@@ -1277,7 +1277,7 @@ export default function PaintItMasterCanvas({
 
                             <button
                               onClick={handleSaveCustomPaint}
-                              className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow"
+                              className="w-full py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow"
                             >
                               💾 Save Custom Paint to Database
                             </button>
@@ -1305,7 +1305,7 @@ export default function PaintItMasterCanvas({
                             onClick={() => handleColorChange(paint.code)}
                             className={`p-2 rounded-2xl border transition-all text-left flex items-center justify-between ${
                               isSelected
-                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
                                 : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
                             }`}
                           >
@@ -1320,7 +1320,7 @@ export default function PaintItMasterCanvas({
                               </div>
                             </div>
                             {isSelected && (
-                              <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE</span>
+                              <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE</span>
                             )}
                           </button>
                         );
@@ -1354,14 +1354,14 @@ export default function PaintItMasterCanvas({
                             onClick={() => handleFinishChange(finish.id as WallFinishType)}
                             className={`w-full p-3 rounded-2xl border transition-all text-left space-y-1 ${
                               isSelected
-                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
                                 : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold text-neutral-100">{finish.label}</span>
                               {isSelected && (
-                                <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE WALL</span>
+                                <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE WALL</span>
                               )}
                             </div>
                             <p className="text-[10px] text-neutral-400 font-normal leading-snug">{finish.desc}</p>
@@ -1370,7 +1370,7 @@ export default function PaintItMasterCanvas({
                           {/* ✨ FINISH ALL WALLS BUTTON */}
                           <button
                             onClick={() => handleApplyFinishToAllWalls(finish.id as WallFinishType)}
-                            className="w-full py-1 text-[9px] font-mono font-bold uppercase text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl border border-emerald-500/20 transition-all flex items-center justify-center gap-1"
+                            className="w-full py-1 text-[9px] font-mono font-bold uppercase text-[#FF8C38] hover:text-orange-300 bg-[#FF8C38]/15 hover:bg-[#FF8C38]/25 rounded-xl border border-[#FF8C38]/30 transition-all flex items-center justify-center gap-1"
                             title="Apply this sheen to all room walls at once"
                           >
                             <span>✨ Finish All Walls ({finish.label})</span>
@@ -1398,7 +1398,7 @@ export default function PaintItMasterCanvas({
                             }}
                             className={`p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between ${
                               isSelected
-                                ? "bg-emerald-500/20 border-emerald-400 text-white shadow-md"
+                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
                                 : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
                             }`}
                           >
@@ -1417,7 +1417,7 @@ export default function PaintItMasterCanvas({
                               </div>
                             </div>
                             {isSelected && (
-                              <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase">ACTIVE</span>
+                              <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE</span>
                             )}
                           </button>
                         );
@@ -1442,7 +1442,7 @@ export default function PaintItMasterCanvas({
                 className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-black uppercase tracking-wider transition-all"
                 title="Expand Lighting & Sky Dock"
               >
-                <span className="text-emerald-400">◀</span>
+                <span className="text-[#FF8C38]">◀</span>
                 <span>☀️ Lighting & Sky</span>
               </button>
             ) : (
@@ -1456,7 +1456,7 @@ export default function PaintItMasterCanvas({
                 >
                   <button
                     onClick={() => setIsRightCollapsed(true)}
-                    className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-emerald-500 text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+                    className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
                     title="Collapse Right Dock"
                   >
                     ▶
@@ -1472,7 +1472,7 @@ export default function PaintItMasterCanvas({
                   <button
                     onClick={() => setRightTab("sun")}
                     className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      rightTab === "sun" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                      rightTab === "sun" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
                     }`}
                   >
                     ☀️ Sun & Sky
@@ -1480,7 +1480,7 @@ export default function PaintItMasterCanvas({
                   <button
                     onClick={() => setRightTab("lighting")}
                     className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      rightTab === "lighting" ? "bg-emerald-500 text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                      rightTab === "lighting" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
                     }`}
                   >
                     💡 Interior Lamps
@@ -1512,7 +1512,7 @@ export default function PaintItMasterCanvas({
                                 onClick={() => onConfigChange?.({ timeOfDay: p.key as LightingPresetKey })}
                                 className={`py-1.5 text-[9px] font-bold rounded-xl border text-center transition-all ${
                                   isSelected
-                                    ? "bg-emerald-500 text-black border-emerald-400 font-black shadow-md"
+                                    ? "bg-[#FF8C38] text-black border-[#FF8C38] font-black shadow-md"
                                     : "bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700"
                                 }`}
                               >
@@ -1529,7 +1529,7 @@ export default function PaintItMasterCanvas({
                           <div className="space-y-1">
                             <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
                               <span>Sun Azimuth</span>
-                              <span className="font-mono text-emerald-400">
+                              <span className="font-mono text-[#FF8C38]">
                                 {config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135}°
                               </span>
                             </div>
@@ -1540,14 +1540,14 @@ export default function PaintItMasterCanvas({
                               step="5"
                               value={config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135}
                               onChange={(e) => onConfigChange?.({ sunAzimuthOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                             />
                           </div>
 
                           <div className="space-y-1">
                             <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
                               <span>Sun Elevation</span>
-                              <span className="font-mono text-emerald-400">
+                              <span className="font-mono text-[#FF8C38]">
                                 {config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35}°
                               </span>
                             </div>
@@ -1558,14 +1558,14 @@ export default function PaintItMasterCanvas({
                               step="5"
                               value={config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35}
                               onChange={(e) => onConfigChange?.({ sunElevationOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                             />
                           </div>
 
                           <div className="space-y-1 pt-2 border-t border-neutral-800/60">
                             <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
                               <span>Sun Intensity</span>
-                              <span className="font-mono text-emerald-400">
+                              <span className="font-mono text-[#FF8C38]">
                                 {(config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8).toFixed(1)}x
                               </span>
                             </div>
@@ -1576,14 +1576,14 @@ export default function PaintItMasterCanvas({
                               step="0.1"
                               value={config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8}
                               onChange={(e) => onConfigChange?.({ sunIntensityOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                             />
                           </div>
 
                           <div className="space-y-1 pt-2 border-t border-neutral-800/60">
                             <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
                               <span>Ambient Fill Light</span>
-                              <span className="font-mono text-emerald-400">
+                              <span className="font-mono text-[#FF8C38]">
                                 {(config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5).toFixed(2)}x
                               </span>
                             </div>
@@ -1594,7 +1594,7 @@ export default function PaintItMasterCanvas({
                               step="0.05"
                               value={config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5}
                               onChange={(e) => onConfigChange?.({ ambientIntensityOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
                             />
                           </div>
                         </div>
@@ -1625,7 +1625,7 @@ export default function PaintItMasterCanvas({
                               });
                             }
                           }}
-                          className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5"
+                          className="w-full py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5"
                         >
                           💾 Save Sun & Light Setup (Global DB)
                         </button>
@@ -1641,7 +1641,7 @@ export default function PaintItMasterCanvas({
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleAddBulb("point")}
-                              className="px-2 py-1 bg-emerald-950 text-emerald-400 hover:bg-emerald-900 border border-emerald-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
+                              className="px-2 py-1 bg-neutral-950 text-[#FF8C38] hover:bg-[#FF8C38]/20 border border-orange-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
                             >
                               + Lamp
                             </button>
@@ -1703,7 +1703,7 @@ export default function PaintItMasterCanvas({
                   setMobileDrawerHeight(260);
                 }
               }}
-              className="px-2.5 py-0.5 rounded-lg bg-neutral-900 border border-neutral-800 text-[10px] font-mono font-bold uppercase text-emerald-400 hover:text-white transition-all flex items-center gap-1"
+              className="px-2.5 py-0.5 rounded-lg bg-neutral-900 border border-neutral-800 text-[10px] font-mono font-bold uppercase text-[#FF8C38] hover:text-white transition-all flex items-center gap-1"
             >
               <span>{isMobileDrawerCollapsed ? "▲ Open Panel" : "▼ Collapse"}</span>
             </button>
@@ -1738,7 +1738,7 @@ export default function PaintItMasterCanvas({
                   }}
                   className={`px-3 py-1 rounded-xl text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all ${
                     isSelected && !isMobileDrawerCollapsed
-                      ? "bg-emerald-500 text-neutral-950 shadow-md"
+                      ? "bg-[#FF8C38] text-neutral-950 shadow-md"
                       : "bg-neutral-900 text-neutral-400 hover:text-white"
                   }`}
                 >
@@ -1756,7 +1756,7 @@ export default function PaintItMasterCanvas({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
                     <span>SELECT PAINT SWATCH</span>
-                    <span className="text-emerald-400 font-bold">Double-Tap Wall To Apply</span>
+                    <span className="text-[#FF8C38] font-bold">Double-Tap Wall To Apply</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -1770,7 +1770,7 @@ export default function PaintItMasterCanvas({
                           onClick={() => handleColorChange(paint.code)}
                           className={`p-2 rounded-xl border flex items-center gap-2 text-left transition-all ${
                             isSelected
-                              ? "bg-emerald-500/20 border-emerald-400 text-white shadow"
+                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow"
                               : "bg-neutral-900 border-neutral-850 text-neutral-300"
                           }`}
                         >
@@ -1810,7 +1810,7 @@ export default function PaintItMasterCanvas({
                           onClick={() => handleFinishChange(finish.id as WallFinishType)}
                           className={`p-2 rounded-xl border text-center transition-all text-xs font-bold ${
                             isSelected
-                              ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow"
+                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-orange-300 shadow"
                               : "bg-neutral-900 border-neutral-850 text-neutral-300"
                           }`}
                         >
@@ -1824,7 +1824,7 @@ export default function PaintItMasterCanvas({
                     onClick={() => handleApplyFinishToAllWalls(
                       (config.wallSurfaceStates?.[activeSelectedWall || "wall_back"]?.finish as WallFinishType) || "EMULSION"
                     )}
-                    className="w-full py-1.5 text-[10px] font-mono font-bold uppercase text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-center"
+                    className="w-full py-1.5 text-[10px] font-mono font-bold uppercase text-[#FF8C38] bg-[#FF8C38]/15 rounded-xl border border-[#FF8C38]/30 text-center"
                   >
                     ✨ Finish All Walls
                   </button>
@@ -1846,7 +1846,7 @@ export default function PaintItMasterCanvas({
                           onClick={() => onConfigChange?.({ activeFloorTextureId: texture.id })}
                           className={`p-2 rounded-xl border text-left flex items-center gap-2 ${
                             isSelected
-                              ? "bg-emerald-500/20 border-emerald-400 text-white"
+                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white"
                               : "bg-neutral-900 border-neutral-850 text-neutral-300"
                           }`}
                         >
@@ -1881,7 +1881,7 @@ export default function PaintItMasterCanvas({
                           onClick={() => onConfigChange?.({ timeOfDay: p.key as LightingPresetKey })}
                           className={`py-1.5 text-[10px] font-bold rounded-xl border text-center ${
                             isSelected
-                              ? "bg-emerald-500 text-black border-emerald-400 font-black shadow"
+                              ? "bg-[#FF8C38] text-black border-[#FF8C38] font-black shadow"
                               : "bg-neutral-900 text-neutral-300 border-neutral-800"
                           }`}
                         >

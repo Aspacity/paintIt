@@ -35,7 +35,7 @@ export function WorkspaceSkeletonLoader({ message = "Verifying Core Session Regi
 
         {/* Central Loader Matrix */}
         <div className="flex flex-col items-center gap-3 relative z-20">
-          <div className="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-[#FF8C38]/40 border-t-orange-400 rounded-full animate-spin" />
           <span className="text-[10px] text-neutral-400 font-mono font-bold tracking-widest uppercase">
             {message}
           </span>

@@ -377,7 +377,7 @@ export default function ModularStudioSandboxPage() {
       {!drawerOpen && (
         <button
           onClick={() => setDrawerOpen(true)}
-          className="absolute top-4 left-4 z-50 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-2xl transition-all flex items-center gap-2 border border-emerald-300 animate-pulse"
+          className="absolute top-4 left-4 z-50 px-4 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-2xl transition-all flex items-center gap-2 border border-orange-300 animate-pulse"
         >
           <span>🧱 Open Studio Controls</span>
         </button>
@@ -469,12 +469,12 @@ export default function ModularStudioSandboxPage() {
         {/* Floating Quick Action Badge when Component Selected */}
         {selectedObject && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-neutral-950/95 border border-neutral-800 rounded-3xl p-3 px-5 flex items-center gap-4 backdrop-blur-2xl shadow-2xl z-40 animate-fade-in text-white">
-            <span className="text-xs font-black uppercase text-emerald-400 truncate max-w-[160px]">
+            <span className="text-xs font-black uppercase text-[#FF8C38] truncate max-w-[160px]">
               {selectedObject.name}
             </span>
             <button
               onClick={() => setActiveStudioTab("inspector")}
-              className="px-3 py-1.5 bg-emerald-500 text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-md"
+              className="px-3 py-1.5 bg-[#FF8C38] text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-md"
             >
               🧩 Inspect in Sidebar ➔
             </button>

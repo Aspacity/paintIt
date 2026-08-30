@@ -37,7 +37,7 @@ export function PaintFinishSelector({
               type="button"
               onClick={() => onChangeFinish(id)}
               className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200 select-none ${isActive
-                  ? "bg-neutral-800 border border-neutral-700 text-emerald-400 shadow-md scale-[1.02]"
+                  ? "bg-neutral-800 border border-neutral-700 text-[#FF8C38] shadow-md scale-[1.02]"
                   : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-850/50"
                 }`}
             >

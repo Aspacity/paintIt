@@ -135,7 +135,7 @@ export default function PainterPortfolioPage() {
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-[0.98] shrink-0"
+          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-[0.98] shrink-0"
         >
           + Add Work
         </button>
@@ -150,7 +150,7 @@ export default function PainterPortfolioPage() {
       {/* ⏳ APP STATE ROUTING INTERCEPTORS */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-24 space-y-3">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
           <span className="text-[10px] uppercase font-black tracking-widest text-neutral-600">Syncing Workspace Assets...</span>
         </div>
       ) : projects.length === 0 ? (
@@ -165,7 +165,7 @@ export default function PainterPortfolioPage() {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="mt-5 px-6 py-3 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-emerald-400 font-black text-xs uppercase tracking-wider rounded-xl transition-all"
+            className="mt-5 px-6 py-3 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-[#FF8C38] font-black text-xs uppercase tracking-wider rounded-xl transition-all"
           >
             Initialize First Showcase
           </button>
@@ -206,7 +206,7 @@ export default function PainterPortfolioPage() {
 
                   {/* Multi-Image Counter Tracker Badge */}
                   {project.images && project.images.length > 1 && (
-                    <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-[9px] font-black text-emerald-400 px-2 py-1 rounded-md border border-neutral-800/60 select-none tracking-wide uppercase">
+                    <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-[9px] font-black text-[#FF8C38] px-2 py-1 rounded-md border border-neutral-800/60 select-none tracking-wide uppercase">
                       + {project.images.length - 1} Images
                     </span>
                   )}
@@ -216,7 +216,7 @@ export default function PainterPortfolioPage() {
                     <button
                       type="button"
                       onClick={(e) => copyProjectDeepLink(e, project.id)}
-                      className="px-2.5 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-emerald-400 text-[10px] font-bold uppercase rounded-xl transition-all"
+                      className="px-2.5 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-[#FF8C38] text-[10px] font-bold uppercase rounded-xl transition-all"
                     >
                       🔗 Link
                     </button>
@@ -228,7 +228,7 @@ export default function PainterPortfolioPage() {
                         e.stopPropagation();
                         triggerEditFlow(project);
                       }}
-                      className="px-3 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-emerald-400 text-[10px] font-bold uppercase rounded-xl transition-all"
+                      className="px-3 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-[#FF8C38] text-[10px] font-bold uppercase rounded-xl transition-all"
                     >
                       ⚙️ Edit
                     </button>
@@ -238,7 +238,7 @@ export default function PainterPortfolioPage() {
                 {/* Content text metadata summary descriptions */}
                 <div className="p-5 space-y-3">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-neutral-200 tracking-wide group-hover:text-emerald-400 transition-colors">
+                    <h3 className="text-sm font-black uppercase text-neutral-200 tracking-wide group-hover:text-[#FF8C38] transition-colors">
                       {project.title}
                     </h3>
                     <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
@@ -305,13 +305,13 @@ export default function PainterPortfolioPage() {
                   <>
                     <button
                       onClick={() => setCurrentImageIndex(p => p === 0 ? activeLightboxProject.images.length - 1 : p - 1)}
-                      className="absolute left-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-black hover:bg-emerald-500 hover:text-black transition-all"
+                      className="absolute left-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-black hover:bg-[#FF8C38] hover:text-black transition-all"
                     >
                       ←
                     </button>
                     <button
                       onClick={() => setCurrentImageIndex(p => p === activeLightboxProject.images.length - 1 ? 0 : p + 1)}
-                      className="absolute right-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-black hover:bg-emerald-500 hover:text-black transition-all"
+                      className="absolute right-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-black hover:bg-[#FF8C38] hover:text-black transition-all"
                     >
                       →
                     </button>
@@ -326,7 +326,7 @@ export default function PainterPortfolioPage() {
                     <div
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-12 h-12 bg-neutral-900 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${currentImageIndex === index ? "border-emerald-500 scale-105" : "border-neutral-900 opacity-50"
+                      className={`w-12 h-12 bg-neutral-900 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${currentImageIndex === index ? "border-[#FF8C38] scale-105" : "border-neutral-900 opacity-50"
                         }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}

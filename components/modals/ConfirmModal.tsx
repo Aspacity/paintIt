@@ -50,7 +50,7 @@ export default function ConfirmModal({
 
         {/* Header Block / State Indicators */}
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold select-none ${isSuccessState ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold select-none ${isSuccessState ? "bg-[#FF8C38]/15 text-[#FF8C38]" : "bg-amber-500/10 text-amber-400"
             }`}>
             {isSuccessState ? "✓" : "❓"}
           </div>
@@ -83,8 +83,8 @@ export default function ConfirmModal({
             disabled={isSuccessState}
             onClick={onConfirm}
             className={`w-full sm:flex-1 py-2.5 text-center text-[10px] font-black uppercase tracking-wider rounded-xl transition-all text-black ${isSuccessState
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
-              : "bg-emerald-500 hover:bg-emerald-400"
+              ? "bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40 cursor-not-allowed"
+              : "bg-[#FF8C38] hover:bg-[#FF8C38]"
               }`}
           >
             {isSuccessState ? "Success" : confirmText}

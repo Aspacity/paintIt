@@ -23,7 +23,7 @@ export default function Validation() {
   return (
     <section className="px-4 max-w-5xl mx-auto">
       <div className="text-center max-w-2xl mx-auto mb-16">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">Market Validation</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#FF8C38] mb-3">Market Validation</h2>
         <p className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-100">
           Backed By Real Market Data
         </p>
@@ -43,7 +43,7 @@ export default function Validation() {
               <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-neutral-50 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm font-bold text-emerald-400 mb-3 uppercase tracking-wider">{stat.label}</div>
+              <div className="text-sm font-bold text-[#FF8C38] mb-3 uppercase tracking-wider">{stat.label}</div>
               <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">{stat.desc}</p>
             </div>
           </motion.div>

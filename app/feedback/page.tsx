@@ -157,7 +157,7 @@ export default function UserFeedbackHubPage() {
         {/* Left Column: Role-Tailored Feedback Form */}
         <div className="bg-neutral-950 border border-neutral-850 rounded-3xl p-6 space-y-4 shadow-xl">
           <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
-            <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38]">
               Submit Feedback ({userRole})
             </h3>
             <span className="text-[9px] font-mono uppercase bg-neutral-900 text-neutral-400 px-2 py-0.5 rounded border border-neutral-800">
@@ -198,7 +198,7 @@ export default function UserFeedbackHubPage() {
               <select
                 value={activeCategory}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-emerald-400 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-[#FF8C38] focus:outline-none focus:border-[#FF8C38]"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -218,14 +218,14 @@ export default function UserFeedbackHubPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={`Share your experience or feature suggestions as a ${userRole.toLowerCase()}...`}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500 font-medium"
+                className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[#FF8C38] font-medium"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-98 disabled:opacity-50"
+              className="w-full py-3 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-98 disabled:opacity-50"
             >
               {isSubmitting ? "Submitting Feedback..." : "Submit Feedback 🚀"}
             </button>
@@ -260,11 +260,11 @@ export default function UserFeedbackHubPage() {
                   className="p-3.5 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-400">{fb.category}</span>
+                    <span className="text-xs font-bold text-[#FF8C38]">{fb.category}</span>
                     <span
                       className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full font-bold ${
                         fb.status === "RESOLVED"
-                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                          ? "bg-[#FF8C38]/25 text-orange-300 border border-[#FF8C38]/40"
                           : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                       }`}
                     >

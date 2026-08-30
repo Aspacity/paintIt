@@ -25,9 +25,9 @@ const ECOSYSTEM_SLIDES: SlideData[] = [
     description:
       "Design wall colors and surface finishes in interactive 3D. Test real paint brands (Dulux, Sherwin-Williams, Benjamin Moore) under realistic daylight.",
     badge: "AVAILABLE NOW",
-    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+    badgeColor: "bg-[#FF8C38]/25 text-orange-300 border-[#FF8C38]/50",
     icon: "🎨",
-    bgGradient: "from-emerald-950/30 via-neutral-900/90 to-neutral-950",
+    bgGradient: "from-orange-950/30 via-neutral-900/90 to-neutral-950",
     features: [
       "Per-wall independent surface design",
       "Real paint brand color catalogs",
@@ -144,14 +144,14 @@ export default function EcosystemCarousel() {
     >
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-emerald-400 block">
+        <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-[#FF8C38] block">
           THE SPATIAL DESIGN ECOSYSTEM
         </span>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
           One Platform. Complete Spatial Design.
         </h2>
         <p className="text-xs sm:text-sm text-neutral-300 font-normal">
-          PaintIT Studio is evolving into a complete 3D platform for visualizing, designing, furnishing, and building physical spaces.
+          PaintIT is evolving into a complete 3D platform for visualizing, designing, furnishing, and building physical spaces.
         </p>
       </div>
 
@@ -203,7 +203,7 @@ export default function EcosystemCarousel() {
                   </h3>
                 </div>
 
-                <p className="text-base sm:text-lg font-medium text-emerald-300/90 leading-snug">
+                <p className="text-base sm:text-lg font-medium text-orange-300/90 leading-snug">
                   &quot;{currentSlide.subtitle}&quot;
                 </p>
 
@@ -230,7 +230,7 @@ export default function EcosystemCarousel() {
                 </span>
                 {currentSlide.features.map((feat, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-neutral-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF8C38] shrink-0" />
                     <span>{feat}</span>
                   </div>
                 ))}
@@ -247,7 +247,7 @@ export default function EcosystemCarousel() {
                 key={slide.id}
                 onClick={() => setCurrentIndex(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex ? "w-8 bg-emerald-400" : "w-2 bg-neutral-800 hover:bg-neutral-700"
+                  index === currentIndex ? "w-8 bg-[#FF8C38]" : "w-2 bg-neutral-800 hover:bg-neutral-700"
                 }`}
                 title={slide.title}
               />

@@ -12,10 +12,10 @@ export default function Solution() {
   return (
     <section className="px-4 max-w-5xl mx-auto bg-neutral-950">
       <div className="border border-neutral-900 rounded-2xl bg-gradient-to-b from-neutral-900/40 to-transparent p-8 md:p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-emerald-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#FF8C38]/10 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="max-w-2xl mb-12">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3">What You Get</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#FF8C38] mb-3">What You Get</h2>
           <p className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-100">
             See the Room in Real Colours Before You Buy Paint
           </p>
@@ -34,7 +34,7 @@ export default function Solution() {
               transition={{ duration: 0.4, delay: idx * 0.05 }}
               className="flex gap-4"
             >
-              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs mt-1 font-bold">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#FF8C38]/15 border border-[#FF8C38]/40 flex items-center justify-center text-[#FF8C38] text-xs mt-1 font-bold">
                 ✓
               </div>
               <div>

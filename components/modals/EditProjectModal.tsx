@@ -167,7 +167,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
@@ -177,7 +177,7 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
@@ -191,15 +191,15 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
               type="text"
               value={colorInput}
               onChange={(e) => setColorInput(e.target.value)}
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors"
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors"
             />
           </div>
 
           <div>
             <label className="text-[10px] uppercase font-black tracking-wider text-neutral-400 block mb-1.5">Manage Media Assets</label>
-            <div onClick={() => fileInputRef.current?.click()} className="group w-full h-16 border border-dashed border-neutral-800 hover:border-emerald-500/40 rounded-xl bg-neutral-900/30 flex flex-col items-center justify-center cursor-pointer transition-colors">
+            <div onClick={() => fileInputRef.current?.click()} className="group w-full h-16 border border-dashed border-neutral-800 hover:border-[#FF8C38]/50 rounded-xl bg-neutral-900/30 flex flex-col items-center justify-center cursor-pointer transition-colors">
               <input type="file" multiple accept="image/*" ref={fileInputRef} onChange={handleFileSelection} className="hidden" />
-              <span className="text-[11px] font-bold text-neutral-400 group-hover:text-emerald-400 transition-colors">📸 Append Additional Photos</span>
+              <span className="text-[11px] font-bold text-neutral-400 group-hover:text-[#FF8C38] transition-colors">📸 Append Additional Photos</span>
             </div>
 
             {/* Media Canvas Gallery Matrix Grid */}
@@ -214,11 +214,11 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
               ))}
               {/* Render local staging selection pre-views */}
               {newFiles.map((item, idx) => (
-                <div key={`local-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden border border-emerald-900 bg-neutral-950 group">
+                <div key={`local-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden border border-orange-900 bg-neutral-950 group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.previewUrl} alt="Staging thumbnail" className="w-full h-full object-cover border-b border-emerald-900" />
+                  <img src={item.previewUrl} alt="Staging thumbnail" className="w-full h-full object-cover border-b border-orange-900" />
                   <button type="button" onClick={() => removeSelectedFile(idx)} className="absolute inset-0 bg-red-950/80 text-red-400 text-[9px] font-black uppercase opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">Remove</button>
-                  <span className="absolute bottom-0 right-0 bg-emerald-500 text-black text-[7px] px-1 font-black uppercase rounded-tl">New</span>
+                  <span className="absolute bottom-0 right-0 bg-[#FF8C38] text-black text-[7px] px-1 font-black uppercase rounded-tl">New</span>
                 </div>
               ))}
             </div>
@@ -226,12 +226,12 @@ export default function EditProjectModal({ isOpen, onClose, project, onProjectUp
 
           <div>
             <label className="text-[10px] uppercase font-black tracking-wider text-neutral-400 block mb-1.5">Project Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/30 transition-colors resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors resize-none" />
           </div>
 
           <div className="flex items-center gap-3 pt-2">
             <button type="button" onClick={onClose} disabled={isSaving} className="flex-1 py-3 bg-neutral-900 text-neutral-400 text-xs font-bold uppercase rounded-xl border border-neutral-800">Cancel</button>
-            <button type="submit" disabled={isSaving} className="flex-1 py-3 bg-emerald-500 text-black text-xs font-black uppercase rounded-xl shadow-lg">{isSaving ? "Updating Entry..." : "Apply Edits"}</button>
+            <button type="submit" disabled={isSaving} className="flex-1 py-3 bg-[#FF8C38] text-black text-xs font-black uppercase rounded-xl shadow-lg">{isSaving ? "Updating Entry..." : "Apply Edits"}</button>
           </div>
         </form>
       </div>
