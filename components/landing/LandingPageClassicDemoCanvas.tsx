@@ -34,7 +34,9 @@ function ClassicDemoRoomMesh({
   activeWallKey: string;
   onSelectWall: (wallKey: string) => void;
 }) {
-  const { scene } = useGLTF("/models/shells/spacious-lux.glb") as unknown as { scene: THREE.Group };
+  const cdnBase = process.env.NEXT_PUBLIC_3D_CDN_URL || "https://d2bzch6iq8q85.cloudfront.net";
+  const modelUrl = `${cdnBase}/models/shells/spacious-lux.glb`;
+  const { scene } = useGLTF(modelUrl) as unknown as { scene: THREE.Group };
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
   const wallMaterialsMap = useMemo(() => ({}) as Record<string, THREE.MeshStandardMaterial>, []);
 

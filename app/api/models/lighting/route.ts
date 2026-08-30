@@ -104,6 +104,20 @@ export async function POST(req: NextRequest) {
     const tod = timeOfDay || "morning";
     const bulbsJson = JSON.stringify(bulbs || []);
 
+    // 0. Ensure table exists with PRIMARY KEY (model_url)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS model_lighting_configs (
+        model_url TEXT PRIMARY KEY,
+        sun_azimuth NUMERIC DEFAULT 135,
+        sun_elevation NUMERIC DEFAULT 35,
+        sun_intensity NUMERIC DEFAULT 2.8,
+        ambient_intensity NUMERIC DEFAULT 0.65,
+        time_of_day TEXT DEFAULT 'morning',
+        bulbs JSONB DEFAULT '[]'::jsonb,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
     // 1. Upsert into model_lighting_configs table
     await client.query(
       `INSERT INTO model_lighting_configs (model_url, sun_azimuth, sun_elevation, sun_intensity, ambient_intensity, time_of_day, bulbs, updated_at)

@@ -210,7 +210,8 @@ function MasterRoomMesh({
   onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
   onDoubleClickSurface?: (meshName: string, category: string, point: THREE.Vector3) => void;
 }) {
-  const cdnBase = typeof process !== "undefined" ? process.env?.NEXT_PUBLIC_3D_CDN_URL || "" : "";
+  const DEFAULT_CDN = "https://d2bzch6iq8q85.cloudfront.net";
+  const cdnBase = process.env.NEXT_PUBLIC_3D_CDN_URL || DEFAULT_CDN;
   const resolvedModelUrl = (cdnBase && config.modelUrl.startsWith("/")) ? `${cdnBase}${config.modelUrl}` : config.modelUrl;
   const { scene } = useGLTF(resolvedModelUrl) as unknown as { scene: THREE.Group };
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
