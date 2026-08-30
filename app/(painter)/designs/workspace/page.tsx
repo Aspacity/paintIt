@@ -5,10 +5,13 @@ import Link from "next/link";
 import PaintItMasterCanvas, { WallFinishType, TimeOfDayPreset } from "@/components/canvas/PaintItMasterCanvas";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Painter3DStudioWorkspacePage() {
   const { user } = useAuth();
   const { showToast } = useAlert();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   const [activeWallColor, setActiveWallColor] = useState<string>("#C4B199");
   const [activeWallFinish, setActiveWallFinish] = useState<WallFinishType>("EMULSION");
@@ -27,7 +30,7 @@ export default function Painter3DStudioWorkspacePage() {
     ceiling: { color: "#FFFFFF", finish: "EMULSION" },
   });
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const handleSavePainterQuoteConfig = async () => {
     setIsSaving(true);
@@ -52,14 +55,13 @@ export default function Painter3DStudioWorkspacePage() {
         throw new Error("Failed to save visualization project to backend.");
       }
 
-      const data = await response.json();
       showToast({
-        message: "✅ 3D Room Canonical Scene State Saved Successfully!",
+        message: "✅ 3D Room Scene Saved Successfully!",
         severity: "success",
       });
     } catch (err: any) {
       showToast({
-        message: `⚠️ Saved locally: ${err.message || "Backend offline"}`,
+        message: `Saved locally: ${err.message || "Backend offline"}`,
         severity: "info",
       });
     } finally {
@@ -68,13 +70,19 @@ export default function Painter3DStudioWorkspacePage() {
   };
 
   return (
-    <div className="w-full h-screen bg-neutral-950 flex flex-col overflow-hidden select-none">
-      {/* 🟢 PAINTER WORKSPACE TOP NAVIGATION BAR */}
-      <header className="h-14 bg-neutral-900 border-b border-neutral-850 px-4 sm:px-6 flex items-center justify-between z-40 shrink-0">
+    <div className={`w-full h-screen flex flex-col overflow-hidden select-none transition-colors duration-300 ${
+      isDark ? "bg-black text-white" : "bg-[#FAF8F5] text-stone-900"
+    }`}>
+      {/* PAINTER WORKSPACE TOP NAVIGATION BAR */}
+      <header className={`h-14 border-b px-4 sm:px-6 flex items-center justify-between z-40 shrink-0 ${
+        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+      }`}>
         <div className="flex items-center gap-3">
           <Link
             href="/designs"
-            className="w-8 h-8 rounded-xl bg-neutral-950 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
+            className={`w-8 h-8 rounded-xl border flex items-center justify-center text-xs transition-all ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white" : "bg-stone-100 border-stone-300 text-stone-700 hover:text-stone-900"
+            }`}
             title="Back to Designs Hub"
           >
             ◀
@@ -82,15 +90,15 @@ export default function Painter3DStudioWorkspacePage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
-              <h1 className="text-sm font-black uppercase text-white tracking-wide">
+              <h1 className={`text-sm font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>
                 Painter 3D Studio Workspace
               </h1>
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40">
+              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/20 text-[#FF8C38] border border-[#FF8C38]/40">
                 PRO WORKFLOW
               </span>
             </div>
-            <p className="text-[10px] font-mono text-neutral-400">
-              Contractor: <span className="text-neutral-200">{user?.fullName || "Painter Pro"}</span> • Client Preview Studio
+            <p className={`text-[10px] font-mono ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+              Contractor: <span className="font-bold">{user?.fullName || "Painter Pro"}</span> • Client Preview Studio
             </p>
           </div>
         </div>
@@ -98,24 +106,36 @@ export default function Painter3DStudioWorkspacePage() {
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setTimeOfDay((prev) => (prev === "day" ? "night" : "day"))}
-            className="px-3 py-1.5 bg-neutral-950 hover:bg-neutral-800 text-amber-300 font-bold border border-neutral-800 text-xs rounded-xl transition-all flex items-center gap-1.5"
+            onClick={toggleTheme}
+            className={`px-3 py-1.5 font-bold border text-xs rounded-xl transition-all flex items-center gap-1.5 ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
+            }`}
+            title="Toggle Theme"
           >
-            <span>{timeOfDay === "day" ? "☀️ Day" : "🌙 Night"}</span>
+            <span>{isDark ? "🌙 Dark" : "☀️ Light"}</span>
+          </button>
+
+          <button
+            onClick={() => setTimeOfDay((prev) => (prev === "day" ? "night" : "day"))}
+            className={`px-3 py-1.5 font-bold border text-xs rounded-xl transition-all flex items-center gap-1.5 ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-amber-300" : "bg-stone-100 border-stone-300 text-stone-800"
+            }`}
+          >
+            <span>{timeOfDay === "day" ? "☀️ Day Scene" : "🌙 Night Scene"}</span>
           </button>
 
           <button
             onClick={handleSavePainterQuoteConfig}
             disabled={isSaving}
-            className="px-4 py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2"
+            className="px-4 py-1.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2"
           >
-            <span>{isSaving ? "⏳ Saving..." : "💾 Save Client Preview"}</span>
+            <span>{isSaving ? "Saving..." : "💾 Save Client Preview"}</span>
           </button>
         </div>
       </header>
 
       {/* 3D MASTER CANVAS VIEWPORT FOR PAINTER WORKFLOW */}
-      <div className="flex-1 relative overflow-hidden bg-neutral-950">
+      <div className={`flex-1 relative overflow-hidden ${isDark ? "bg-black" : "bg-[#FAF8F5]"}`}>
         <PaintItMasterCanvas
           config={{
             mode: "sandbox",
@@ -129,7 +149,7 @@ export default function Painter3DStudioWorkspacePage() {
             bumpScale: 0.05,
             shadowOpacity: 0.65,
             enableAutoCutaway: true,
-            isAdmin: false, // 🔒 Hides advanced admin sliders for painters!
+            isAdmin: false,
             hideLightingTab: false,
           }}
           onConfigChange={(newCfg) => {

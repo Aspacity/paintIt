@@ -67,14 +67,15 @@ function VerifyOTPForm() {
         router.push(`/reset-password?email=${encodeURIComponent(verificationEmail)}&token=${completeCode}`);
       } else {
         sessionStorage.removeItem("paintit_verification_email");
-        if (data.accessToken && data.refreshToken && data.user) {
+        const userObj = data.account || data.user;
+        if (data.accessToken && data.refreshToken && userObj) {
           login(data.accessToken, data.refreshToken, {
-            id: data.user.id,
-            email: data.user.email,
-            fullName: data.user.fullName || data.user.full_name || "User Account",
-            role: data.user.role,
+            id: userObj.id,
+            email: userObj.email,
+            fullName: userObj.displayName || userObj.fullName || userObj.full_name || "User Account",
+            role: userObj.role || "CONSUMER",
           });
-          router.push(data.user.role === "ADMIN" ? "/admin/playground" : "/dashboard");
+          router.push(userObj.role === "ADMIN" ? "/admin/playground" : "/dashboard");
         } else {
           router.push("/login");
         }

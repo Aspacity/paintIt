@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 import ConfirmModal from "@/components/modals/ConfirmModal";
-import { MicroVideoCarousel } from "@/components/ui/MicroVideoCarousel";
 
 interface MasterTemplate {
   id: string;
@@ -28,6 +28,8 @@ interface SavedVisualization {
 export default function Painter3DStudioDashboardHub() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [catalog, setCatalog] = useState<MasterTemplate[]>([]);
   const [savedDesigns, setSavedDesigns] = useState<SavedVisualization[]>([]);
@@ -59,8 +61,8 @@ export default function Painter3DStudioDashboardHub() {
         const fallbackCatalog: MasterTemplate[] = [
           { id: "tmpl_living_lux", title: "Luxury Minimalist Living Room", category: "INTERIOR", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "🛋️" },
           { id: "tmpl_bed_nordic", title: "Nordic Executive Bedroom Layout", category: "INTERIOR", model_url: "", plan_type: "RENTAL", price: "2500.00", thumbnail_icon: "🛏️" },
-          { id: "tmpl_office_corp", title: "Corporate Creative Studio Office", category: "COMMERCIAL", model_url: "", plan_type: "BUY", price: "6000.00", thumbnail_icon: "🏢" },
-          { id: "tmpl_accent_geometric", title: "Geometric POP Screeding Accent Wall", category: "ACCENT", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "📐" }
+          { id: "tmpl_office_corp", title: "Corporate Creative Office", category: "COMMERCIAL", model_url: "", plan_type: "BUY", price: "6000.00", thumbnail_icon: "🏢" },
+          { id: "tmpl_accent_geometric", title: "Geometric POP Accent Wall", category: "ACCENT", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "📐" }
         ];
 
         const catalogRes = await fetch(`${BACKEND_API_URL}/api/visualizations/catalog`, {
@@ -130,7 +132,7 @@ export default function Painter3DStudioDashboardHub() {
     } catch (err) {
       console.error("Link generation failure:", err);
       navigator.clipboard.writeText(`${window.location.origin}/workspace?id=${design.id}`);
-      showToast({ message: "Workspace workspace url link copied directly.", severity: "info" });
+      showToast({ message: "Workspace URL copied to clipboard.", severity: "info" });
     }
   };
 
@@ -167,12 +169,12 @@ export default function Painter3DStudioDashboardHub() {
 
       if (res.ok) {
         setSavedDesigns((prev) => prev.filter(item => item.id !== designTargetForDelete.id));
-        showToast({ message: "Project mockup cleanly deleted from dashboard.", severity: "success" });
+        showToast({ message: "Project mockup deleted.", severity: "success" });
       } else {
-        showToast({ message: "Failed removing entry from cloud indices.", severity: "error" });
+        showToast({ message: "Failed removing entry.", severity: "error" });
       }
     } catch (err) {
-      console.error("Delete exception caught:", err);
+      console.error("Delete exception:", err);
     }
   };
 
@@ -180,103 +182,82 @@ export default function Painter3DStudioDashboardHub() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[50vh] w-full flex flex-col items-center justify-center gap-3">
+      <div className={`min-h-[50vh] w-full flex flex-col items-center justify-center gap-3 ${
+        isDark ? "text-white" : "text-stone-900"
+      }`}>
         <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
-        <span className="text-[10px] uppercase text-neutral-600 font-bold tracking-widest">Opening 3D Workspace Engine...</span>
+        <span className={`text-[10px] uppercase font-bold tracking-widest ${
+          isDark ? "text-neutral-500" : "text-stone-500"
+        }`}>Opening 3D Studio...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-[#FF8C38] selection:text-black">
+    <div className={`w-full space-y-8 animate-fade-in pb-16 transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
 
       {/* HEADER SECTION */}
-      <div className="border-b border-neutral-900 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className={`border-b pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
+          <h1 className={`text-xl font-bold uppercase tracking-tight flex items-center gap-2 ${
+            isDark ? "text-white" : "text-stone-900"
+          }`}>
             <span>3D Design Studio</span>
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/25 text-[#FF8C38] border border-[#FF8C38]/40">
+            <span className="px-2.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-[#FF8C38]/20 text-[#FF8C38] border border-[#FF8C38]/40">
               PAINTER PRO
             </span>
           </h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Select structural rooms, experiment with dynamic color variations, and share realistic 3D visualizations with your clients.
+          <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Select 3D rooms, experiment with dynamic color variations, and share realistic visualizations with clients.
           </p>
         </div>
 
         <Link
           href="/designs/workspace"
-          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0"
+          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 shrink-0"
         >
-          <span>🎨 Open Painter 3D Studio Workspace ➔</span>
+          <span>🎨 Open 3D Studio Canvas ➔</span>
         </Link>
       </div>
-
-      {/* 🎥 REUSABLE MICRO-VIDEO CAROUSEL DEMO MODULE FOR 3D STUDIO (COMMENTED OUT FOR NOW)
-      <MicroVideoCarousel
-        title="⚡ 15-Second 3D Studio Quick Guide"
-        subtitle="Swipe to watch how to paint 3D walls, pick finishes, and send visual links to clients."
-        steps={[
-          {
-            id: "studio_step_1",
-            stepNumber: 1,
-            title: "1. Paint Wall Surfaces",
-            subtitle: "Tap any 3D room wall and pick your color from real paint brand catalogs.",
-            videoUrl: "/videos/paint_wall_demo.mp4",
-            badge: "3D Wall Paint",
-            actionText: "Open 3D Visualizer",
-            onActionClick: () => { window.location.href = "/workspace?template=tmpl_living_lux"; },
-          },
-          {
-            id: "studio_step_2",
-            stepNumber: 2,
-            title: "2. Choose Paint Finishes",
-            subtitle: "Toggle wall finishes between Emulsion (Matte), Gloss, and Satin Sheen.",
-            videoUrl: "/videos/paint_finishes_demo.mp4",
-            badge: "Material Sheen",
-          },
-          {
-            id: "studio_step_3",
-            stepNumber: 3,
-            title: "3. Day & Night Studio Lighting",
-            subtitle: "Switch to night mode or adjust point lights to inspect shadow depth.",
-            videoUrl: "/videos/studio_lighting_demo.mp4",
-            badge: "Lighting Rig",
-          },
-          {
-            id: "studio_step_4",
-            stepNumber: 4,
-            title: "4. Send 3D Link to Client",
-            subtitle: "Generate a 3D visual link to send to clients on WhatsApp to close quotes.",
-            videoUrl: "/videos/client_share_demo.mp4",
-            badge: "WhatsApp Lead",
-          },
-        ]}
-      />
-      */}
 
       {/* ZONE 1: PAINTER'S SAVED WORKSPACES */}
       <div className="space-y-4">
         <div className="flex items-center justify-between pl-1">
-          <h2 className="text-xs font-black uppercase tracking-wider text-neutral-400">Your Saved Color Concepts</h2>
-          <span className="text-[10px] bg-neutral-900 text-neutral-500 border border-neutral-850 font-mono px-2 py-0.5 rounded-md">
+          <h2 className={`text-xs font-bold uppercase tracking-wider ${
+            isDark ? "text-neutral-400" : "text-stone-600"
+          }`}>Your Saved Color Concepts</h2>
+          <span className={`text-[10px] border font-mono px-2 py-0.5 rounded-md font-bold ${
+            isDark ? "bg-neutral-900 border-neutral-800 text-neutral-400" : "bg-stone-100 border-stone-300 text-stone-700"
+          }`}>
             {savedDesigns.length} Mockups
           </span>
         </div>
 
         {savedDesigns.length === 0 ? (
-          <div className="p-10 bg-neutral-950/40 border border-neutral-900 border-dashed rounded-3xl text-center space-y-3 flex flex-col items-center justify-center max-w-md mx-auto">
+          <div className={`p-10 border border-dashed rounded-3xl text-center space-y-3 flex flex-col items-center justify-center max-w-md mx-auto ${
+            isDark ? "bg-neutral-950/40 border-neutral-900" : "bg-white border-stone-300"
+          }`}>
             <span className="text-2xl select-none opacity-40">🎨</span>
             <div>
-              <h4 className="text-xs font-black uppercase tracking-wide text-neutral-300">Your custom designs library is empty</h4>
-              <p className="text-[11px] text-neutral-500 leading-relaxed max-w-xs mx-auto mt-1">
+              <h4 className={`text-xs font-bold uppercase tracking-wide ${
+                isDark ? "text-neutral-300" : "text-stone-800"
+              }`}>Your custom designs library is empty</h4>
+              <p className={`text-xs leading-relaxed max-w-xs mx-auto mt-1 ${
+                isDark ? "text-neutral-500" : "text-stone-500"
+              }`}>
                 Pick an available room model from the catalog below to apply your color schemes, then save them here for quick client viewing.
               </p>
             </div>
             <button
               type="button"
               onClick={() => document.getElementById("catalog-section-scroller")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-4 py-2 bg-neutral-900 border border-neutral-800 text-[#FF8C38] text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+              className={`px-4 py-2 text-[#FF8C38] text-xs font-bold uppercase tracking-wider rounded-xl transition-all border ${
+                isDark ? "bg-neutral-900 border-neutral-800" : "bg-stone-100 border-stone-300"
+              }`}
             >
               ↓ View Room Catalog
             </button>
@@ -286,43 +267,53 @@ export default function Painter3DStudioDashboardHub() {
             {savedDesigns.map((design) => (
               <div
                 key={design.id}
-                className="group p-5 bg-neutral-950 border border-neutral-900 hover:border-neutral-800 rounded-2xl flex flex-col justify-between shadow-xl transition-all duration-150 relative"
+                className={`group p-5 border rounded-2xl flex flex-col justify-between shadow-md transition-all duration-150 relative ${
+                  isDark
+                    ? "bg-neutral-950 border-neutral-900 hover:border-[#FF8C38]/50"
+                    : "bg-white border-stone-200 hover:border-[#FF8C38]"
+                }`}
               >
                 <button
                   type="button"
                   onClick={(e) => initializeDeleteWorkflow(e, design)}
-                  className="absolute top-4 right-4 text-neutral-600 hover:text-red-400 text-[10px] font-bold uppercase transition-colors"
-                  title="Delete this layout concept variant safely"
+                  className="absolute top-4 right-4 text-red-500 hover:text-red-600 text-[10px] font-bold uppercase transition-colors"
+                  title="Delete layout concept"
                 >
                   ✕ Delete
                 </button>
 
                 <div className="space-y-3 pr-12">
                   <div>
-                    <h4 className="text-sm font-black text-neutral-100 uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate">
+                    <h4 className={`text-sm font-bold uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate ${
+                      isDark ? "text-white" : "text-stone-900"
+                    }`}>
                       {design.name}
                     </h4>
-                    <p className="text-[10px] text-neutral-500 mt-0.5 font-medium">
-                      Template: <span className="text-neutral-400 font-bold">{design.parent_template_name}</span>
+                    <p className={`text-[11px] mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+                      Template: <span className="font-bold">{design.parent_template_name}</span>
                     </p>
                   </div>
-                  <span className="text-[9px] text-neutral-600 font-bold block">
+                  <span className={`text-[10px] font-bold block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>
                     Created: {new Date(design.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                   </span>
                 </div>
 
-                <div className="flex gap-2 pt-4 mt-4 border-t border-neutral-900/60">
+                <div className={`flex gap-2 pt-4 mt-4 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
                   <button
                     type="button"
                     onClick={() => { window.location.href = `/workspace?id=${design.id}`; }}
-                    className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-center text-[10px] font-black uppercase tracking-wider rounded-xl transition-all text-neutral-300"
+                    className={`flex-1 py-2 text-center text-xs font-bold uppercase tracking-wider rounded-xl transition-all border ${
+                      isDark
+                        ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-white"
+                        : "bg-stone-100 hover:bg-stone-200 border-stone-300 text-stone-900"
+                    }`}
                   >
                     Open Canvas ➔
                   </button>
                   <button
                     type="button"
                     onClick={() => shareToWhatsAppStream(design)}
-                    className="px-3.5 py-2 bg-[#FF8C38]/15 text-[#FF8C38] hover:bg-[#FF8C38] border border-[#FF8C38]/30 hover:text-black text-[10px] font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center"
+                    className="px-3.5 py-2 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center shrink-0"
                   >
                     💬 Share
                   </button>
@@ -333,27 +324,36 @@ export default function Painter3DStudioDashboardHub() {
         )}
       </div>
 
-      
-
-      {/* ZONE 2: MASTER BLENDER SCENE CATALOG */}
-      <div id="catalog-section-scroller" className="space-y-4 pt-4 border-t border-neutral-900/40">
+      {/* ZONE 2: 3D ROOM CATALOG */}
+      <div id="catalog-section-scroller" className={`space-y-4 pt-6 border-t ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-1">
           <div>
-            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-400">Available 3D Room Templates</h2>
-            <p className="text-[10px] text-neutral-500 mt-0.5">Load pre-built structures straight into the coloring tool deck panels.</p>
+            <h2 className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+              Available 3D Room Templates
+            </h2>
+            <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+              Load pre-built structures straight into the 3D visualizer canvas.
+            </p>
           </div>
 
-          <div className="flex bg-neutral-950 border border-neutral-900 p-0.5 rounded-xl w-fit self-start sm:self-auto">
+          <div className={`flex border p-1 rounded-xl w-fit self-start sm:self-auto ${
+            isDark ? "bg-neutral-950 border-neutral-900" : "bg-stone-100 border-stone-300"
+          }`}>
             {["ALL", "INTERIOR", "COMMERCIAL", "ACCENT"].map((categoryKey) => (
               <button
                 key={categoryKey}
                 type="button"
                 onClick={() => setActiveTab(categoryKey)}
-                className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === categoryKey
-                  ? "bg-neutral-900 text-[#FF8C38] border border-neutral-800"
-                  : "text-neutral-500 hover:text-neutral-300"
-                  }`}
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                  activeTab === categoryKey
+                    ? "bg-[#FF8C38] text-black font-extrabold shadow-sm"
+                    : isDark
+                    ? "text-neutral-400 hover:text-white"
+                    : "text-stone-600 hover:text-stone-900"
+                }`}
               >
                 {categoryKey}
               </button>
@@ -368,16 +368,19 @@ export default function Painter3DStudioDashboardHub() {
             return (
               <div
                 key={template.id}
-                className="group bg-neutral-950 border border-neutral-900 hover:border-neutral-850 rounded-2xl p-4 flex flex-col justify-between shadow-lg transition-all"
+                className={`group border rounded-2xl p-4 flex flex-col justify-between shadow-md transition-all ${
+                  isDark
+                    ? "bg-neutral-950 border-neutral-900 hover:border-[#FF8C38]/50"
+                    : "bg-white border-stone-200 hover:border-[#FF8C38]"
+                }`}
               >
                 <div className="space-y-4">
-                  <div className="w-full h-32 bg-neutral-900 border border-neutral-850 group-hover:border-neutral-750 transition-colors rounded-xl flex flex-col items-center justify-center relative overflow-hidden select-none">
+                  <div className={`w-full h-32 border rounded-xl flex flex-col items-center justify-center relative overflow-hidden select-none transition-colors ${
+                    isDark ? "bg-black/90 border-neutral-800" : "bg-stone-100 border-stone-200"
+                  }`}>
 
                     <div className="absolute top-2 right-2 flex items-center gap-1">
-                      <span className={`text-[8px] font-mono border px-1.5 py-0.5 rounded font-black tracking-wider uppercase ${isPremiumPlan
-                        ? "bg-amber-950/40 border-amber-900/50 text-amber-400"
-                        : "bg-neutral-950 border-neutral-800 text-neutral-400"
-                        }`}>
+                      <span className="text-[8px] font-mono border px-1.5 py-0.5 rounded font-bold tracking-wider uppercase bg-[#FF8C38]/20 text-[#FF8C38] border-[#FF8C38]/40">
                         {template.plan_type}
                       </span>
                     </div>
@@ -386,35 +389,34 @@ export default function Painter3DStudioDashboardHub() {
                       {template.thumbnail_icon}
                     </span>
 
-                    <span className="text-[8px] font-mono text-neutral-600 uppercase tracking-widest mt-2 block">
+                    <span className="text-[8px] font-mono uppercase tracking-widest text-[#FF8C38] font-bold mt-2 block">
                       {template.category}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-xs font-black text-neutral-200 uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate">
+                    <h3 className={`text-xs font-bold uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors truncate ${
+                      isDark ? "text-white" : "text-stone-900"
+                    }`}>
                       {template.title}
                     </h3>
-                    <div className="mt-1 text-[11px] text-neutral-500 font-medium">
+                    <div className={`mt-1 text-xs font-medium ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
                       {isPremiumPlan ? (
-                        <p>Cost to Unlock: <span className="text-amber-400 font-mono font-bold">₦{Number(template.price).toLocaleString()}</span></p>
+                        <p>Unlock: <span className="text-[#FF8C38] font-mono font-bold">₦{Number(template.price).toLocaleString()}</span></p>
                       ) : (
-                        <p className="text-[#FF8C38]/80 font-bold">Included Free</p>
+                        <p className="text-[#FF8C38] font-bold">Included Free</p>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4 mt-3 border-t border-neutral-900/60">
+                <div className={`pt-4 mt-3 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
                   <button
                     type="button"
                     onClick={() => handleLaunchRequest(template)}
-                    className={`w-full py-2 text-center text-[10px] font-black uppercase tracking-wider rounded-xl transition-all border ${isPremiumPlan
-                      ? "bg-neutral-900/40 border-neutral-850 text-amber-400 hover:bg-neutral-900 hover:border-amber-500/20"
-                      : "bg-neutral-900 hover:bg-[#FF8C38] border-neutral-850 hover:border-[#FF8C38] text-neutral-300 hover:text-black shadow-inner"
-                      }`}
+                    className="w-full py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm"
                   >
-                    {isPremiumPlan ? "Launch Trial Mode ➔" : "Load Room Studio ➔"}
+                    Load Room Canvas ➔
                   </button>
                 </div>
 
@@ -424,7 +426,7 @@ export default function Painter3DStudioDashboardHub() {
         </div>
       </div>
 
-      {/* CONFIRMATION POPUP MODAL */}
+      {/* CONFIRMATION POPUP MODALS */}
       <ConfirmModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -432,15 +434,14 @@ export default function Painter3DStudioDashboardHub() {
         title={modalSuccess ? "Workspace Ready" : "Load Room Template"}
         message={
           modalSuccess
-            ? `Setting up canvas layout environment paths for "${selectedTemplate?.title}" structure.`
-            : `Are you sure you want to load "${selectedTemplate?.title}" into your main workspace studio canvas?`
+            ? `Setting up canvas environment for "${selectedTemplate?.title}".`
+            : `Are you sure you want to load "${selectedTemplate?.title}" into your workspace?`
         }
         confirmText="Launch Engine"
         cancelText="Go Back"
         isSuccessState={modalSuccess}
       />
 
-      {/* SAfE DELETION DECK CONFIRMATION INTERFACE POPUP */}
       <ConfirmModal
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -449,7 +450,7 @@ export default function Painter3DStudioDashboardHub() {
           setDeleteOpen(false);
         }}
         title="Delete Design Layout?"
-        message={`Are you sure you want to permanently remove "${designTargetForDelete?.name}" from your saved studio layouts folder? This action cannot be reversed.`}
+        message={`Are you sure you want to permanently remove "${designTargetForDelete?.name}"?`}
         confirmText="Yes, Delete Design"
         cancelText="Cancel"
       />

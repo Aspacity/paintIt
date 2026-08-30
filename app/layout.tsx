@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { TrafficTracker } from "@/components/analytics/TrafficTracker";
 import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine"; // Rendered below
 import { FeedbackModalPopup } from "@/components/ui/FeedbackModalPopup";
+import { ConsentBanner } from "@/components/consent/ConsentBanner";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -101,6 +102,7 @@ export default function RootLayout({
               <TrafficTracker />
               {children}
               <FeedbackModalPopup />
+              <ConsentBanner />
             </AuthProvider>
           </AlertProvider>
         </ThemeProvider>

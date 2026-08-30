@@ -57,11 +57,13 @@ function LoginContent() {
 
       showToast({ message: "Login successful! Syncing profile...", severity: "success" });
 
+      const userObj = data.account || data.user || {};
+
       login(data.accessToken, data.refreshToken, {
-        id: data.user.id,
-        email: data.user.email,
-        fullName: data.user.fullName || data.user.full_name || "User Account",
-        role: data.user.role
+        id: userObj.id,
+        email: userObj.email,
+        fullName: userObj.displayName || userObj.fullName || userObj.full_name || "User Account",
+        role: userObj.role || "CONSUMER"
       });
 
       if (redirect) {
