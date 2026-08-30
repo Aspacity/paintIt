@@ -12,6 +12,7 @@ import {
   fetchOnlineModelLightingConfig,
   saveModelLightingConfigGlobal,
 } from "@/config/roomModelLightingConfigs";
+import { useGLTFWithFallback } from "@/utils/modelFallbackResolver";
 
 // ============================================================================
 // 1. UNIFIED MASTER CANVAS TYPES & SCHEMAS
@@ -210,10 +211,7 @@ function MasterRoomMesh({
   onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
   onDoubleClickSurface?: (meshName: string, category: string, point: THREE.Vector3) => void;
 }) {
-  const DEFAULT_CDN = "https://d2bzch6iq8q85.cloudfront.net";
-  const cdnBase = process.env.NEXT_PUBLIC_3D_CDN_URL || DEFAULT_CDN;
-  const resolvedModelUrl = (cdnBase && config.modelUrl.startsWith("/")) ? `${cdnBase}${config.modelUrl}` : config.modelUrl;
-  const { scene } = useGLTF(resolvedModelUrl) as unknown as { scene: THREE.Group };
+  const { scene } = useGLTFWithFallback(config.modelUrl);
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
   // Map to hold unique isolated material instances per wall mesh

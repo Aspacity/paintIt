@@ -13,6 +13,7 @@ import { useAlert } from "@/context/AlertContext";
 // Modular Dashboard Components
 import PaintPicker, { CustomColor } from "@/components/canvas/ClientPaintPicker";
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary";
+import { useGLTFWithFallback } from "@/utils/modelFallbackResolver";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import ClientTexturePicker from "@/components/canvas/ClientTexturePicker";
 import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
@@ -102,7 +103,7 @@ function ClientInteractiveCanvas({
   activeTextures?: Record<string, string>;
   onModelLoaded?: (materials: string[], meshes: { name: string; originalMaterial: string }[]) => void;
 }) {
-  const { scene, materials } = useGLTF(modelUrl) as unknown as { scene: THREE.Group; materials: Record<string, THREE.Material> };
+  const { scene, materials = {} } = useGLTFWithFallback(modelUrl);
   const clonedScene = React.useMemo(() => {
     const clone = scene.clone();
     const hasInnerWalls = !!clone.getObjectByName('wallLeft');

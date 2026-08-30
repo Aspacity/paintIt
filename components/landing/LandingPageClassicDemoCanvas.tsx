@@ -6,6 +6,7 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import Link from "next/link";
 import { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
+import { useGLTFWithFallback } from "@/utils/modelFallbackResolver";
 
 interface PaintColorItem {
   name: string;
@@ -34,9 +35,7 @@ function ClassicDemoRoomMesh({
   activeWallKey: string;
   onSelectWall: (wallKey: string) => void;
 }) {
-  const cdnBase = process.env.NEXT_PUBLIC_3D_CDN_URL || "https://d2bzch6iq8q85.cloudfront.net";
-  const modelUrl = `${cdnBase}/models/shells/spacious-lux.glb`;
-  const { scene } = useGLTF(modelUrl) as unknown as { scene: THREE.Group };
+  const { scene } = useGLTFWithFallback("/models/shells/spacious-lux.glb");
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
   const wallMaterialsMap = useMemo(() => ({}) as Record<string, THREE.MeshStandardMaterial>, []);
 

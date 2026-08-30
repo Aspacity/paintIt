@@ -9,6 +9,7 @@ import { BulbState } from '@/components/canvas/LightControls';
 import { DBCameraConfig } from '@/app/(public)/workspace/page';
 import { generateWallNormalMap } from '@/utils/generateWallNormalMaps';
 import { TEXTURE_PRESETS, getMeshCategory } from '@/utils/generateFloorTextures';
+import { useGLTFWithFallback } from '@/utils/modelFallbackResolver';
 
 interface CanvasProps {
   modelUrl: string;
@@ -52,7 +53,7 @@ export default function WorkspaceCanvas({
   onModelLoaded,
   isNightMode = false
 }: CanvasProps) {
-  const { scene, materials } = useGLTF(modelUrl) as unknown as GLTFResult;
+  const { scene, materials = {} } = useGLTFWithFallback(modelUrl);
   const clonedScene = useMemo(() => {
     const clone = scene.clone();
     const hasInnerWalls = !!clone.getObjectByName('wallLeft');
