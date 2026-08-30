@@ -49,7 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('paintit_refresh_token', refresh);
     localStorage.setItem('paintit_user_data', JSON.stringify(userData));
 
-    if (userData.role === 'PAINTER' || userData.role === 'CONSUMER') {
+    const roleUpper = (userData.role || "").toUpperCase();
+    const emailLower = (userData.email || "").toLowerCase();
+
+    if (roleUpper === 'ADMIN' || emailLower === 'codelight001@gmail.com') {
+      router.push('/admin/dashboard');
+    } else if (roleUpper === 'PAINTER' || roleUpper === 'CONSUMER') {
       router.push('/dashboard');
     } else {
       router.push('/');

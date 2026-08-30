@@ -37,9 +37,15 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRole }) =
       }
 
       // 🛡️ 3. Role Isolation Gatehouse
-      if (user?.role !== allowedRole) {
-        if (user?.role === 'PAINTER') router.replace('/dashboard');
-        else if (user?.role === 'CONSUMER') router.replace('/hub');
+      const userRole = (user?.role || "").toUpperCase();
+      const userEmail = (user?.email || "").toLowerCase();
+      const isMasterAdmin = userEmail === "codelight001@gmail.com";
+      const isAllowed = userRole === allowedRole || (allowedRole === "ADMIN" && (userRole === "ADMIN" || isMasterAdmin));
+
+      if (!isAllowed) {
+        if (userRole === 'ADMIN' || isMasterAdmin) router.replace('/admin/dashboard');
+        else if (userRole === 'PAINTER') router.replace('/dashboard');
+        else if (userRole === 'CONSUMER') router.replace('/hub');
         else router.replace('/');
         return;
       }
@@ -55,8 +61,12 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRole }) =
     return <WorkspaceSkeletonLoader message="Verifying Secure Session Registry..." />;
   }
 
-  // Double check fallback properties prior to commit injection
-  if (!accessToken || user?.role !== allowedRole) {
+  const userRole = (user?.role || "").toUpperCase();
+  const userEmail = (user?.email || "").toLowerCase();
+  const isMasterAdmin = userEmail === "codelight001@gmail.com";
+  const isAllowed = userRole === allowedRole || (allowedRole === "ADMIN" && (userRole === "ADMIN" || isMasterAdmin));
+
+  if (!accessToken || !isAllowed) {
     return null;
   }
 
