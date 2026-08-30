@@ -41,7 +41,7 @@ export default function PaintPicker({
   const [newColorHex, setNewColorHex] = useState("#10B981");
   const [syncingState, setSyncingState] = useState(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // Build the master structural color deck by mapping commercial presets with saved custom swatches
   const combinedPaintDeck = [

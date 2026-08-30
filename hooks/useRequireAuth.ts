@@ -7,7 +7,7 @@ export function useRequireAuth() {
   const router = useRouter();
   const [isValidated, setIsValidated] = useState<boolean>(false);
   const BACKEND_API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const runStrictTokenHeartbeat = async () => {

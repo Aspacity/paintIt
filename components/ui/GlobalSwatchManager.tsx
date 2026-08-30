@@ -21,7 +21,7 @@ export default function GlobalSwatchManager({
   const { showToast } = useAlert();
   const [deletingHex, setDeletingHex] = useState<string | null>(null);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   const handleDeleteSwatch = async (hex: string) => {
     if (typeof window === "undefined") return;

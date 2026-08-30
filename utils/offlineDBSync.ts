@@ -3,7 +3,7 @@
 import { CameraConfigPayload } from "@/components/canvas/master/MasterCameraRig";
 import { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
 export interface RoomDataPayload {
   modelUrl: string;
