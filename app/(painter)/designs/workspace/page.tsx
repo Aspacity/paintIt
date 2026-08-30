@@ -30,7 +30,7 @@ export default function Painter3DStudioWorkspacePage() {
     ceiling: { color: "#FFFFFF", finish: "EMULSION" },
   });
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   const handleSavePainterQuoteConfig = async () => {
     setIsSaving(true);

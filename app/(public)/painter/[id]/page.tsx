@@ -64,7 +64,7 @@ export default function PublicPainterShowcasePage() {
   const [activeLightboxProject, setActiveLightboxProject] = useState<PortfolioProject | null>(null);
   const [currentLightboxImageIdx, setCurrentLightboxImageIdx] = useState<number>(0);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!id) return;

@@ -92,7 +92,7 @@ export default function AddProjectModal({ isOpen, onClose, onProjectAdded }: Add
     });
 
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
       const response = await fetch(`${BACKEND_URL}/api/portfolio/projects`, {
         method: "POST",
         headers: {
