@@ -1,14 +1,16 @@
-// app/(painter)/dashboard/settings/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 
 export default function PainterAccountSettingsPage() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Profile Form States
   const [fullName, setFullName] = useState("");
@@ -27,7 +29,6 @@ export default function PainterAccountSettingsPage() {
 
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // Bootstrap active profile values on component lifecycle initialization
   useEffect(() => {
     if (!accessToken) return;
 
@@ -114,27 +115,37 @@ export default function PainterAccountSettingsPage() {
   };
 
   return (
-    <div className="w-full text-white space-y-8 animate-fade-in pb-16 selection:bg-[#FF8C38] selection:text-black">
+    <div className={`w-full space-y-8 animate-fade-in pb-16 transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
 
-      {/* HEADER ROW BAR CONTAINER */}
-      <div className="border-b border-neutral-900 pb-5">
-        <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100">Account Settings</h1>
-        <p className="text-xs text-neutral-500 mt-0.5">
-          Modify your studio branding metadata credentials and keep your entry access codes secure.
+      {/* HEADER */}
+      <div className={`border-b pb-5 ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+        <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Security & Account Settings
+        </h1>
+        <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Modify your studio branding credentials and update your security passwords.
         </p>
       </div>
 
       <form onSubmit={validateAndPromptConfirm} className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl">
 
-        {/* LEFT COLUMN: PUBLIC STUDIO BRANDING METADATA */}
-        <div className="bg-neutral-950 border border-neutral-900 rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 border-b border-neutral-900/60 pb-2">
-            Studio Profile Details
+        {/* LEFT COLUMN: PROFILE DETAILS */}
+        <div className={`border rounded-2xl p-6 space-y-4 shadow-md ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <h3 className={`text-xs font-bold uppercase tracking-wider pb-2 border-b ${
+            isDark ? "text-neutral-400 border-neutral-850" : "text-stone-700 border-stone-200"
+          }`}>
+            Studio Details
           </h3>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-wider text-neutral-500 block pl-0.5">
-              Full Branding Contractor Name
+            <label className={`text-[10px] uppercase font-bold tracking-wider block pl-0.5 ${
+              isDark ? "text-neutral-400" : "text-stone-600"
+            }`}>
+              Full Contractor Name
             </label>
             <input
               type="text"
@@ -142,12 +153,18 @@ export default function PainterAccountSettingsPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="e.g. Samuel Tijesunimi"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
+              className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-medium focus:outline-none focus:border-[#FF8C38] ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+              }`}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-wider text-neutral-500 block pl-0.5">
+            <label className={`text-[10px] uppercase font-bold tracking-wider block pl-0.5 ${
+              isDark ? "text-neutral-400" : "text-stone-600"
+            }`}>
               Operating Location Area
             </label>
             <input
@@ -156,19 +173,29 @@ export default function PainterAccountSettingsPage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. Ibadan, Nigeria"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
+              className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-medium focus:outline-none focus:border-[#FF8C38] ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+              }`}
             />
           </div>
         </div>
 
-        {/* RIGHT COLUMN: RE-HASH CREDENTIAL MANAGEMENT DECK */}
-        <div className="bg-neutral-950 border border-neutral-900 rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 border-b border-neutral-900/60 pb-2">
-            Update Security Passphrase
+        {/* RIGHT COLUMN: SECURITY & PASSWORD */}
+        <div className={`border rounded-2xl p-6 space-y-4 shadow-md ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <h3 className={`text-xs font-bold uppercase tracking-wider pb-2 border-b ${
+            isDark ? "text-neutral-400 border-neutral-850" : "text-stone-700 border-stone-200"
+          }`}>
+            Update Security Password
           </h3>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-wider text-neutral-500 block pl-0.5">
+            <label className={`text-[10px] uppercase font-bold tracking-wider block pl-0.5 ${
+              isDark ? "text-neutral-400" : "text-stone-600"
+            }`}>
               New Password Choice
             </label>
             <input
@@ -176,12 +203,18 @@ export default function PainterAccountSettingsPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
+              className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-medium focus:outline-none focus:border-[#FF8C38] ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+              }`}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-wider text-neutral-500 block pl-0.5">
+            <label className={`text-[10px] uppercase font-bold tracking-wider block pl-0.5 ${
+              isDark ? "text-neutral-400" : "text-stone-600"
+            }`}>
               Confirm New Password
             </label>
             <input
@@ -189,12 +222,16 @@ export default function PainterAccountSettingsPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
+              className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-medium focus:outline-none focus:border-[#FF8C38] ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+              }`}
             />
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-neutral-900/40">
-            <label className="text-[10px] uppercase font-black tracking-wider text-amber-500 font-bold block pl-0.5">
+          <div className={`space-y-1.5 pt-2 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+            <label className="text-[10px] uppercase tracking-wider text-[#FF8C38] font-bold block pl-0.5">
               Current Password
             </label>
             <input
@@ -202,16 +239,20 @@ export default function PainterAccountSettingsPage() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Required to commit updates..."
-              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-850 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF8C38]/40 transition-colors font-medium"
+              className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-medium focus:outline-none focus:border-[#FF8C38] ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white placeholder:text-neutral-600"
+                  : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder:text-stone-400"
+              }`}
             />
           </div>
         </div>
 
-        {/* BOTTOM GLOBAL ACTION BUTTON CONTAINER */}
+        {/* BUTTON */}
         <div className="md:col-span-2 flex justify-end pt-2">
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-3 bg-[#FF8C38] hover:bg-[#FF8C38] text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg flex items-center justify-center"
+            className="w-full sm:w-auto px-6 py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center active:scale-95"
           >
             Save Account Settings ➔
           </button>
@@ -219,7 +260,6 @@ export default function PainterAccountSettingsPage() {
 
       </form>
 
-      {/* PORTAL MODAL INTEGRATION COMPONENT */}
       <ConfirmModal
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -227,8 +267,8 @@ export default function PainterAccountSettingsPage() {
         title={successState ? "Settings Saved Successfully" : "Commit Profile Changes?"}
         message={
           successState
-            ? "Your identity modifications and password hashes were successfully compiled into our live production indices files."
-            : "Are you sure you want to write these modifications into your active account database variables profile?"
+            ? "Your identity modifications and password hashes were successfully updated."
+            : "Are you sure you want to write these modifications into your profile?"
         }
         confirmText={isSubmitting ? "Updating..." : "Confirm Save"}
         cancelText="Cancel"
