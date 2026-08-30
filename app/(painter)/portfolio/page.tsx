@@ -1,14 +1,14 @@
-// app/(painter)/portfolio/page.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 import AddProjectModal from "@/components/modals/AddProjectModal";
 import EditProjectModal from "@/components/modals/EditProjectModal";
 
 interface Project {
-  id: string; // ✅ FIX 1: Updated to string to support UUID hashes correctly
+  id: string;
   title: string;
   description: string | null;
   location: string;
@@ -20,6 +20,8 @@ interface Project {
 export default function PainterPortfolioPage() {
   const { user } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,15 +31,12 @@ export default function PainterPortfolioPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<Project | null>(null);
 
-  // ✅ FIX 2: Dynamic internal gallery lightbox state parameters
+  // Dynamic lightbox
   const [activeLightboxProject, setActiveLightboxProject] = useState<Project | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // ==========================================================
-  // 🔄 FETCH DATA STREAM VECTOR
-  // ==========================================================
   const fetchContractorProjects = useCallback(async () => {
     setErrorBanner(null);
     try {
@@ -68,7 +67,7 @@ export default function PainterPortfolioPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Database synchronization dropped.";
       setErrorBanner(msg);
-    } finally {
+    } fontinally: {
       setIsLoading(false);
     }
   }, [BACKEND_URL]);
@@ -89,15 +88,11 @@ export default function PainterPortfolioPage() {
     };
   }, [fetchContractorProjects]);
 
-  // ==========================================================
-  // ⚡ ACTION INTERCEPTOR ROUTINES
-  // ==========================================================
   const triggerEditFlow = (project: Project) => {
     setSelectedProjectForEdit(project);
     setIsEditModalOpen(true);
   };
 
-  // ✅ FIX 3: Robust Deep-Link Generation maps accurately to your active context state
   const copyProjectDeepLink = (e: React.MouseEvent, projectId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -105,7 +100,7 @@ export default function PainterPortfolioPage() {
     const activeUserId = user?.id || user?._id;
 
     if (!activeUserId) {
-      showToast({ message: "Unable to resolve active session credentials o!", severity: "error" });
+      showToast({ message: "Unable to resolve active session credentials!", severity: "error" });
       return;
     }
 
@@ -123,67 +118,85 @@ export default function PainterPortfolioPage() {
   };
 
   return (
-    <div className="w-full text-white space-y-6 relative">
+    <div className={`w-full space-y-6 relative animate-fade-in transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
 
       {/* Top Header Management Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-900 pb-5">
+      <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-5 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         <div>
-          <h1 className="text-xl font-black tracking-tight text-neutral-100">Real Works Catalog</h1>
-          <p className="text-xs text-neutral-500 mt-0.5">Showcase your completed site projects with photos and paint parameters to prospective clients.</p>
+          <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+            Real Works Catalog
+          </h1>
+          <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Showcase your completed site projects with photos and paint swatches to prospective clients.
+          </p>
         </div>
 
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-[0.98] shrink-0"
+          className="px-5 py-2.5 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 shrink-0"
         >
           + Add Work
         </button>
       </div>
 
       {errorBanner && (
-        <div className="p-3 bg-red-950/20 border border-red-900/40 text-red-400 text-xs rounded-xl">
+        <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-xs rounded-xl font-medium">
           ⚠️ {errorBanner}
         </div>
       )}
 
-      {/* ⏳ APP STATE ROUTING INTERCEPTORS */}
+      {/* APP STATE */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-24 space-y-3">
           <div className="w-6 h-6 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
-          <span className="text-[10px] uppercase font-black tracking-widest text-neutral-600">Syncing Workspace Assets...</span>
+          <span className={`text-[10px] uppercase font-bold tracking-widest ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>Syncing Workspace Assets...</span>
         </div>
       ) : projects.length === 0 ? (
-
-        /* Zero-State Handler */
-        <div className="flex flex-col items-center justify-center text-center py-20 px-4 border border-dashed border-neutral-900 rounded-2xl bg-neutral-950/20 max-w-md mx-auto">
-          <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xl mb-4">📸</div>
-          <h3 className="text-sm font-black text-neutral-200 uppercase tracking-wide">No Projects Cataloged Yet o!</h3>
-          <p className="text-xs text-neutral-500 max-w-xs mt-1.5 leading-relaxed">
-            Upload high-fidelity photos of your real paint jobs to back up your experience metrics.
+        /* Zero-State */
+        <div className={`flex flex-col items-center justify-center text-center py-20 px-4 border border-dashed rounded-2xl max-w-md mx-auto ${
+          isDark ? "border-neutral-800 bg-neutral-950/40" : "border-stone-300 bg-white"
+        }`}>
+          <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center text-xl mb-4 shadow-xs ${
+            isDark ? "bg-neutral-900 border-neutral-800" : "bg-stone-100 border-stone-200"
+          }`}>📸</div>
+          <h3 className={`text-sm font-bold uppercase tracking-wide ${isDark ? "text-white" : "text-stone-900"}`}>
+            No Projects Cataloged Yet!
+          </h3>
+          <p className={`text-xs max-w-xs mt-1.5 leading-relaxed ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+            Upload photos of your real paint jobs to back up your experience metrics.
           </p>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="mt-5 px-6 py-3 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-[#FF8C38] font-black text-xs uppercase tracking-wider rounded-xl transition-all"
+            className="mt-5 px-6 py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
           >
             Initialize First Showcase
           </button>
         </div>
       ) : (
-
-        /* 🎨 PORTFOLIO IMAGE DISPLAY GRID */
+        /* PORTFOLIO DISPLAY GRID */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="group bg-neutral-950 border border-neutral-900 hover:border-neutral-800 rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all duration-200"
+              className={`group border rounded-2xl overflow-hidden flex flex-col justify-between shadow-md transition-all duration-200 ${
+                isDark
+                  ? "bg-neutral-950 border-neutral-900 hover:border-[#FF8C38]/50"
+                  : "bg-white border-stone-200 hover:border-[#FF8C38]"
+              }`}
             >
               <div>
-                {/* Visual Image Header (Tapping this now launches the expansion swiper modal!) */}
+                {/* Visual Image Header */}
                 <div
                   onClick={() => handleOpenLightbox(project)}
-                  className="relative w-full h-48 bg-neutral-900 border-b border-neutral-900 overflow-hidden cursor-pointer"
+                  className="relative w-full h-48 bg-black/90 border-b border-neutral-800 overflow-hidden cursor-pointer"
                 >
                   {project.images && project.images.length > 0 ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -193,30 +206,30 @@ export default function PainterPortfolioPage() {
                       className="w-full h-full object-cover group-hover:scale-[102%] transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-neutral-600 bg-neutral-950">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-neutral-500 bg-neutral-900">
                       <span className="text-2xl mb-1">🎨</span>
                       <span className="text-[10px] uppercase font-bold tracking-wider">No Image Attachments</span>
                     </div>
                   )}
 
                   {/* Location Pin Badge */}
-                  <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/70 backdrop-blur-md border border-neutral-800/60 rounded-full text-[10px] font-bold tracking-wide text-neutral-300 select-none">
+                  <div className="absolute top-3 left-3 px-2.5 py-1 bg-black/80 backdrop-blur-md border border-neutral-800 rounded-full text-[10px] font-bold tracking-wide text-neutral-200 select-none">
                     📍 {project.location}
                   </div>
 
                   {/* Multi-Image Counter Tracker Badge */}
                   {project.images && project.images.length > 1 && (
-                    <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-[9px] font-black text-[#FF8C38] px-2 py-1 rounded-md border border-neutral-800/60 select-none tracking-wide uppercase">
+                    <span className="absolute bottom-3 left-3 bg-black/80 text-[9px] font-bold text-[#FF8C38] px-2 py-1 rounded-md border border-neutral-800 select-none tracking-wide uppercase">
                       + {project.images.length - 1} Images
                     </span>
                   )}
 
-                  {/* Control Layout Action Handles */}
+                  {/* Action Handles */}
                   <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                     <button
                       type="button"
                       onClick={(e) => copyProjectDeepLink(e, project.id)}
-                      className="px-2.5 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-[#FF8C38] text-[10px] font-bold uppercase rounded-xl transition-all"
+                      className="px-2.5 py-1.5 bg-black/80 hover:bg-black text-[#FF8C38] text-[10px] font-bold uppercase rounded-xl transition-all border border-neutral-800"
                     >
                       🔗 Link
                     </button>
@@ -228,32 +241,38 @@ export default function PainterPortfolioPage() {
                         e.stopPropagation();
                         triggerEditFlow(project);
                       }}
-                      className="px-3 py-1.5 bg-neutral-950/80 backdrop-blur-md hover:bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-[#FF8C38] text-[10px] font-bold uppercase rounded-xl transition-all"
+                      className="px-3 py-1.5 bg-black/80 hover:bg-black text-white text-[10px] font-bold uppercase rounded-xl transition-all border border-neutral-800"
                     >
                       ⚙️ Edit
                     </button>
                   </div>
                 </div>
 
-                {/* Content text metadata summary descriptions */}
+                {/* Content */}
                 <div className="p-5 space-y-3">
                   <div>
-                    <h3 className="text-sm font-black uppercase text-neutral-200 tracking-wide group-hover:text-[#FF8C38] transition-colors">
+                    <h3 className={`text-sm font-bold uppercase tracking-wide group-hover:text-[#FF8C38] transition-colors ${
+                      isDark ? "text-white" : "text-stone-900"
+                    }`}>
                       {project.title}
                     </h3>
-                    <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
-                      {project.description || "No project overview layout notes cataloged."}
+                    <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+                      {project.description || "No project overview notes cataloged."}
                     </p>
                   </div>
 
                   {project.colors_used && project.colors_used.length > 0 && (
-                    <div className="space-y-1.5 pt-2 border-t border-neutral-900/60">
-                      <span className="text-[9px] uppercase font-black tracking-widest text-neutral-600 block">Colors Used // Swatches</span>
+                    <div className={`space-y-1.5 pt-2 border-t ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+                      <span className={`text-[9px] uppercase font-bold tracking-wider block ${
+                        isDark ? "text-neutral-500" : "text-stone-500"
+                      }`}>Colors Used // Swatches</span>
                       <div className="flex flex-wrap gap-1.5">
                         {project.colors_used.map((color, index) => (
                           <span
                             key={index}
-                            className="px-2 py-0.5 bg-neutral-900 border border-neutral-800/80 rounded-md text-[10px] text-neutral-400 font-semibold uppercase tracking-wider"
+                            className={`px-2 py-0.5 border rounded-md text-[10px] font-semibold uppercase tracking-wider ${
+                              isDark ? "bg-black border-neutral-800 text-neutral-300" : "bg-stone-100 border-stone-300 text-stone-700"
+                            }`}
                           >
                             {color}
                           </span>
@@ -264,9 +283,11 @@ export default function PainterPortfolioPage() {
                 </div>
               </div>
 
-              {/* Card Meta Timeline Anchor Footer */}
-              <div className="px-5 py-3.5 bg-neutral-950 border-t border-neutral-900/40 flex items-center justify-between text-[9px] text-neutral-600 font-bold tracking-widest uppercase select-none">
-                <span className="max-w-[180px] truncate">Showcase Record ID: #{project.id}</span>
+              {/* Footer */}
+              <div className={`px-5 py-3.5 border-t flex items-center justify-between text-[9px] font-bold tracking-wider uppercase select-none ${
+                isDark ? "bg-neutral-950 border-neutral-900 text-neutral-500" : "bg-stone-50 border-stone-200 text-stone-500"
+              }`}>
+                <span className="max-w-[180px] truncate">Record ID: #{project.id}</span>
                 <span>{new Date(project.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}</span>
               </div>
 
@@ -275,22 +296,17 @@ export default function PainterPortfolioPage() {
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* 🖼️ NEW INTERNAL EXPANSION GALLERY LIGHTBOX MODAL SECTOR     */}
-      {/* ========================================================== */}
+      {/* GALLERY LIGHTBOX MODAL */}
       {activeLightboxProject && (
-        <div className="fixed inset-0 bg-black/95 z-50 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-fade-in">
-
+        <div className="fixed inset-0 bg-black/95 z-50 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-fade-in text-white">
           <button
             onClick={() => setActiveLightboxProject(null)}
-            className="absolute top-6 right-6 text-xs text-neutral-500 hover:text-white font-black uppercase tracking-widest border border-neutral-900 px-3 py-1.5 rounded-xl bg-neutral-950"
+            className="absolute top-6 right-6 text-xs text-neutral-400 hover:text-white font-bold uppercase tracking-widest border border-neutral-800 px-3 py-1.5 rounded-xl bg-neutral-900"
           >
             ✕ Close View
           </button>
 
           <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-
-            {/* Swiper Media Track Container */}
             <div className="md:col-span-2 space-y-4">
               <div className="w-full h-[55vh] bg-neutral-950 border border-neutral-900 rounded-2xl overflow-hidden relative flex items-center justify-center shadow-2xl select-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -300,12 +316,11 @@ export default function PainterPortfolioPage() {
                   className="max-w-full max-h-full object-contain"
                 />
 
-                {/* Swiper Navigation Hotkeys */}
                 {activeLightboxProject.images.length > 1 && (
                   <>
                     <button
                       onClick={() => setCurrentImageIndex(p => p === 0 ? activeLightboxProject.images.length - 1 : p - 1)}
-                      className="absolute left-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-black hover:bg-[#FF8C38] hover:text-black transition-all"
+                      className="absolute left-4 w-9 h-9 rounded-full bg-black/80 border border-neutral-800 text-white flex items-center justify-center text-sm font-bold hover:bg-[#FF8C38] hover:text-black transition-all"
                     >
                       ←
                     </button>
@@ -318,53 +333,20 @@ export default function PainterPortfolioPage() {
                   </>
                 )}
               </div>
-
-              {/* Strip Carousel Node Indicators */}
-              {activeLightboxProject.images.length > 1 && (
-                <div className="flex flex-wrap gap-2 items-center justify-center">
-                  {activeLightboxProject.images.map((img, index) => (
-                    <div
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`w-12 h-12 bg-neutral-900 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${currentImageIndex === index ? "border-[#FF8C38] scale-105" : "border-neutral-900 opacity-50"
-                        }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Sidebar Data Profile Specs */}
             <div className="space-y-4 text-left">
               <div>
-                <span className="text-[9px] bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded text-neutral-400 font-bold uppercase tracking-wider">Workspace Deep View</span>
-                <h2 className="text-xl font-black text-white mt-1">{activeLightboxProject.title}</h2>
-                <p className="text-[11px] text-neutral-500 mt-0.5">📍 Location Area: {activeLightboxProject.location}</p>
+                <span className="text-[9px] bg-[#FF8C38]/15 border border-[#FF8C38]/30 px-2 py-0.5 rounded text-[#FF8C38] font-bold uppercase">Showcase</span>
+                <h2 className="text-xl font-bold text-white mt-1">{activeLightboxProject.title}</h2>
+                <p className="text-[11px] text-neutral-400 mt-0.5">📍 Location: {activeLightboxProject.location}</p>
               </div>
-              <p className="text-xs text-neutral-400 leading-relaxed max-h-[25vh] overflow-y-auto pr-1">{activeLightboxProject.description || "No project overview notes compiled."}</p>
-
-              {activeLightboxProject.colors_used && activeLightboxProject.colors_used.length > 0 && (
-                <div className="space-y-1.5 border-t border-neutral-900 pt-3">
-                  <span className="text-[9px] uppercase font-black text-neutral-600 block">Swatches Registered</span>
-                  <div className="flex flex-wrap gap-1">
-                    {activeLightboxProject.colors_used.map((c, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 rounded text-[10px] text-neutral-400 uppercase font-semibold">{c}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <p className="text-xs text-neutral-400 leading-relaxed max-h-[25vh] overflow-y-auto">{activeLightboxProject.description}</p>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* 🚀 MODAL OVERLAY PORTALS                                   */}
-      {/* ========================================================== */}
       <AddProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

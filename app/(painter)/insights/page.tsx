@@ -1,8 +1,8 @@
-// app/(painter)/insights/page.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 interface PerformanceMetrics {
   profileViews: number;
@@ -14,6 +14,9 @@ interface PerformanceMetrics {
 
 export default function PainterInsightsAnalyticsPage() {
   const { accessToken } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -43,17 +46,18 @@ export default function PainterInsightsAnalyticsPage() {
     if (accessToken) {
       fetchPerformanceMetrics();
     }
-  }, [accessToken]);
+  }, [accessToken, BACKEND_API_URL]);
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] w-full flex items-center justify-center">
+      <div className={`min-h-[60vh] w-full flex items-center justify-center ${
+        isDark ? "text-white" : "text-stone-900"
+      }`}>
         <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Fallback default mocked dashboard state matching our backend fields if data is fresh
   const activeMetrics = metrics || {
     profileViews: 142,
     designViews: 89,
@@ -63,39 +67,55 @@ export default function PainterInsightsAnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6 text-white animate-fade-in">
-      <div>
-        <h1 className="text-xl font-black tracking-tight text-neutral-100">Business Insights</h1>
-        <p className="text-xs text-neutral-500 mt-0.5">Real-time optimization metrics proving your design retention.</p>
+    <div className={`space-y-6 animate-fade-in transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
+      <div className={`border-b pb-4 ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+        <h1 className={`text-xl font-bold uppercase tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Business Insights & Analytics
+        </h1>
+        <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Real-time metrics tracking client interest and 3D design engagement.
+        </p>
       </div>
 
       {/* Primary Analytical Highlight Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl">
-          <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Profile Views</span>
-          <span className="text-2xl font-black text-white block mt-1">{activeMetrics.profileViews}</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Profile Views</span>
+          <span className={`text-2xl font-bold block mt-1 ${isDark ? "text-white" : "text-stone-900"}`}>{activeMetrics.profileViews}</span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl">
-          <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Design Views</span>
-          <span className="text-2xl font-black text-white block mt-1">{activeMetrics.designViews}</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Design Views</span>
+          <span className={`text-2xl font-bold block mt-1 ${isDark ? "text-white" : "text-stone-900"}`}>{activeMetrics.designViews}</span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl">
-          <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Design Saves</span>
-          <span className="text-2xl font-black text-[#FF8C38] block mt-1">{activeMetrics.designSaves}</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Design Saves</span>
+          <span className="text-2xl font-bold text-[#FF8C38] block mt-1">{activeMetrics.designSaves}</span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl">
-          <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block">Conversion Rate</span>
-          <span className="text-2xl font-black text-white block mt-1">{activeMetrics.conversionRate}%</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Conversion Rate</span>
+          <span className={`text-2xl font-bold block mt-1 ${isDark ? "text-white" : "text-stone-900"}`}>{activeMetrics.conversionRate}%</span>
         </div>
       </div>
 
-      {/* Conversion Retention Callout Banner */}
-      <div className="p-4 bg-[#FF8C38]/10 border border-[#FF8C38]/20 rounded-2xl flex items-start gap-3">
-        <div className="w-2 h-2 rounded-full bg-[#FF8C38] mt-1.5 shrink-0 animate-pulse" />
+      {/* Retention Callout Banner */}
+      <div className={`p-4 border rounded-2xl flex items-start gap-3 shadow-xs ${
+        isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+      }`}>
+        <div className="w-2.5 h-2.5 rounded-full bg-[#FF8C38] mt-1 shrink-0 animate-pulse" />
         <div>
-          <h4 className="text-sm font-bold text-neutral-200">Retention Catalyst Signal</h4>
-          <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
-            Your published 3D workspace configurations generated <span className="text-[#FF8C38] font-semibold">{activeMetrics.quoteRequests} job inquiries</span> this running billing context cycle. Keep publishing custom room presets to accelerate organic lead velocity.
+          <h4 className="text-sm font-bold text-[#FF8C38]">Conversion Signal</h4>
+          <p className={`text-xs mt-0.5 leading-relaxed ${isDark ? "text-neutral-300" : "text-stone-700"}`}>
+            Your published 3D workspace configurations generated <span className="text-[#FF8C38] font-bold">{activeMetrics.quoteRequests} job inquiries</span> this billing cycle. Keep publishing custom room presets to accelerate organic client leads!
           </p>
         </div>
       </div>

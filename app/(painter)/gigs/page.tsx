@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 import { ClientInquiryCard } from "@/components/ui/ClientInquiryCard";
 
 interface InboundLead {
@@ -31,6 +32,8 @@ interface RawBackendLead {
 export default function PainterLeadsAndGigsPage() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [leads, setLeads] = useState<InboundLead[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -130,19 +133,25 @@ export default function PainterLeadsAndGigsPage() {
   });
 
   return (
-    <div className="w-full text-white space-y-6 animate-fade-in pb-12">
+    <div className={`w-full space-y-6 animate-fade-in pb-12 transition-colors duration-300 ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
       {/* Header Section */}
-      <div className="border-b border-neutral-900 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className={`border-b pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         <div>
-          <h1 className="text-xl font-black uppercase tracking-tight text-neutral-100 flex items-center gap-2">
+          <h1 className={`text-xl font-bold uppercase tracking-tight flex items-center gap-2 ${
+            isDark ? "text-white" : "text-stone-900"
+          }`}>
             <span>📩 Customer Inquiries & Job Leads</span>
           </h1>
-          <p className="text-xs text-neutral-500 mt-0.5 font-medium">
+          <p className={`text-xs mt-0.5 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
             Manage incoming messages, project specs, and 3D color choices from clients.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] bg-[#FF8C38]/15 border border-[#FF8C38]/40 text-[#FF8C38] px-3 py-1.5 rounded-xl font-bold uppercase tracking-wider">
+          <span className="text-xs bg-[#FF8C38]/20 border border-[#FF8C38]/40 text-[#FF8C38] px-3.5 py-1.5 rounded-xl font-bold uppercase tracking-wider">
             {leads.length} Total Leads
           </span>
         </div>
@@ -150,38 +159,58 @@ export default function PainterLeadsAndGigsPage() {
 
       {/* Leads Summary Statistics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Total Inquiries</span>
-          <span className="text-xl font-black text-white block mt-0.5">{leads.length}</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>Total Inquiries</span>
+          <span className={`text-xl font-bold block mt-0.5 ${isDark ? "text-white" : "text-stone-900"}`}>{leads.length}</span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">WhatsApp Direct</span>
-          <span className="text-xl font-black text-[#FF8C38] block mt-0.5">
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>WhatsApp Direct</span>
+          <span className="text-xl font-bold text-[#FF8C38] block mt-0.5">
             {leads.filter((l) => !!l.client_phone).length}
           </span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">3D Color Picks</span>
-          <span className="text-xl font-black text-cyan-400 block mt-0.5">
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>3D Color Picks</span>
+          <span className="text-xl font-bold text-[#FF8C38] block mt-0.5">
             {leads.filter((l) => !!l.roomColors).length}
           </span>
         </div>
-        <div className="p-4 bg-neutral-950 border border-neutral-900 rounded-2xl shadow-md">
-          <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Response Rate</span>
-          <span className="text-xl font-black text-white block mt-0.5">100%</span>
+        <div className={`p-4 border rounded-2xl shadow-sm ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${
+            isDark ? "text-neutral-500" : "text-stone-500"
+          }`}>Response Rate</span>
+          <span className={`text-xl font-bold block mt-0.5 ${isDark ? "text-white" : "text-stone-900"}`}>100%</span>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-neutral-900 pb-3">
+      <div className={`flex items-center gap-2 border-b pb-3 ${
+        isDark ? "border-neutral-900" : "border-stone-200"
+      }`}>
         {["ALL", "Profile", "3D Studio", "Direct"].map((source) => (
           <button
             key={source}
             onClick={() => setFilterSource(source)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
               filterSource === source
-                ? "bg-[#FF8C38] text-neutral-950 font-black shadow-md"
-                : "bg-neutral-950 border border-neutral-850 text-neutral-400 hover:text-white"
+                ? "bg-[#FF8C38] text-black border-[#FF8C38] font-extrabold shadow-sm"
+                : isDark
+                ? "bg-neutral-950 border-neutral-800 text-neutral-400 hover:text-white"
+                : "bg-white border-stone-300 text-stone-600 hover:text-stone-900"
             }`}
           >
             {source === "ALL" ? "All Messages" : source}
@@ -193,13 +222,15 @@ export default function PainterLeadsAndGigsPage() {
       {loading ? (
         <div className="py-16 text-center">
           <div className="w-5 h-5 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-neutral-500">Loading your client inquiries...</p>
+          <p className={`text-xs ${isDark ? "text-neutral-500" : "text-stone-500"}`}>Loading your client inquiries...</p>
         </div>
       ) : filteredLeads.length === 0 ? (
-        <div className="py-16 bg-neutral-950 border border-neutral-900 rounded-3xl text-center space-y-3">
+        <div className={`py-16 border rounded-3xl text-center space-y-3 ${
+          isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
+        }`}>
           <span className="text-3xl block">📩</span>
-          <h3 className="text-xs font-black uppercase text-neutral-300">No Inquiries Found</h3>
-          <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+          <h3 className={`text-xs font-bold uppercase ${isDark ? "text-white" : "text-stone-900"}`}>No Inquiries Found</h3>
+          <p className={`text-xs max-w-sm mx-auto ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
             Share your business link with potential clients on WhatsApp to start receiving direct job requests!
           </p>
           <button
@@ -208,7 +239,7 @@ export default function PainterLeadsAndGigsPage() {
               navigator.clipboard.writeText(link);
               showToast({ message: "Profile link copied to clipboard!", severity: "success" });
             }}
-            className="px-4 py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 text-xs font-black uppercase rounded-xl shadow-md transition-all"
+            className="px-4 py-2 bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-xs font-bold uppercase rounded-xl shadow-sm transition-all"
           >
             🔗 Copy Profile Link
           </button>
