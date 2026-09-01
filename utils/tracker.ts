@@ -1,4 +1,4 @@
-// src/utils/tracker.ts
+const backend_connection = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
 const generateToken = (): string => {
   return (
@@ -20,7 +20,6 @@ export const startTrackingLifecycle = (onTriggerNudge: () => void) => {
 
   const sessionStartTime = Date.now();
   let nudgeFired = false;
-  const backend_connection = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // 2. Compute timeline update values and post statistics payload profiles to backend
   const sendHeartbeatUpdate = () => {
