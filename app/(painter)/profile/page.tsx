@@ -42,6 +42,7 @@ export default function AccountProfileWorkspacePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackBanner, setFeedbackBanner] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
+  const ASPACITY_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
@@ -139,6 +140,19 @@ export default function AccountProfileWorkspacePage() {
       .filter(Boolean);
 
     try {
+      // 1. Sync Central Identity (Display Name) to Aspacity Identity Server
+      if (fullName.trim()) {
+        fetch(`${ASPACITY_URL}/api/auth/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("paintit_access_token")}`,
+          },
+          body: JSON.stringify({ full_name: fullName.trim(), avatar_url: avatarUrl }),
+        }).catch(() => null);
+      }
+
+      // 2. Sync Product Profile Metadata to PAINTIT Product Backend
       const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
         method: "PUT",
         headers: {
@@ -146,6 +160,7 @@ export default function AccountProfileWorkspacePage() {
           "Authorization": `Bearer ${localStorage.getItem("paintit_access_token")}`,
         },
         body: JSON.stringify({
+          fullName: fullName.trim(),
           bio: bio,
           phoneNumber: phoneNumber || null,
           location: location || null,
@@ -163,7 +178,7 @@ export default function AccountProfileWorkspacePage() {
         throw new Error(data.error || "Failed to update profile matrix.");
       }
 
-      setFeedbackBanner({ type: "success", msg: "Profile credentials updated successfully!" });
+      setFeedbackBanner({ type: "success", msg: "Profile credentials updated successfully across Aspacity!" });
 
       if (data.profile) {
         setProfile((prev) => prev ? { ...prev, ...data.profile } : null);

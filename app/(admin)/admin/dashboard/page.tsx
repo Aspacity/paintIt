@@ -54,7 +54,7 @@ interface AnalyticsData {
   interactions: InteractionLog[];
 }
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
 export default function AdminAnalyticsDashboard() {
   const { accessToken } = useAuth();

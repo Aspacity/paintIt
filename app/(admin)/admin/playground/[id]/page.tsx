@@ -11,7 +11,7 @@ import { CameraConfigPayload } from '@/components/canvas/master/MasterCameraRig'
 
 import ConfirmModal from '@/components/modals/ConfirmModal';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || 'http://localhost:5000';
 
 function PlaygroundCanvasContent() {
   const routeParams = useParams();

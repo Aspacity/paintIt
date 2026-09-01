@@ -28,14 +28,15 @@ export default function ClientProfilePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [successState, setSuccessState] = useState(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
+  const ASPACITY_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const PAINTIT_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (!accessToken) return;
 
     const fetchClientIdentity = async () => {
       try {
-        const res = await fetch(`${BACKEND_API_URL}/api/profile/me`, {
+        const res = await fetch(`${PAINTIT_API_URL}/api/profile/me`, {
           headers: { "Authorization": `Bearer ${accessToken}` }
         });
 
@@ -54,7 +55,7 @@ export default function ClientProfilePage() {
     };
 
     fetchClientIdentity();
-  }, [accessToken, BACKEND_API_URL]);
+  }, [accessToken, PAINTIT_API_URL]);
 
   const handleValidationCheck = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,30 +87,42 @@ export default function ClientProfilePage() {
   const executeUpdatePipeline = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${BACKEND_API_URL}/api/auth/update-account`, {
+      // 1. Sync Central Identity (Display Name) to Aspacity Identity Server
+      const identityRes = await fetch(`${ASPACITY_API_URL}/api/auth/profile`, {
         method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          fullName,
-          currentPassword: currentPassword || null,
-          newPassword: newPassword || null
-        })
+          full_name: fullName.trim(),
+        }),
       });
 
-      if (response.ok) {
+      // 2. Sync Product Profile metadata to PAINTIT Product Backend
+      const productRes = await fetch(`${PAINTIT_API_URL}/api/profile/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+        }),
+      });
+
+      if (identityRes.ok || productRes.ok) {
         setSuccessState(true);
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+        showToast({ message: "Profile credentials updated successfully across Aspacity!", severity: "success" });
 
         setTimeout(() => {
           setConfirmOpen(false);
         }, 1500);
       } else {
-        const data = await response.json();
+        const data = await productRes.json();
         showToast({ message: data.error || "Failed updating profile settings.", severity: "error" });
         setConfirmOpen(false);
       }

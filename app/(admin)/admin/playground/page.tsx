@@ -14,7 +14,7 @@ interface DesignTemplate {
   category?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || 'http://localhost:5000';
 
 export default function AdminPlaygroundCatalog() {
   const [catalog, setCatalog] = useState<DesignTemplate[]>([]);

@@ -59,7 +59,7 @@ export default function ModularStudioSandboxPage() {
 
   const { showToast } = useAlert();
   const { accessToken } = useAuth();
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // Exact Leva Controls from Playground
   const [cameraConfig] = useControls("Camera Limits", () => ({
