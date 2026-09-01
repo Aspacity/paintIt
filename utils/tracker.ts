@@ -88,7 +88,7 @@ export const identifyUserSession = async (email: string) => {
   if (!visitorToken) return;
 
   try {
-    await fetch("http://localhost:5000/api/analytics/identify", {
+    await fetch(`${backend_connection}/api/analytics/identify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ visitorToken, email }),
