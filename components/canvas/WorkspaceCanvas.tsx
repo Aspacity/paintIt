@@ -143,65 +143,69 @@ export default function WorkspaceCanvas({
         const customTexture = activeTextures?.[targetKey] || activeTextures?.[meshName];
         const swapMaterialName = materialSwaps?.[meshName];
 
-            });
-            if (preset.clearcoat) (mat as unknown as { clearcoat: number }).clearcoat = preset.clearcoat;
-            node.material = mat;
-            node.material.needsUpdate = true;
-          }
-        } else if (swapMaterialName && materials[swapMaterialName]) {
+        if (swapMaterialName && materials[swapMaterialName]) {
           node.material = materials[swapMaterialName].clone();
-          node.material.side = THREE.DoubleSide;
+          (node.material as THREE.Material).side = THREE.DoubleSide;
           node.material.needsUpdate = true;
-        } else {
-          const activeColor = roomColors[meshName] || roomColors[targetKey];
-          const isWallSurface = category === 'WALL';
+          return;
+        }
 
-          if (activeColor && node.material instanceof THREE.MeshStandardMaterial) {
-            node.material = node.material.clone();
-            node.material.side = THREE.DoubleSide;
-            node.material.color.set(activeColor);
+        if (surfaceColor || surfaceFinish || customTexture || category) {
+          let mat = node.material as THREE.MeshStandardMaterial;
 
-            if (isWallSurface || meshName.startsWith('wall')) {
-              // 🎨 DYNAMIC PAINT FINISH ROUGHNESS & REFLECTIVITY MAPPING
-              const finishType = (roomFinishes?.[meshName] || roomFinishes?.[targetKey] || "EMULSION").toUpperCase();
-
-              let roughness = 0.85;
-              let metalness = 0.0;
-              let bumpScale = 0.015;
-
-              if (finishType === "SATIN" || finishType === "SILK") {
-                roughness = 0.35;
-                metalness = 0.04;
-                bumpScale = 0.008;
-              } else if (finishType === "GLOSS") {
-                roughness = 0.15;
-                metalness = 0.12;
-                bumpScale = 0.003;
-              } else if (finishType === "EGGSHELL") {
-                roughness = 0.55;
-                metalness = 0.02;
-                bumpScale = 0.012;
-              } else if (finishType === "TEXTURED") {
-                roughness = 0.95;
-                metalness = 0.0;
-                bumpScale = 0.035;
-              }
-
-              node.material.bumpMap = wallNormalMap;
-              node.material.bumpScale = bumpScale;
-              node.material.roughness = roughness;
-              node.material.metalness = metalness;
-
-              node.material.polygonOffset = true;
-              node.material.polygonOffsetFactor = -1;
-              node.material.polygonOffsetUnits = -1;
-            }
-            node.material.needsUpdate = true;
+          if (!mat || !mat.isMeshStandardMaterial) {
+            mat = new THREE.MeshStandardMaterial({
+              name: `mat_${meshName}`,
+              roughness: 0.5,
+              metalness: 0.0,
+              side: THREE.DoubleSide,
+            });
+            node.material = mat;
+          } else {
+            mat = mat.clone();
+            mat.side = THREE.DoubleSide;
+            node.material = mat;
           }
+
+          if (surfaceColor) {
+            mat.color.set(surfaceColor);
+          }
+
+          if (customTexture) {
+            const preset = TEXTURE_PRESETS.find((p) => p.id === customTexture);
+            if (preset) {
+              mat.map = preset.generateTexture();
+              mat.roughness = preset.roughness;
+              mat.metalness = preset.metalness;
+              mat.needsUpdate = true;
+            }
+          }
+
+          switch (surfaceFinish.toUpperCase()) {
+            case 'GLOSS':
+            case 'HIGH_GLOSS':
+              mat.roughness = 0.15;
+              mat.metalness = 0.12;
+              break;
+            case 'SATIN':
+            case 'EGGSHELL':
+            case 'SILK':
+              mat.roughness = 0.35;
+              mat.metalness = 0.04;
+              break;
+            case 'MATTE':
+            case 'EMULSION':
+            default:
+              mat.roughness = 0.75;
+              mat.metalness = 0.0;
+              break;
+          }
+
+          mat.needsUpdate = true;
         }
       }
     });
-  }, [clonedScene, roomColors, roomFinishes, wallNormalMap, activeTextures, materialSwaps, materials]);
+  }, [clonedScene, roomColors, roomFinishes, activeTextures, materialSwaps, materials]);
 
   return (
     <>

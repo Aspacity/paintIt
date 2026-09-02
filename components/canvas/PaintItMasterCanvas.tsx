@@ -1,283 +1,141 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, Suspense, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
-import { useGLTF, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
+
 import { LightingPresetKey, MASTER_LIGHTING_PRESETS } from "@/config/lightingPresets";
-import { TEXTURE_PRESETS, getMeshCategory } from "@/utils/generateFloorTextures";
-import { OfflineSyncBanner } from "@/components/ui/OfflineSyncBanner";
-import {
-  getSavedModelLightingConfig,
-  fetchOnlineModelLightingConfig,
-  saveModelLightingConfigGlobal,
-} from "@/config/roomModelLightingConfigs";
-import { useGLTFWithFallback } from "@/utils/modelFallbackResolver";
+import { TEXTURE_PRESETS } from "@/config/texturePresets";
+import { PAINTS } from "@/config/paints";
+import { useAlert } from "@/context/AlertContext";
+import { useTheme } from "@/context/ThemeContext";
 
-// ============================================================================
-// 1. UNIFIED MASTER CANVAS TYPES & SCHEMAS
-// ============================================================================
-export type TimeOfDayPreset = LightingPresetKey | "day";
-export type WallFinishType = "EMULSION" | "GLOSS" | "SATIN";
-export type CeilingType = "Ceiling_Cove" | "Ceiling_FlatModern" | "Ceiling_Tray" | "Ceiling_POP" | "Ceiling_Linear";
-export type CameraViewPreset = "FULL_ROOM" | "SEATING_FOCUS" | "ACCENT_WALL" | "TOP_DOWN";
+import MasterLightingEngine, { LightFixtureConfig } from "./master/MasterLightingEngine";
+import MasterCameraRig, { CameraConfigPayload } from "./master/MasterCameraRig";
+import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
+import LightControls from "@/components/canvas/LightControls";
+import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
+import { ModularAssetInstance } from "./ModularAssetInstance";
+import { FurnishItAssetItem } from "@/config/furnishItAssets";
+import { PlacedObjectTransform } from "@/types/modular";
 
-const WALL_MAPPING_PRESETS: Record<string, string> = {
-  left: "wall_left",
-  right: "wall_right",
-  back: "wall_back",
-  front: "wall_front",
-  roof: "ceiling",
-};
+import { CanvasTopStatusBar, CameraViewPreset } from "./master/CanvasTopStatusBar";
+import { CanvasMobileToolsDrawer } from "./master/CanvasMobileToolsDrawer";
+import { threeCache } from "@/utils/threeCacheManager";
+import { saveModelLightingConfigGlobal } from "@/utils/offlineDBSync";
 
-function resolveWallKey(meshName: string): string {
-  if (!meshName) return "wall_back";
-  const name = meshName.toLowerCase();
-  if (WALL_MAPPING_PRESETS[name]) return WALL_MAPPING_PRESETS[name];
-  if (name.includes("toilet") || name.includes("bath") || name.includes("wc")) return "toilet";
-  if (name.includes("back")) return "wall_back";
-  if (name.includes("left")) return "wall_left";
-  if (name.includes("right")) return "wall_right";
-  if (name.includes("front")) return "wall_front";
-  if (name.includes("ceiling") || name.includes("roof")) return "ceiling";
-  return meshName;
-}
+export type WallFinishType = "EMULSION" | "SATIN" | "GLOSS";
+export type TimeOfDayPreset = "dawn" | "morning" | "midday" | "goldenHour" | "sunset" | "night" | "day";
 
 export interface SurfaceState {
   color: string;
   finish: WallFinishType;
-  textureId?: string;
 }
 
 export interface MasterCanvasConfig {
-  mode: "painter" | "client" | "admin" | "sandbox";
+  mode: "demo" | "painter" | "sandbox";
   modelUrl: string;
   timeOfDay: TimeOfDayPreset;
   sunAzimuthOverride?: number;
   sunElevationOverride?: number;
   sunIntensityOverride?: number;
-  sunColorOverride?: string;
   ambientIntensityOverride?: number;
-  bulbs?: BulbState[];
+  sunColorOverride?: string;
+  bulbs?: LightFixtureConfig[];
   activeWallColor: string;
   activeWallFinish: WallFinishType;
-  activeCeilingType: CeilingType;
+  activeCeilingType: "Ceiling_FlatModern" | "Ceiling_Tray" | "Ceiling_POP" | "Ceiling_Cove" | "Ceiling_Linear";
   activeFloorTextureId: string;
-  wallSurfaceStates?: Record<string, { color: string; finish: WallFinishType }>;
+  wallSurfaceStates?: Record<string, SurfaceState>;
   bumpScale?: number;
   shadowOpacity?: number;
-  isCeilingCutaway?: boolean;
   enableAutoCutaway?: boolean;
-  enableZoom?: boolean;
+  isCeilingCutaway?: boolean;
+  isAdmin?: boolean;
   hideLightingTab?: boolean;
   hideFloorTab?: boolean;
-  hideColorMixer?: boolean;
   hideAssemblyPanel?: boolean;
-  isAdmin?: boolean;
 }
 
-import { CameraConfigPayload } from "./master/MasterCameraRig";
-import { saveCustomPaintSync } from "@/utils/offlineDBSync";
-import { BulbState } from "@/components/canvas/LightControls";
-
-interface PaintItMasterCanvasProps {
+export interface PaintItMasterCanvasProps {
   config: MasterCanvasConfig;
-  savedCameraConfig?: Partial<CameraConfigPayload> | null;
+  savedCameraConfig?: CameraConfigPayload | null;
   onConfigChange?: (newConfig: Partial<MasterCanvasConfig>) => void;
   onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
-  onSaveLightingConfig?: (lightingData: {
-    timeOfDay: LightingPresetKey;
-    azimuth: number;
-    elevation: number;
-    intensity: number;
-    ambient: number;
-    color?: string;
-    bulbs?: BulbState[];
-  }) => void;
-  onSaveCameraConfig?: (cameraData: CameraConfigPayload) => void;
+  onSaveLightingConfig?: (data: any) => void;
+  onSaveCameraConfig?: (camConfig: CameraConfigPayload) => void;
+  isSavingLocally?: boolean;
+  lastSavedTimestamp?: number | null;
 }
 
-export const LIGHTING_CONTROLS = {
-  // ☀️ DAYTIME — equatorial noon, high overhead sun, hazy tropical sky
-  day: {
-    sunElevationDeg: 82,
-    sunAzimuthDeg: 205,
-    sunColor: "#FFF7EC",
-    sunIntensity: 3.2,
-
-    hemisphereSkyColor: "#cfe3f2",
-    hemisphereGroundColor: "#c9b89a",
-    hemisphereIntensity: 0.55,
-
-    skyTurbidity: 8,
-    skyRayleigh: 1.2,
-    skyMieCoefficient: 0.012,
-    skyMieDirectionalG: 0.85,
-
-    envPreset: "city" as const,
-    envIntensity: 0.35,
-    exposure: 0.95,
-  },
-  // 🌙 NIGHTTIME — short equatorial dusk, warm urban skyglow, faint moon
-  night: {
-    sunElevationDeg: -8,
-    sunAzimuthDeg: 205,
-    sunColor: "#9AB4E0",
-    sunIntensity: 0.12,
-
-    hemisphereSkyColor: "#0b1330",
-    hemisphereGroundColor: "#3a2a1a",
-    hemisphereIntensity: 0.22,
-
-    skyTurbidity: 10,
-    skyRayleigh: 0.5,
-    skyMieCoefficient: 0.01,
-    skyMieDirectionalG: 0.9,
-
-    envPreset: "night" as const,
-    envIntensity: 0.25,
-    exposure: 0.45,
-  },
-};
-
-// Import Real Paint Swatch Catalog
-import { REAL_PAINTS_CATALOG } from "@/config/paints";
-
-// 3D Canvas Fallback & Loader
-function Canvas3DSpinner() {
-  const meshRef = useRef<THREE.Mesh>(null);
-  useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 2.5;
-    }
-  });
-  return (
-    <mesh ref={meshRef} position={[0, 1.5, 0]}>
-      <torusGeometry args={[0.3, 0.04, 16, 32]} />
-      <meshBasicMaterial color="#10b981" wireframe />
-    </mesh>
-  );
+function getMeshCategory(name: string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
+  const lower = name.toLowerCase();
+  if (lower.includes("wall")) return "WALL";
+  if (lower.includes("floor") || lower.includes("ground") || lower.includes("base")) return "FLOOR";
+  if (lower.includes("ceiling") || lower.includes("roof")) return "CEILING";
+  return "OTHER";
 }
 
-class CanvasErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback?: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn("3D Model load error caught cleanly:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        this.props.fallback || (
-          <mesh position={[0, 1.5, 0]}>
-            <boxGeometry args={[3.2, 2.4, 3.2]} />
-            <meshStandardMaterial color="#1c1c1e" wireframe />
-          </mesh>
-        )
-      );
-    }
-    return this.props.children;
-  }
+function resolveWallKey(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes("back")) return "wall_back";
+  if (lower.includes("left")) return "wall_left";
+  if (lower.includes("right")) return "wall_right";
+  if (lower.includes("front") || lower.includes("accent")) return "wall_front";
+  if (lower.includes("toilet") || lower.includes("restroom") || lower.includes("bath")) return "toilet";
+  if (lower.includes("ceiling")) return "ceiling";
+  return "wall_back";
 }
 
-// ============================================================================
-// 2. INNER 3D ROOM MESH COMPONENT
-// ============================================================================
-function MasterRoomMesh({
+function CanvasSceneMeshEngine({
   config,
-  cameraPreset,
-  isPaintDormant,
-  selectedSurfacePoint,
-  activeSelectedWall: _activeSelectedWall,
   onSurfaceSelect,
   onDoubleClickSurface,
+  selectedSurfacePoint,
+  isPaintDormant,
+  cameraPreset,
 }: {
   config: MasterCanvasConfig;
-  cameraPreset?: CameraViewPreset | null;
-  isPaintDormant?: boolean;
+  onSurfaceSelect?: (rawName: string, category: string, point: THREE.Vector3) => void;
+  onDoubleClickSurface?: (rawName: string, category: string, point: THREE.Vector3) => void;
   selectedSurfacePoint: THREE.Vector3 | null;
-  activeSelectedWall?: string | null;
-  onSurfaceSelect?: (meshName: string, category: string, point: THREE.Vector3) => void;
-  onDoubleClickSurface?: (meshName: string, category: string, point: THREE.Vector3) => void;
+  isPaintDormant: boolean;
+  cameraPreset: CameraViewPreset | null;
 }) {
-  const { scene } = useGLTFWithFallback(config.modelUrl);
-  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+  const [gltfScene, setGltfScene] = useState<THREE.Group | null>(null);
 
-  // Map to hold unique isolated material instances per wall mesh
-  const wallMaterialCache = useRef<Record<string, THREE.MeshStandardMaterial>>({});
-
-  // Update Mesh Materials Dynamically (Independent Walls Guaranteed!)
   useEffect(() => {
-    clonedScene.traverse((node: THREE.Object3D) => {
+    let active = true;
+    const loader = new (require("three/examples/jsm/loaders/GLTFLoader").GLTFLoader)();
+    loader.load(
+      config.modelUrl,
+      (gltf: any) => {
+        if (active) setGltfScene(gltf.scene);
+      },
+      undefined,
+      (err: any) => console.error("Error loading 3D GLTF model:", err)
+    );
+    return () => {
+      active = false;
+    };
+  }, [config.modelUrl]);
+
+  const clonedScene = React.useMemo(() => {
+    if (!gltfScene) return null;
+    return gltfScene.clone(true);
+  }, [gltfScene]);
+
+  useEffect(() => {
+    if (!clonedScene) return;
+
+    clonedScene.traverse((node) => {
       if (node instanceof THREE.Mesh) {
         const meshName = node.name;
         const nameLower = meshName.toLowerCase();
         const category = getMeshCategory(meshName);
 
-        // 🛋️ 1. ARCHITECTURAL FIXTURES, BULBS & CURTAINS PROTECTION (NEVER paint or cast shadow stencils!)
-        const isFixtureOrCurtain =
-          nameLower.includes("curtain") ||
-          nameLower.includes("drape") ||
-          nameLower.includes("blind") ||
-          nameLower.includes("lamp") ||
-          nameLower.includes("light") ||
-          nameLower.includes("strip") ||
-          nameLower.includes("led") ||
-          nameLower.includes("cove") ||
-          nameLower.includes("bulb") ||
-          nameLower.includes("spot") ||
-          nameLower.includes("housing") ||
-          nameLower.includes("downlight") ||
-          nameLower.includes("tube") ||
-          nameLower.includes("recessed") ||
-          nameLower.includes("furniture") ||
-          nameLower.includes("sofa") ||
-          nameLower.includes("chair") ||
-          nameLower.includes("table") ||
-          nameLower.includes("door") ||
-          nameLower.includes("wood");
-
-        if (isFixtureOrCurtain) {
-          // ☀️ Ceiling LED strips, bulbs & light fixtures MUST NOT cast dark shadow stencils onto floor/walls!
-          const isCeilingLightOrLED =
-            nameLower.includes("strip") ||
-            nameLower.includes("led") ||
-            nameLower.includes("cove") ||
-            nameLower.includes("bulb") ||
-            nameLower.includes("spot") ||
-            nameLower.includes("housing") ||
-            nameLower.includes("downlight") ||
-            nameLower.includes("tube") ||
-            nameLower.includes("light") ||
-            nameLower.includes("fixture") ||
-            nameLower.includes("recessed") ||
-            nameLower.includes("chandelier") ||
-            nameLower.includes("pendant");
-
-          if (isCeilingLightOrLED) {
-            node.castShadow = false;
-            node.receiveShadow = false;
-          } else {
-            node.castShadow = true;
-            node.receiveShadow = true;
-          }
-          return;
-        }
-
-        // ☀️ 2. CRYSTAL CLEAR WINDOW GLASS PANES ONLY
         const isGlassPane =
-          (nameLower.includes("glass") || nameLower.includes("pane") || nameLower.includes("glazing")) &&
+          (nameLower.includes("glass") || nameLower.includes("window") || nameLower.includes("pane") || nameLower.includes("glazing")) &&
           !nameLower.includes("frame") &&
           !nameLower.includes("sash");
 
@@ -289,10 +147,10 @@ function MasterRoomMesh({
             materials.forEach((m) => {
               if (m instanceof THREE.MeshStandardMaterial) {
                 m.transparent = true;
-                m.opacity = 0.05; // ☀️ Ultra crystal clear window glass!
+                m.opacity = 0.05;
                 m.roughness = 0.01;
                 m.metalness = 0.9;
-                m.depthWrite = false; // ☀️ Sunlight streams straight into room!
+                m.depthWrite = false;
                 m.needsUpdate = true;
               }
             });
@@ -302,31 +160,27 @@ function MasterRoomMesh({
           node.castShadow = true;
         }
 
-        // Modular Ceiling Visibility Toggle
         if (meshName.startsWith("Ceiling_") || meshName.startsWith("Cove_Lights_")) {
-          if (config.activeCeilingType === "Ceiling_FlatModern") {
-            node.visible = meshName.includes("Flat");
-          } else if (config.activeCeilingType === "Ceiling_Tray") {
-            node.visible = meshName.includes("Tray");
-          } else if (config.activeCeilingType === "Ceiling_POP") {
-            node.visible = meshName.includes("POP");
-          } else if (config.activeCeilingType === "Ceiling_Cove") {
-            node.visible = meshName.includes("Cove");
-          } else if (config.activeCeilingType === "Ceiling_Linear") {
-            node.visible = meshName.includes("Linear");
-          }
+          if (config.activeCeilingType === "Ceiling_FlatModern") node.visible = meshName.includes("Flat");
+          else if (config.activeCeilingType === "Ceiling_Tray") node.visible = meshName.includes("Tray");
+          else if (config.activeCeilingType === "Ceiling_POP") node.visible = meshName.includes("POP");
+          else if (config.activeCeilingType === "Ceiling_Cove") node.visible = meshName.includes("Cove");
+          else if (config.activeCeilingType === "Ceiling_Linear") node.visible = meshName.includes("Linear");
         }
 
-        // 1. Photorealistic Floor PBR Texture Mapping (ONLY for Floor Meshes!)
+        // 1. Photorealistic Floor PBR Texture Mapping with Caching
         if (category === "FLOOR") {
           if (config.activeFloorTextureId && config.activeFloorTextureId !== "original") {
             const preset = TEXTURE_PRESETS.find((p) => p.id === config.activeFloorTextureId);
             if (preset) {
-              const mat = new THREE.MeshStandardMaterial({
-                map: preset.generateTexture(),
-                roughness: preset.roughness,
-                metalness: preset.metalness,
-                side: THREE.DoubleSide,
+              const texture = threeCache.getOrCreateTexture(`texture_${preset.id}`, () => preset.generateTexture());
+              const mat = threeCache.getOrCreateMaterial(`mat_floor_${preset.id}`, () => {
+                return new THREE.MeshStandardMaterial({
+                  map: texture,
+                  roughness: preset.roughness,
+                  metalness: preset.metalness,
+                  side: THREE.DoubleSide,
+                });
               });
               node.material = mat;
               node.material.needsUpdate = true;
@@ -335,95 +189,61 @@ function MasterRoomMesh({
           }
         }
 
-        // 2. Pure Architectural Wall Paint & Sheen Engine (PER-WALL ISOLATED PAINTING!)
-        const isWall = (meshName.toLowerCase().includes("wall") || category === "WALL") && !isFixtureOrCurtain;
+        // 2. Pure Architectural Wall Paint & Sheen Engine
+        const isWall = meshName.toLowerCase().includes("wall") || category === "WALL";
         const isCeiling = meshName.toLowerCase().includes("ceiling") || meshName.toLowerCase().includes("roof");
 
         if (isWall || isCeiling) {
           const key = resolveWallKey(meshName);
-
-          // Get or create unique material clone specifically for this surface key
-          if (!wallMaterialCache.current[key]) {
-            wallMaterialCache.current[key] = new THREE.MeshStandardMaterial({
-              side: THREE.DoubleSide,
-              shadowSide: THREE.DoubleSide,
-            });
-          }
-
-          const mat = wallMaterialCache.current[key];
-          mat.map = null; // Pure solid paint!
-          mat.side = THREE.DoubleSide; // Render both inner and outer face!
-
-          // Resolve wall/ceiling specific color or active fallback
           const wallState = config.wallSurfaceStates?.[key];
           const wallColor = wallState?.color || (isCeiling ? "#FFFFFF" : config.activeWallColor);
           const wallFinish = wallState?.finish || config.activeWallFinish;
 
-          mat.color.set(wallColor);
-
-          if (isCeiling) {
-            mat.roughness = 0.95;
-            mat.metalness = 0.0;
-            mat.emissive = new THREE.Color("#000000");
-            mat.emissiveIntensity = 0.0;
-          } else {
-            let roughness = 0.85;
-            let metalness = 0.0;
-
-            if (wallFinish === "SATIN") {
-              roughness = 0.35;
-              metalness = 0.04;
-            } else if (wallFinish === "GLOSS") {
-              roughness = 0.15;
-              metalness = 0.12;
+          const matCacheKey = `mat_wall_${key}_${wallColor}_${wallFinish}`;
+          const mat = threeCache.getOrCreateMaterial(matCacheKey, () => {
+            const m = new THREE.MeshStandardMaterial({
+              side: THREE.DoubleSide,
+              shadowSide: THREE.DoubleSide,
+            });
+            m.color.set(wallColor);
+            if (isCeiling) {
+              m.roughness = 0.95;
+              m.metalness = 0.0;
+            } else {
+              m.roughness = wallFinish === "SATIN" ? 0.35 : wallFinish === "GLOSS" ? 0.15 : 0.85;
+              m.metalness = wallFinish === "SATIN" ? 0.04 : wallFinish === "GLOSS" ? 0.12 : 0.0;
             }
+            return m;
+          });
 
-            mat.roughness = roughness;
-            mat.metalness = metalness;
-            mat.emissive = new THREE.Color("#000000");
-            mat.emissiveIntensity = 0.0;
-          }
-
-          mat.bumpMap = null;
+          mat.color.set(wallColor);
           mat.needsUpdate = true;
-
           node.material = mat;
         }
       }
     });
   }, [clonedScene, config]);
 
-  // Ceiling & Ceiling Light Cutaway Loop (Only when explicit cutaway is requested!)
   useFrame(({ camera }) => {
+    if (!clonedScene) return;
     const isHighAngle = camera.position.y > 3.8;
     const shouldCutawayCeiling = config.isCeilingCutaway || cameraPreset === "TOP_DOWN" || isHighAngle;
 
     clonedScene.traverse((node) => {
       if (node instanceof THREE.Mesh) {
         const meshName = node.name.toLowerCase();
-        const isCeilingOrCeilingLight =
+        if (
           meshName.includes("ceiling") ||
           meshName.includes("roof") ||
-          meshName.includes("cove") ||
-          meshName.includes("strip") ||
-          meshName.includes("led") ||
-          meshName.includes("bulb") ||
-          meshName.includes("spot") ||
-          meshName.includes("housing") ||
-          meshName.includes("downlight") ||
-          meshName.includes("tube") ||
-          meshName.includes("light") ||
-          meshName.includes("fixture") ||
-          meshName.includes("chandelier") ||
-          meshName.includes("pendant") ||
-          meshName.includes("recessed");
-
-        if (isCeilingOrCeilingLight) {
+          meshName.includes("cove")
+        ) {
           node.visible = !shouldCutawayCeiling;
         }
       }
     });
   });
+
+  if (!clonedScene) return null;
 
   return (
     <group>
@@ -431,7 +251,7 @@ function MasterRoomMesh({
         object={clonedScene}
         onClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
-          if (isPaintDormant) return; // 🔒 DORMANT PAINT MODE! When assembling furniture, painting does NOT fire!
+          if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name;
             const category = getMeshCategory(rawName);
@@ -440,7 +260,7 @@ function MasterRoomMesh({
         }}
         onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
-          if (isPaintDormant) return; // 🔒 DORMANT PAINT MODE!
+          if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name;
             const category = getMeshCategory(rawName);
@@ -449,35 +269,16 @@ function MasterRoomMesh({
         }}
       />
 
-      {/* 3D 1-Tap Target Surface Ring Marker */}
       {selectedSurfacePoint && (
         <mesh position={selectedSurfacePoint}>
           <ringGeometry args={[0.08, 0.12, 32]} />
-          <meshBasicMaterial color="#10b981" side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#FF8C38" side={THREE.DoubleSide} />
         </mesh>
       )}
     </group>
   );
 }
 
-// ============================================================================
-import MasterLightingEngine from "./master/MasterLightingEngine";
-import MasterCameraRig from "./master/MasterCameraRig";
-import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
-import LightControls from "@/components/canvas/LightControls";
-import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
-import { ModularAssetInstance } from "./ModularAssetInstance";
-import { FurnishItAssetItem } from "@/config/furnishItAssets";
-import { PlacedObjectTransform } from "@/types/modular";
-
-// Helper to generate pure unique IDs for custom paints
-function generateCustomPaintId(): string {
-  return `custom-p-${Math.random().toString(36).substring(2, 9)}`;
-}
-
-// ============================================================================
-// 4. UNIFIED MASTER CANVAS CONTAINER COMPONENT
-// ============================================================================
 export default function PaintItMasterCanvas({
   config,
   savedCameraConfig,
@@ -485,162 +286,102 @@ export default function PaintItMasterCanvas({
   onSurfaceSelect,
   onSaveLightingConfig,
   onSaveCameraConfig,
+  isSavingLocally,
+  lastSavedTimestamp,
 }: PaintItMasterCanvasProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [selectedPoint, setSelectedPoint] = useState<THREE.Vector3 | null>(null);
   const [activeSelectedWall, setActiveSelectedWall] = useState<string | null>(null);
   const [cameraPreset, setCameraPreset] = useState<CameraViewPreset | null>(null);
 
-  // 🛋️ Studio Interaction Mode & Furniture Asset Assembly State
   const [studioMode, setStudioMode] = useState<"PAINT" | "FURNITURE" | "ROOM">("PAINT");
   const [selectedFurnitureId, setSelectedFurnitureId] = useState<string | null>(null);
   const [furnitureTransformMode, setFurnitureTransformMode] = useState<"translate" | "rotate" | "scale">("translate");
   const [placedFurnitureAssets, setPlacedFurnitureAssets] = useState<
-    Array<{
-      id: string;
-      assetId: string;
-      name: string;
-      modelUrl: string;
-      position: [number, number, number];
-      rotation: [number, number, number];
-      scale: [number, number, number];
-    }>
+    Array<{ id: string; asset: FurnishItAssetItem; transform: PlacedObjectTransform }>
   >([]);
 
-  const isPaintDormant = studioMode === "FURNITURE" || selectedFurnitureId !== null;
+  const [bulbs, setBulbs] = useState<LightFixtureConfig[]>(config.bulbs || []);
+  const [selectedBulbId, setSelectedBulbId] = useState<string | null>(null);
 
-  const handleAddFurnitureAsset = (asset: FurnishItAssetItem) => {
-    const newInstance = {
-      id: `furn-${Date.now()}`,
-      assetId: asset.id,
-      name: asset.name,
-      modelUrl: asset.modelUrl,
-      position: [0, 0.001, 0] as [number, number, number],
-      rotation: [0, 0, 0] as [number, number, number],
-      scale: asset.defaultScale || [1.8, 1.8, 1.8],
-    };
-    setPlacedFurnitureAssets((prev) => [...prev, newInstance]);
-    setSelectedFurnitureId(newInstance.id);
-    setStudioMode("FURNITURE");
-  };
-
-  // ⚡ Offline Auto-Draft Save States
-  const [isSavingLocally, setIsSavingLocally] = useState<boolean>(false);
-  const [lastSavedTimestamp, setLastSavedTimestamp] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (config.wallSurfaceStates) {
-      setIsSavingLocally(true);
-      const draftPayload = {
-        timestamp: new Date().toISOString(),
-        modelUrl: config.modelUrl,
-        wallSurfaceStates: config.wallSurfaceStates,
-        timeOfDay: config.timeOfDay,
-      };
-      try {
-        localStorage.setItem("paintit_offline_workspace_draft", JSON.stringify(draftPayload));
-        const nowString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        setLastSavedTimestamp(nowString);
-      } catch (e) {
-        console.warn("Offline cache quota exceeded", e);
-      }
-      const timer = setTimeout(() => setIsSavingLocally(false), 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [config.wallSurfaceStates, config.timeOfDay, config.modelUrl]);
-
-  // Dual Sidebar States (Default COLLAPSED by default!)
-  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(true);
+  const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
+  const [rightTab, setRightTab] = useState<"sun" | "lighting">("sun");
 
-  const [leftTab, setLeftTab] = useState<"colors" | "finishes" | "textures">("colors");
+  const [paintSplashes, setPaintSplashes] = useState<
+    Array<{ id: string; position: THREE.Vector3; color: string }>
+  >([]);
 
-  // 📱 Mobile Terminal-Style Drawer States (< md screen)
-  const [mobileTab, setMobileTab] = useState<"colors" | "finishes" | "textures" | "sun" | "lighting" | "assembly">("colors");
-  const [mobileDrawerHeight, setMobileDrawerHeight] = useState<number>(260);
-  const [isMobileDrawerCollapsed, setIsMobileDrawerCollapsed] = useState<boolean>(false);
-  const touchStartYRef = useRef<number>(0);
-  const initialHeightRef = useRef<number>(260);
+  const [paintsList, setPaintsList] = useState<any[]>(PAINTS);
 
-  const handleMobileTouchStart = (e: React.TouchEvent | React.PointerEvent) => {
-    const clientY = "touches" in e ? e.touches[0].clientY : (e as React.PointerEvent).clientY;
-    touchStartYRef.current = clientY;
-    initialHeightRef.current = mobileDrawerHeight;
+  const handleSurfaceSelect = (rawName: string, category: string, point: THREE.Vector3) => {
+    setSelectedPoint(point);
+    const key = resolveWallKey(rawName);
+    setActiveSelectedWall(key);
+    onSurfaceSelect?.(rawName, category, point);
   };
 
-  const handleMobileTouchMove = (e: React.TouchEvent | React.PointerEvent) => {
-    if (touchStartYRef.current === 0) return;
-    const clientY = "touches" in e ? e.touches[0].clientY : (e as React.PointerEvent).clientY;
-    const deltaY = touchStartYRef.current - clientY;
-    const newHeight = Math.max(48, Math.min(420, initialHeightRef.current + deltaY));
-    setMobileDrawerHeight(newHeight);
-    if (newHeight <= 60) {
-      setIsMobileDrawerCollapsed(true);
-    } else {
-      setIsMobileDrawerCollapsed(false);
-    }
-  };
-
-  const handleMobileTouchEnd = () => {
-    touchStartYRef.current = 0;
-    if (mobileDrawerHeight < 100) {
-      setIsMobileDrawerCollapsed(true);
-      setMobileDrawerHeight(48);
-    } else if (mobileDrawerHeight > 340) {
-      setMobileDrawerHeight(360);
-    }
-  };
-
-  // 🎨 Custom Paints Catalog & Color Mixer State
-  const [paintsList, setPaintsList] = useState(() => {
-    let saved: Array<{ id: string; name: string; code: string; brand?: string }> = [];
-    if (typeof window !== "undefined") {
-      try {
-        saved = JSON.parse(localStorage.getItem("paintit_custom_paints") || "[]");
-      } catch {
-        saved = [];
-      }
-    }
-    return [...saved, ...REAL_PAINTS_CATALOG];
-  });
-  const [showPaintMixer, setShowPaintMixer] = useState(false);
-  const [newPaintName, setNewPaintName] = useState("");
-  const [newPaintHex, setNewPaintHex] = useState("#2e5b88");
-
-  const handleSaveCustomPaint = async () => {
-    if (!newPaintName.trim()) return;
-    const newPaint = {
-      id: generateCustomPaintId(),
-      brand: "Custom Mixer",
-      name: newPaintName.trim(),
-      code: newPaintHex,
-      hex: newPaintHex,
-    };
-    setPaintsList((prev) => [newPaint, ...prev]);
-    await saveCustomPaintSync({
-      name: newPaintName.trim(),
-      code: newPaintHex,
-      hex: newPaintHex,
-    });
-    setNewPaintName("");
-    setShowPaintMixer(false);
-    handleColorChange(newPaintHex);
-  };
-
-  const handleApplyFinishToAllWalls = (finish: WallFinishType) => {
+  const handleColorChange = (colorHex: string) => {
+    const targetKey = activeSelectedWall || "wall_back";
     const currentStates = config.wallSurfaceStates || {
-      wall_back: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_left: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_right: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_front: { color: config.activeWallColor, finish: config.activeWallFinish },
+      wall_back: { color: "#C4B199", finish: "EMULSION" },
+      wall_left: { color: "#C4B199", finish: "EMULSION" },
+      wall_right: { color: "#C4B199", finish: "EMULSION" },
+      wall_front: { color: "#C4B199", finish: "EMULSION" },
       ceiling: { color: "#FFFFFF", finish: "EMULSION" },
     };
 
-    const updatedStates: Record<string, { color: string; finish: WallFinishType }> = {};
-    Object.keys(currentStates).forEach((key) => {
-      updatedStates[key] = {
-        ...currentStates[key],
-        finish,
-      };
+    const currentFinish = currentStates[targetKey]?.finish || config.activeWallFinish || "EMULSION";
+    const updatedStates = {
+      ...currentStates,
+      [targetKey]: { color: colorHex, finish: currentFinish },
+    };
+
+    if (selectedPoint) {
+      setPaintSplashes((prev) => [
+        ...prev,
+        { id: `splash-${Date.now()}`, position: selectedPoint.clone(), color: colorHex },
+      ]);
+    }
+
+    onConfigChange?.({
+      activeWallColor: colorHex,
+      wallSurfaceStates: updatedStates,
+    });
+  };
+
+  const handleFinishChange = (finish: WallFinishType) => {
+    const targetKey = activeSelectedWall || "wall_back";
+    const currentStates = config.wallSurfaceStates || {
+      wall_back: { color: "#C4B199", finish: "EMULSION" },
+      wall_left: { color: "#C4B199", finish: "EMULSION" },
+      wall_right: { color: "#C4B199", finish: "EMULSION" },
+      wall_front: { color: "#C4B199", finish: "EMULSION" },
+      ceiling: { color: "#FFFFFF", finish: "EMULSION" },
+    };
+
+    const currentColor = currentStates[targetKey]?.color || config.activeWallColor || "#C4B199";
+    const updatedStates = {
+      ...currentStates,
+      [targetKey]: { color: currentColor, finish },
+    };
+
+    onConfigChange?.({
+      activeWallFinish: finish,
+      wallSurfaceStates: updatedStates,
+    });
+  };
+
+  const handleApplyFinishToAllWalls = (finish: WallFinishType) => {
+    const currentStates = config.wallSurfaceStates || {};
+    const keys = ["wall_back", "wall_left", "wall_right", "wall_front"];
+    const updatedStates = { ...currentStates };
+
+    keys.forEach((k) => {
+      const c = currentStates[k]?.color || config.activeWallColor || "#C4B199";
+      updatedStates[k] = { color: c, finish };
     });
 
     onConfigChange?.({
@@ -648,788 +389,89 @@ export default function PaintItMasterCanvas({
       wallSurfaceStates: updatedStates,
     });
   };
-  const [rightTab, setRightTab] = useState<"lighting" | "sun">("sun");
 
-  // Draggable Positions
-  const [leftPos, setLeftPos] = useState({ x: 0, y: 0 });
-  const [rightPos, setRightPos] = useState({ x: 0, y: 0 });
-
-  const isDraggingLeft = useRef(false);
-  const dragStartLeft = useRef({ x: 0, y: 0 });
-
-  const isDraggingRight = useRef(false);
-  const dragStartRight = useRef({ x: 0, y: 0 });
-
-  const handlePointerDownLeft = (e: React.PointerEvent) => {
-    isDraggingLeft.current = true;
-    dragStartLeft.current = { x: e.clientX - leftPos.x, y: e.clientY - leftPos.y };
-    try {
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
-  };
-
-  const handlePointerMoveLeft = (e: React.PointerEvent) => {
-    if (!isDraggingLeft.current) return;
-    setLeftPos({
-      x: e.clientX - dragStartLeft.current.x,
-      y: e.clientY - dragStartLeft.current.y,
-    });
-  };
-
-  const handlePointerUpLeft = (e: React.PointerEvent) => {
-    isDraggingLeft.current = false;
-    try {
-      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
-  };
-
-  const handlePointerDownRight = (e: React.PointerEvent) => {
-    isDraggingRight.current = true;
-    dragStartRight.current = { x: e.clientX - rightPos.x, y: e.clientY - rightPos.y };
-    try {
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
-  };
-
-  const handlePointerMoveRight = (e: React.PointerEvent) => {
-    if (!isDraggingRight.current) return;
-    setRightPos({
-      x: e.clientX - dragStartRight.current.x,
-      y: e.clientY - dragStartRight.current.y,
-    });
-  };
-
-  const handlePointerUpRight = (e: React.PointerEvent) => {
-    isDraggingRight.current = false;
-    try {
-      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignore
-    }
-  };
-
-  // 3D Paint Splash Ripple animation state
-  const [splashPoint, setSplashPoint] = useState<{ point: THREE.Vector3; wallKey?: string; color: string; id: number } | null>(null);
-
-  const [selectedBulbId, setSelectedBulbId] = useState<string | null>("ceiling-light-1");
-
-  // Dynamic User Interactive Lightbulbs State (Hydrates from model config registry, DB config or defaults)
-  const [bulbs, setBulbs] = useState<BulbState[]>(() => {
-    if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
-      return config.bulbs;
-    }
-    const savedModelConfig = getSavedModelLightingConfig(config.modelUrl);
-    if (savedModelConfig && Array.isArray(savedModelConfig.bulbs) && savedModelConfig.bulbs.length > 0) {
-      return savedModelConfig.bulbs;
-    }
-    return [
-      {
-        id: "ceiling-light-1",
-        name: "Central Ceiling Lamp",
-        type: "point",
-        position: [0, 2.6, 0],
-        color: "#fffaed",
-        intensity: 3.5,
-        enabled: true,
-        visible: true,
-      },
-    ];
-  });
-
-  // Automatically load model's saved bulbs from Neon Cloud Database whenever config.modelUrl changes!
-  useEffect(() => {
-    let isSubscribed = true;
-    if (config.bulbs && Array.isArray(config.bulbs) && config.bulbs.length > 0) {
-      setBulbs(config.bulbs);
-    } else if (config.modelUrl) {
-      // 1. Instantly populate from local cache/registry
-      const localConfig = getSavedModelLightingConfig(config.modelUrl);
-      if (localConfig && Array.isArray(localConfig.bulbs) && localConfig.bulbs.length > 0) {
-        setBulbs(localConfig.bulbs);
-      }
-
-      // 2. Fetch global online lighting configuration from Neon PostgreSQL Database
-      fetchOnlineModelLightingConfig(config.modelUrl).then((onlineConfig) => {
-        if (isSubscribed && onlineConfig && Array.isArray(onlineConfig.bulbs) && onlineConfig.bulbs.length > 0) {
-          setBulbs(onlineConfig.bulbs);
-        }
-      });
-    }
-    return () => {
-      isSubscribed = false;
-    };
-  }, [config.modelUrl, config.bulbs]);
-
-  // Auto-Save Bulb Changes per 3D Model Globally to Neon Database
-  useEffect(() => {
-    if (config.modelUrl && bulbs.length > 0) {
-      saveModelLightingConfigGlobal({
-        modelUrl: config.modelUrl,
-        sunAzimuth: config.sunAzimuthOverride,
-        sunElevation: config.sunElevationOverride,
-        sunIntensity: config.sunIntensityOverride,
-        ambientIntensity: config.ambientIntensityOverride,
-        timeOfDay: config.timeOfDay,
-        bulbs,
-      });
-    }
-  }, [bulbs, config.modelUrl, config.sunAzimuthOverride, config.sunElevationOverride, config.sunIntensityOverride, config.ambientIntensityOverride, config.timeOfDay]);
-
-  const handleAddBulb = (type: "point" | "spot") => {
-    const newId = `bulb-${Date.now()}`;
-    const newBulb: BulbState = {
-      id: newId,
-      name: type === "spot" ? `Spotlight #${bulbs.length + 1}` : `Ceiling Lamp #${bulbs.length + 1}`,
-      type,
-      position: [0, 2.4, 0],
-      color: type === "spot" ? "#ffeedd" : "#fffaed",
-      intensity: 3.0,
-      enabled: true,
-      visible: true,
-    };
-    const updatedBulbs = [...bulbs, newBulb];
-    setBulbs(updatedBulbs);
-    setSelectedBulbId(newId);
-    onConfigChange?.({ bulbs: updatedBulbs });
-  };
-
-  const lastTapRef = useRef<{ time: number; wallKey: string }>({ time: 0, wallKey: "" });
-
-  // CORE COLOR CYCLING FUNCTION FOR DOUBLE-CLICK & DOUBLE-TAP
-  const triggerColorCycle = useCallback(
-    (meshName: string, category: string, point: THREE.Vector3) => {
-      setSelectedPoint(point);
-      const isWall = meshName.toLowerCase().includes("wall") || category === "WALL" || meshName.toLowerCase().includes("roof") || meshName.toLowerCase().includes("ceiling");
-      const wallKey = resolveWallKey(meshName);
-
-      setActiveSelectedWall(wallKey);
-
-      if (isWall) {
-        const currentColor = config.wallSurfaceStates?.[wallKey]?.color || config.activeWallColor || "#C4B199";
-        const currentIndex = REAL_PAINTS_CATALOG.findIndex(
-          (p) => p.code.toLowerCase() === currentColor.toLowerCase()
-        );
-
-        const nextIndex = (currentIndex + 1) % REAL_PAINTS_CATALOG.length;
-        const nextPaint = REAL_PAINTS_CATALOG[nextIndex];
-
-        const currentStates = config.wallSurfaceStates || {
-          wall_back: { color: config.activeWallColor, finish: config.activeWallFinish },
-          wall_left: { color: config.activeWallColor, finish: config.activeWallFinish },
-          wall_right: { color: config.activeWallColor, finish: config.activeWallFinish },
-          wall_front: { color: config.activeWallColor, finish: config.activeWallFinish },
-          ceiling: { color: "#FFFFFF", finish: "EMULSION" },
-        };
-
-        const updatedStates = {
-          ...currentStates,
-          [wallKey]: {
-            color: nextPaint.code,
-            finish: currentStates[wallKey]?.finish || config.activeWallFinish || "EMULSION",
-          },
-        };
-
-        setSplashPoint({ point, wallKey, color: nextPaint.code, id: Date.now() });
-        onConfigChange?.({
-          activeWallColor: nextPaint.code,
-          wallSurfaceStates: updatedStates,
-        });
-      }
-    },
-    [config, onConfigChange, setSplashPoint]
-  );
-
-  // SINGLE TAP / CLICK HANDLER (Selects wall & handles mobile double-tap detection)
-  const handleSurfaceClick = useCallback(
-    (meshName: string, category: string, point: THREE.Vector3) => {
-      setSelectedPoint(point);
-      const wallKey = resolveWallKey(meshName);
-      const now = Date.now();
-
-      // Mobile & Desktop Double-Tap / Quick Double-Click Detection (< 320ms interval)
-      if (now - lastTapRef.current.time < 320 && lastTapRef.current.wallKey === wallKey) {
-        lastTapRef.current = { time: 0, wallKey: "" };
-        triggerColorCycle(meshName, category, point);
-        return;
-      }
-
-      lastTapRef.current = { time: now, wallKey };
-      setActiveSelectedWall(wallKey);
-
-      const activeColor = config.wallSurfaceStates?.[wallKey]?.color || config.activeWallColor || "#C4B199";
-      setSplashPoint({ point, wallKey, color: activeColor, id: Date.now() });
-      onSurfaceSelect?.(meshName, category, point);
-    },
-    [config.wallSurfaceStates, config.activeWallColor, onSurfaceSelect, triggerColorCycle, setSplashPoint]
-  );
-
-  // NATIVE DESKTOP DOUBLE CLICK HANDLER
-  const handleSurfaceDoubleClick = useCallback(
-    (meshName: string, category: string, point: THREE.Vector3) => {
-      triggerColorCycle(meshName, category, point);
-    },
-    [triggerColorCycle]
-  );
-
-  const handleColorChange = (newColor: string) => {
-    const targetWall = activeSelectedWall || "wall_back";
-    const currentStates = config.wallSurfaceStates || {
-      wall_back: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_left: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_right: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_front: { color: config.activeWallColor, finish: config.activeWallFinish },
-      ceiling: { color: "#FFFFFF", finish: "EMULSION" },
-    };
-
-    const updatedStates = {
-      ...currentStates,
-      [targetWall]: {
-        color: newColor,
-        finish: currentStates[targetWall]?.finish || config.activeWallFinish || "EMULSION",
+  const handleAddFurnitureAsset = (asset: FurnishItAssetItem) => {
+    const newInstance = {
+      id: `furn-${Date.now()}`,
+      asset,
+      transform: {
+        position: [0, 0.5, 0] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        scale: [1, 1, 1] as [number, number, number],
       },
     };
-
-    onConfigChange?.({
-      activeWallColor: newColor,
-      wallSurfaceStates: updatedStates,
-    });
-  };
-
-  const handleFinishChange = (newFinish: WallFinishType) => {
-    const targetWall = activeSelectedWall || "wall_back";
-    const currentStates = config.wallSurfaceStates || {
-      wall_back: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_left: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_right: { color: config.activeWallColor, finish: config.activeWallFinish },
-      wall_front: { color: config.activeWallColor, finish: config.activeWallFinish },
-      ceiling: { color: "#FFFFFF", finish: "EMULSION" },
-    };
-
-    const updatedStates = {
-      ...currentStates,
-      [targetWall]: {
-        color: currentStates[targetWall]?.color || config.activeWallColor || "#C4B199",
-        finish: newFinish,
-      },
-    };
-
-    onConfigChange?.({
-      activeWallFinish: newFinish,
-      wallSurfaceStates: updatedStates,
-    });
+    setPlacedFurnitureAssets((prev) => [...prev, newInstance]);
+    setSelectedFurnitureId(newInstance.id);
+    setStudioMode("FURNITURE");
   };
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-neutral-950 select-none flex flex-col">
-      {/* 3D RENDER CANVAS VIEWPORT */}
-      <div className="flex-1 relative">
+    <div className={`w-full h-full relative overflow-hidden select-none flex flex-col transition-colors duration-300 ${
+      isDark ? "bg-black" : "bg-[#FAF8F5]"
+    }`}>
+      {/* 3D R3F CANVAS ENGINE */}
+      <div className="w-full h-full relative flex-1">
         <Canvas
           shadows
-          gl={{
-            preserveDrawingBuffer: true,
-            powerPreference: "high-performance",
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: config.timeOfDay === "night" ? 0.35 : 0.65,
-          }}
-          camera={{ position: savedCameraConfig?.position || [0, 1.8, 4.6], fov: savedCameraConfig?.fov || 54 }}
+          camera={{ position: [0, 1.8, 4.5], fov: 45 }}
+          gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
+          className="w-full h-full"
         >
-          <Suspense fallback={<Canvas3DSpinner />}>
-            {/* 📷 MASTER CAMERA RIG CONTROLLER */}
-            <MasterCameraRig
-              targetPreset={cameraPreset}
-              enableZoom={config.enableZoom ?? true}
-              isAdmin={config.isAdmin}
-              savedCameraConfig={savedCameraConfig}
-              onSaveCameraConfig={onSaveCameraConfig}
+          <MasterCameraRig
+            preset={cameraPreset}
+            savedCameraConfig={savedCameraConfig}
+            onSaveCameraConfig={onSaveCameraConfig}
+          />
+          <MasterLightingEngine config={config} bulbs={bulbs} />
+
+          <CanvasSceneMeshEngine
+            config={config}
+            onSurfaceSelect={handleSurfaceSelect}
+            selectedSurfacePoint={selectedPoint}
+            isPaintDormant={studioMode === "FURNITURE"}
+            cameraPreset={cameraPreset}
+          />
+
+          {placedFurnitureAssets.map((item) => (
+            <ModularAssetInstance
+              key={item.id}
+              instanceId={item.id}
+              gltfPath={item.asset.gltfPath}
+              transform={item.transform}
+              isSelected={selectedFurnitureId === item.id}
+              transformMode={furnitureTransformMode}
+              onSelect={() => {
+                setSelectedFurnitureId(item.id);
+                setStudioMode("FURNITURE");
+              }}
+              onTransformChange={(updates) => {
+                setPlacedFurnitureAssets((prev) =>
+                  prev.map((it) => (it.id === item.id ? { ...it, transform: { ...it.transform, ...updates } } : it))
+                );
+              }}
             />
-            {/* 💡 MODULAR LIGHTING ENGINE (Window sunlight + Dynamic lightbulbs + 3D Gizmos for Master Admin) */}
-            <MasterLightingEngine
-              timeOfDay={config.timeOfDay}
-              sunAzimuthOverride={config.sunAzimuthOverride}
-              sunElevationOverride={config.sunElevationOverride}
-              sunIntensityOverride={config.sunIntensityOverride}
-              ambientIntensityOverride={config.ambientIntensityOverride}
-              bulbs={bulbs}
-              setBulbs={setBulbs}
-              selectedBulbId={selectedBulbId}
-              onSelectBulb={setSelectedBulbId}
-              isAdmin={config.isAdmin}
-            />
+          ))}
 
-            {/* 3D ROOM MODEL */}
-            <CanvasErrorBoundary>
-              <MasterRoomMesh
-                config={config}
-                cameraPreset={cameraPreset}
-                isPaintDormant={isPaintDormant}
-                selectedSurfacePoint={selectedPoint}
-                activeSelectedWall={activeSelectedWall}
-                onSurfaceSelect={handleSurfaceClick}
-                onDoubleClickSurface={handleSurfaceDoubleClick}
-              />
-            </CanvasErrorBoundary>
-
-            {/* 🛋️ PLACED FURNITURE 3D ASSET INSTANCES */}
-            {placedFurnitureAssets.map((asset) => (
-              <ModularAssetInstance
-                key={asset.id}
-                objectData={{
-                  instance_id: asset.id,
-                  asset_id: asset.assetId,
-                  name: asset.name,
-                  category: "seating",
-                  model_url: asset.modelUrl,
-                  transform: {
-                    position: asset.position,
-                    rotation: asset.rotation,
-                    scale: asset.scale,
-                  },
-                }}
-                isSelected={selectedFurnitureId === asset.id}
-                transformMode={furnitureTransformMode}
-                onSelect={() => {
-                  setStudioMode("FURNITURE");
-                  setSelectedFurnitureId(asset.id);
-                }}
-                onTransformChange={(newTransform: PlacedObjectTransform) => {
-                  setPlacedFurnitureAssets((prev) =>
-                    prev.map((item) =>
-                      item.id === asset.id
-                        ? {
-                            ...item,
-                            position: newTransform.position,
-                            rotation: newTransform.rotation,
-                            scale: newTransform.scale,
-                          }
-                        : item
-                    )
-                  );
-                }}
-                onDelete={() => {
-                  setPlacedFurnitureAssets((prev) => prev.filter((item) => item.id !== asset.id));
-                  if (selectedFurnitureId === asset.id) {
-                    setSelectedFurnitureId(null);
-                  }
-                }}
-              />
-            ))}
-
-            {/* 🎨 3D ANIMATED PAINT SPLASH RIPPLE MARKER */}
-            {splashPoint && (
-              <MasterPaintSplashRipple
-                key={splashPoint.id}
-                position={splashPoint.point}
-                wallKey={splashPoint.wallKey}
-                color={splashPoint.color}
-                onAnimationComplete={() => setSplashPoint(null)}
-              />
-            )}
-
-            {/* GROUND CONTACT SHADOWS */}
-            <ContactShadows position={[0, 0.01, 0]} opacity={config.shadowOpacity || 0.65} scale={15} blur={2.0} far={4} />
-
-            {/* 🎥 MODULAR LEVA CAMERA CONTROL RIG */}
-            <MasterCameraRig
-              targetPreset={cameraPreset}
-              activeSurface={activeSelectedWall}
-              enableZoom={config.enableZoom !== false}
-              isAdmin={config.isAdmin}
-              savedCameraConfig={savedCameraConfig}
-              onSaveCameraConfig={onSaveCameraConfig}
-            />
-          </Suspense>
+          {paintSplashes.map((splash) => (
+            <MasterPaintSplashRipple key={splash.id} position={splash.position} color={splash.color} />
+          ))}
         </Canvas>
 
         {/* 📱 TOP CENTER FLOATING CAMERA & STATUS BAR */}
-        <div className="absolute top-14 md:top-3 left-2 right-2 md:left-3 md:right-3 flex flex-wrap sm:flex-nowrap items-center justify-between pointer-events-none z-10 gap-2">
-          {/* Active Wall Status Pill & Offline Sync Indicator */}
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <div className="bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-2xl">
-              <span className="w-2 h-2 rounded-full bg-[#FF8C38] animate-pulse" />
-              <span className="text-[10px] font-mono text-[#FF8C38] font-bold uppercase tracking-wide">
-                {activeSelectedWall ? activeSelectedWall.toUpperCase() : "SELECT SURFACE"}
-                {activeSelectedWall &&
-                (activeSelectedWall.toLowerCase().includes("curtain") ||
-                  activeSelectedWall.toLowerCase().includes("window") ||
-                  activeSelectedWall.toLowerCase().includes("door") ||
-                  activeSelectedWall.toLowerCase().includes("lamp"))
-                  ? " • NATIVE FIXTURE"
-                  : ` • ${config.activeWallFinish}`}
-              </span>
-            </div>
+        <CanvasTopStatusBar
+          activeSelectedWall={activeSelectedWall}
+          activeWallFinish={config.activeWallFinish}
+          isSavingLocally={isSavingLocally}
+          lastSavedTimestamp={lastSavedTimestamp}
+          onSyncToLiveServer={async () => {
+            if (onConfigChange && config.wallSurfaceStates) {
+              onConfigChange(config);
+            }
+          }}
+          onSelectCameraPreset={(preset) => setCameraPreset(preset)}
+        />
 
-            {/* 🌐 OFFLINE & AUTO-DRAFT SYNC STATUS BANNER */}
-            <OfflineSyncBanner
-              isSavingLocally={isSavingLocally}
-              lastSavedTimestamp={lastSavedTimestamp}
-              onSyncToLiveServer={async () => {
-                if (onConfigChange && config.wallSurfaceStates) {
-                  onConfigChange(config);
-                }
-              }}
-            />
-          </div>
-
-          {/* Camera View Preset Pills */}
-          <div className="flex items-center gap-1 bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 p-1 rounded-2xl pointer-events-auto shadow-2xl">
-            <button
-              onClick={() => setCameraPreset("FULL_ROOM")}
-              className="px-2.5 py-1 text-[9px] font-black uppercase rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-            >
-              🏠 Room
-            </button>
-            <button
-              onClick={() => setCameraPreset("SEATING_FOCUS")}
-              className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-            >
-              🛋️ Focus
-            </button>
-            <button
-              onClick={() => setCameraPreset("ACCENT_WALL")}
-              className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-            >
-              🎨 Wall
-            </button>
-          </div>
-        </div>
-
-        {/* 🛋️ FLOATING FURNISH-IT & MODEL ASSEMBLY PANEL (ADMIN ONLY - HIDDEN FOR PAINTERS & DEMO!) */}
-        {config.isAdmin && !config.hideAssemblyPanel && (
-          <div className="absolute top-14 right-3 z-30 pointer-events-none">
-            <MasterModelAssemblyPanel
-              activeRoomModelUrl={config.modelUrl}
-              activeStudioMode={studioMode}
-              selectedFurnitureId={selectedFurnitureId}
-              placedAssets={placedFurnitureAssets}
-              transformMode={furnitureTransformMode}
-              onTransformModeChange={setFurnitureTransformMode}
-              onUpdateTransform={(id, updates) => {
-                setPlacedFurnitureAssets((prev) =>
-                  prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-                );
-              }}
-              onSelectRoomModel={(newModelUrl, keepPaints) => {
-                if (keepPaints) {
-                  onConfigChange?.({ modelUrl: newModelUrl });
-                } else {
-                  const defaultWallStates = {
-                    wall_back: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
-                    wall_left: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
-                    wall_right: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
-                    wall_front: { color: "#C4B199", finish: "EMULSION" as WallFinishType },
-                    ceiling: { color: "#FFFFFF", finish: "EMULSION" as WallFinishType },
-                  };
-                  onConfigChange?.({
-                    modelUrl: newModelUrl,
-                    activeWallColor: "#C4B199",
-                    activeWallFinish: "EMULSION",
-                    wallSurfaceStates: defaultWallStates,
-                  });
-                }
-              }}
-              onSelectStudioMode={(newMode) => {
-                setStudioMode(newMode);
-                if (newMode === "PAINT") {
-                  setSelectedFurnitureId(null);
-                }
-              }}
-              onAddFurnitureAsset={handleAddFurnitureAsset}
-              onSelectFurnitureInstance={(id) => {
-                setSelectedFurnitureId(id);
-                setStudioMode("FURNITURE");
-              }}
-              onDeleteFurnitureInstance={(id) => {
-                setPlacedFurnitureAssets((prev) => prev.filter((item) => item.id !== id));
-                if (selectedFurnitureId === id) {
-                  setSelectedFurnitureId(null);
-                }
-              }}
-              onClearAllFurniture={() => {
-                setPlacedFurnitureAssets([]);
-                setSelectedFurnitureId(null);
-              }}
-            />
-          </div>
-        )}
-
-        {/* 🎨 1. LEFT COLLAPSIBLE & DRAGGABLE STUDIO FLOATING PANEL (Surface Paints & Finishes) */}
-        <div
-          className="hidden md:flex absolute top-16 left-3 z-30 pointer-events-none items-start"
-          style={{ transform: `translate3d(${leftPos.x}px, ${leftPos.y}px, 0)` }}
-        >
-          {isLeftCollapsed ? (
-            <button
-              onPointerDown={handlePointerDownLeft}
-              onPointerMove={handlePointerMoveLeft}
-              onPointerUp={handlePointerUpLeft}
-              onClick={() => setIsLeftCollapsed(false)}
-              className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-black uppercase tracking-wider transition-all cursor-grab active:cursor-grabbing select-none"
-              title="Expand Surface Styling Dock (Drag anywhere)"
-            >
-              <span className="text-neutral-500 font-bold">⋮⋮</span>
-              <span>🎨 Paint & Finishes</span>
-              <span className="text-[#FF8C38]">▶</span>
-            </button>
-          ) : (
-            <div className="pointer-events-auto w-[calc(100vw-28px)] max-w-xs sm:w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
-              {/* Left Dock Drag Header */}
-              <div
-                onPointerDown={handlePointerDownLeft}
-                onPointerMove={handlePointerMoveLeft}
-                onPointerUp={handlePointerUpLeft}
-                className="flex items-center justify-between pb-2 border-b border-neutral-850 cursor-grab active:cursor-grabbing select-none"
-              >
-                <span className="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
-                  <span className="text-neutral-500">⋮⋮</span>
-                  <span>🎨 Surface Styling</span>
-                </span>
-                <button
-                  onClick={() => setIsLeftCollapsed(true)}
-                  className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
-                  title="Collapse Left Dock"
-                >
-                  ◀
-                </button>
-              </div>
-
-              {/* Left Dock Sub-Tabs */}
-              <div className="grid grid-cols-3 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850">
-                <button
-                  onClick={() => setLeftTab("colors")}
-                  className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                    leftTab === "colors" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  🎨 Paints
-                </button>
-                <button
-                  onClick={() => setLeftTab("finishes")}
-                  className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                    leftTab === "finishes" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  ✨ Sheen
-                </button>
-                {!config.hideFloorTab && (
-                  <button
-                    onClick={() => setLeftTab("textures")}
-                    className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      leftTab === "textures" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
-                    }`}
-                  >
-                    🪵 Floor
-                  </button>
-                )}
-              </div>
-
-              {/* Left Dock Content */}
-              <div className="flex-1 overflow-y-auto pr-1 space-y-3">
-                {leftTab === "colors" && (
-                  <div className="space-y-3">
-                    {/* ➕ CUSTOM PAINT CREATOR / COLOR MIXER DRAWER */}
-                    {!config.hideColorMixer && (
-                      <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-2.5 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase text-[#FF8C38] flex items-center gap-1.5">
-                            <span>🎨 Color Mixer & Upload</span>
-                          </span>
-                          <button
-                            onClick={() => setShowPaintMixer(!showPaintMixer)}
-                            className="text-[9px] font-black uppercase text-[#FF8C38] hover:underline px-2 py-0.5 bg-[#FF8C38]/15 rounded"
-                          >
-                            {showPaintMixer ? "Close Mixer" : "➕ Custom Paint"}
-                          </button>
-                        </div>
-
-                        {showPaintMixer && (
-                          <div className="space-y-2 pt-2 border-t border-neutral-800">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="color"
-                                value={newPaintHex}
-                                onChange={(e) => setNewPaintHex(e.target.value)}
-                                className="w-8 h-8 rounded-lg cursor-pointer border border-white/20 shrink-0"
-                                title="Pick Custom Color Hex"
-                              />
-                              <input
-                                type="text"
-                                placeholder="Hex (e.g. #2e5b88)"
-                                value={newPaintHex}
-                                onChange={(e) => setNewPaintHex(e.target.value)}
-                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1 text-xs text-white font-mono"
-                              />
-                            </div>
-
-                            <input
-                              type="text"
-                              placeholder="Paint Code/Name (e.g. Velvet Teal)"
-                              value={newPaintName}
-                              onChange={(e) => setNewPaintName(e.target.value)}
-                              className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-2.5 py-1 text-xs text-white font-sans"
-                            />
-
-                            <button
-                              onClick={handleSaveCustomPaint}
-                              className="w-full py-1.5 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow"
-                            >
-                              💾 Save Custom Paint to Database
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider">
-                        Paint Swatch Catalog ({paintsList.length})
-                      </span>
-                      <span className="text-[9px] font-mono text-neutral-500">Double-Click Wall</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1">
-                      {paintsList.map((paint) => {
-                        const targetKey = activeSelectedWall || "wall_back";
-                        const currentStates = config.wallSurfaceStates || {};
-                        const isSelected = currentStates[targetKey]?.color === paint.code;
-
-                        return (
-                          <button
-                            key={paint.id || paint.code}
-                            onClick={() => handleColorChange(paint.code)}
-                            className={`p-2 rounded-2xl border transition-all text-left flex items-center justify-between ${
-                              isSelected
-                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
-                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div
-                                className="w-6 h-6 rounded-xl border border-white/20 shadow-sm shrink-0"
-                                style={{ backgroundColor: paint.code }}
-                              />
-                              <div className="min-w-0">
-                                <span className="text-xs font-bold block truncate">{paint.name}</span>
-                                <span className="text-[9px] font-mono text-neutral-400 block">{paint.code}</span>
-                              </div>
-                            </div>
-                            {isSelected && (
-                              <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {leftTab === "finishes" && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider">
-                        Select Paint Finish & Reflection
-                      </span>
-                    </div>
-
-                    {(
-                      [
-                        { id: "EMULSION", label: "Matte Emulsion", desc: "Velvety flat non-reflective wall sheen" },
-                        { id: "SATIN", label: "Satin Sheen", desc: "Soft pearl sheen with subtle light reflection" },
-                        { id: "GLOSS", label: "High Gloss", desc: "High specular reflective architectural gloss" },
-                      ] as const
-                    ).map((finish) => {
-                      const targetKey = activeSelectedWall || "wall_back";
-                      const currentStates = config.wallSurfaceStates || {};
-                      const isSelected = currentStates[targetKey]?.finish === finish.id;
-
-                      return (
-                        <div key={finish.id} className="space-y-1">
-                          <button
-                            onClick={() => handleFinishChange(finish.id as WallFinishType)}
-                            className={`w-full p-3 rounded-2xl border transition-all text-left space-y-1 ${
-                              isSelected
-                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
-                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-neutral-100">{finish.label}</span>
-                              {isSelected && (
-                                <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE WALL</span>
-                              )}
-                            </div>
-                            <p className="text-[10px] text-neutral-400 font-normal leading-snug">{finish.desc}</p>
-                          </button>
-
-                          {/* ✨ FINISH ALL WALLS BUTTON */}
-                          <button
-                            onClick={() => handleApplyFinishToAllWalls(finish.id as WallFinishType)}
-                            className="w-full py-1 text-[9px] font-mono font-bold uppercase text-[#FF8C38] hover:text-orange-300 bg-[#FF8C38]/15 hover:bg-[#FF8C38]/25 rounded-xl border border-[#FF8C38]/30 transition-all flex items-center justify-center gap-1"
-                            title="Apply this sheen to all room walls at once"
-                          >
-                            <span>✨ Finish All Walls ({finish.label})</span>
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {leftTab === "textures" && (
-                  <div className="space-y-3">
-                    <span className="text-[9px] font-bold uppercase text-neutral-400 block tracking-wider">
-                      Select Floor Wood & Tile Texture
-                    </span>
-
-                    <div className="grid grid-cols-1 gap-2">
-                      {TEXTURE_PRESETS.filter((t) => t.category === "FLOOR").map((texture) => {
-                        const isSelected = (config.activeFloorTextureId || "floor_oak") === texture.id;
-                        return (
-                          <button
-                            key={texture.id}
-                            onClick={() => {
-                              onConfigChange?.({ activeFloorTextureId: texture.id });
-                            }}
-                            className={`p-2.5 rounded-2xl border transition-all text-left flex items-center justify-between ${
-                              isSelected
-                                ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow-md"
-                                : "bg-neutral-900/60 border-neutral-850 hover:border-neutral-700"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div
-                                className="w-7 h-7 rounded-xl border border-white/20 shadow-sm shrink-0 flex items-center justify-center text-xs font-bold"
-                                style={{ backgroundColor: texture.thumbnailColor }}
-                              >
-                                🪵
-                              </div>
-                              <div className="min-w-0">
-                                <span className="text-xs font-bold block text-neutral-100 truncate">{texture.name}</span>
-                                <span className="text-[9px] font-mono text-neutral-400 block">
-                                  PBR Floor Texture • {texture.roughness} Roughness
-                                </span>
-                              </div>
-                            </div>
-                            {isSelected && (
-                              <span className="text-[9px] font-mono font-bold text-[#FF8C38] uppercase">ACTIVE</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ☀️ 2. RIGHT COLLAPSIBLE & DRAGGABLE STUDIO FLOATING PANEL (Lighting & Sky for Painters and Admins!) */}
+        {/* ☀️ RIGHT FLOATING PANEL (Lighting & Sky) */}
         {!config.hideLightingTab && (
           <div
             className="hidden md:flex absolute top-16 right-3 z-30 pointer-events-none items-start justify-end"
@@ -1438,222 +480,76 @@ export default function PaintItMasterCanvas({
             {isRightCollapsed ? (
               <button
                 onClick={() => setIsRightCollapsed(false)}
-                className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-black uppercase tracking-wider transition-all"
-                title="Expand Lighting & Sky Dock"
+                className="pointer-events-auto bg-neutral-950/90 hover:bg-neutral-900 backdrop-blur-xl border border-neutral-800 text-white px-3 py-2 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-all"
               >
                 <span className="text-[#FF8C38]">◀</span>
                 <span>☀️ Lighting & Sky</span>
               </button>
             ) : (
-              <div className="pointer-events-auto w-[calc(100vw-28px)] max-w-xs sm:w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
-                {/* Right Dock Drag Header */}
-                <div
-                  onPointerDown={handlePointerDownRight}
-                  onPointerMove={handlePointerMoveRight}
-                  onPointerUp={handlePointerUpRight}
-                  className="flex items-center justify-between pb-2 border-b border-neutral-850 cursor-grab active:cursor-grabbing select-none"
-                >
+              <div className="pointer-events-auto w-80 max-h-[70vh] bg-neutral-950/95 backdrop-blur-2xl border border-neutral-850 rounded-3xl p-3.5 flex flex-col space-y-3 shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-850">
                   <button
                     onClick={() => setIsRightCollapsed(true)}
                     className="w-6 h-6 rounded-full bg-neutral-900 border border-neutral-800 hover:border-[#FF8C38] text-neutral-400 hover:text-white flex items-center justify-center text-xs transition-all"
-                    title="Collapse Right Dock"
                   >
                     ▶
                   </button>
-                  <span className="text-xs font-black uppercase text-white tracking-wider flex items-center gap-1.5">
-                    <span className="text-neutral-500">⋮⋮</span>
-                    <span>☀️ Daylight & Sky</span>
-                  </span>
+                  <span className="text-xs font-bold uppercase text-white tracking-wider">☀️ Daylight & Sky</span>
                 </div>
 
-                {/* Right Dock Sub-Tabs */}
                 <div className="grid grid-cols-2 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850">
                   <button
                     onClick={() => setRightTab("sun")}
-                    className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      rightTab === "sun" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                    className={`py-1.5 text-[10px] font-bold uppercase rounded-xl transition-all ${
+                      rightTab === "sun" ? "bg-[#FF8C38] text-black shadow-md font-extrabold" : "text-neutral-400 hover:text-white"
                     }`}
                   >
                     ☀️ Sun & Sky
                   </button>
                   <button
                     onClick={() => setRightTab("lighting")}
-                    className={`py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${
-                      rightTab === "lighting" ? "bg-[#FF8C38] text-neutral-950 shadow-md" : "text-neutral-400 hover:text-white"
+                    className={`py-1.5 text-[10px] font-bold uppercase rounded-xl transition-all ${
+                      rightTab === "lighting" ? "bg-[#FF8C38] text-black shadow-md font-extrabold" : "text-neutral-400 hover:text-white"
                     }`}
                   >
-                    💡 Interior Lamps
+                    💡 Bulbs
                   </button>
                 </div>
 
-                {/* Right Dock Content */}
                 <div className="flex-1 overflow-y-auto pr-1 space-y-3">
                   {rightTab === "sun" && (
                     <div className="space-y-3">
-                      {/* Global Daylight Presets */}
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold uppercase text-neutral-400 tracking-wider block">
-                          Daylight Presets
-                        </span>
-                        <div className="grid grid-cols-3 gap-1.5">
-                          {[
-                            { key: "dawn", label: "🌅 Dawn" },
-                            { key: "morning", label: "☀️ Morning" },
-                            { key: "midday", label: "🌤️ Midday" },
-                            { key: "goldenHour", label: "🌇 Golden" },
-                            { key: "sunset", label: "🌆 Sunset" },
-                            { key: "night", label: "🌙 Night" },
-                          ].map((p) => {
-                            const isSelected = config.timeOfDay === p.key;
-                            return (
-                              <button
-                                key={p.key}
-                                onClick={() => onConfigChange?.({ timeOfDay: p.key as LightingPresetKey })}
-                                className={`py-1.5 text-[9px] font-bold rounded-xl border text-center transition-all ${
-                                  isSelected
-                                    ? "bg-[#FF8C38] text-black border-[#FF8C38] font-black shadow-md"
-                                    : "bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700"
-                                }`}
-                              >
-                                {p.label}
-                              </button>
-                            );
-                          })}
-                        </div>
+                      <span className="text-[9px] font-bold uppercase text-neutral-400 block">Daylight Presets</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { key: "dawn", label: "🌅 Dawn" },
+                          { key: "morning", label: "☀️ Morning" },
+                          { key: "midday", label: "🌤️ Midday" },
+                          { key: "goldenHour", label: "🌇 Golden" },
+                          { key: "sunset", label: "🌆 Sunset" },
+                          { key: "night", label: "🌙 Night" },
+                        ].map((p) => {
+                          const isSelected = config.timeOfDay === p.key;
+                          return (
+                            <button
+                              key={p.key}
+                              onClick={() => onConfigChange?.({ timeOfDay: p.key as LightingPresetKey })}
+                              className={`py-1.5 text-[9px] font-bold rounded-xl border text-center transition-all ${
+                                isSelected
+                                  ? "bg-[#FF8C38] text-black border-[#FF8C38] font-extrabold shadow-md"
+                                  : "bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700"
+                              }`}
+                            >
+                              {p.label}
+                            </button>
+                          );
+                        })}
                       </div>
-
-                      {/* Sun Azimuth & Elevation Sliders (ADMIN ONLY!) */}
-                      {config.isAdmin && config.timeOfDay !== "night" && (
-                        <div className="space-y-3 bg-neutral-900/60 p-2.5 rounded-2xl border border-neutral-850">
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
-                              <span>Sun Azimuth</span>
-                              <span className="font-mono text-[#FF8C38]">
-                                {config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135}°
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0"
-                              max="360"
-                              step="5"
-                              value={config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135}
-                              onChange={(e) => onConfigChange?.({ sunAzimuthOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
-                              <span>Sun Elevation</span>
-                              <span className="font-mono text-[#FF8C38]">
-                                {config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35}°
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min="5"
-                              max="85"
-                              step="5"
-                              value={config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35}
-                              onChange={(e) => onConfigChange?.({ sunElevationOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
-                            />
-                          </div>
-
-                          <div className="space-y-1 pt-2 border-t border-neutral-800/60">
-                            <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
-                              <span>Sun Intensity</span>
-                              <span className="font-mono text-[#FF8C38]">
-                                {(config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8).toFixed(1)}x
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0.5"
-                              max="8.0"
-                              step="0.1"
-                              value={config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8}
-                              onChange={(e) => onConfigChange?.({ sunIntensityOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
-                            />
-                          </div>
-
-                          <div className="space-y-1 pt-2 border-t border-neutral-800/60">
-                            <div className="flex justify-between text-[9px] font-bold uppercase text-neutral-400">
-                              <span>Ambient Fill Light</span>
-                              <span className="font-mono text-[#FF8C38]">
-                                {(config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5).toFixed(2)}x
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0.1"
-                              max="3.0"
-                              step="0.05"
-                              value={config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5}
-                              onChange={(e) => onConfigChange?.({ ambientIntensityOverride: parseFloat(e.target.value) })}
-                              className="w-full accent-orange-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 💾 Save Custom Sun Setup per Project Globally to Neon Database (ADMIN ONLY) */}
-                      {config.isAdmin && (
-                        <button
-                          onClick={async () => {
-                            await saveModelLightingConfigGlobal({
-                              modelUrl: config.modelUrl,
-                              sunAzimuth: config.sunAzimuthOverride,
-                              sunElevation: config.sunElevationOverride,
-                              sunIntensity: config.sunIntensityOverride,
-                              ambientIntensity: config.ambientIntensityOverride,
-                              timeOfDay: config.timeOfDay,
-                              bulbs,
-                            });
-                            if (onSaveLightingConfig) {
-                              onSaveLightingConfig({
-                                timeOfDay: (config.timeOfDay as LightingPresetKey) || "morning",
-                                azimuth: config.sunAzimuthOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.azimuthDeg ?? 135,
-                                elevation: config.sunElevationOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.elevationDeg ?? 35,
-                                intensity: config.sunIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.sun.intensity ?? 2.8,
-                                ambient: config.ambientIntensityOverride ?? MASTER_LIGHTING_PRESETS[config.timeOfDay as LightingPresetKey || "morning"]?.environment.ambientIntensity ?? 0.5,
-                                color: config.sunColorOverride,
-                                bulbs,
-                              });
-                            }
-                          }}
-                          className="w-full py-2 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5"
-                        >
-                          💾 Save Sun & Light Setup (Global DB)
-                        </button>
-                      )}
                     </div>
                   )}
 
                   {rightTab === "lighting" && (
                     <div className="space-y-3">
-                      {config.isAdmin && (
-                        <div className="flex items-center justify-between bg-neutral-900/80 p-2 rounded-xl border border-neutral-800">
-                          <span className="text-[9px] font-black uppercase text-white tracking-wider">Add Fixture</span>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleAddBulb("point")}
-                              className="px-2 py-1 bg-neutral-950 text-[#FF8C38] hover:bg-[#FF8C38]/20 border border-orange-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
-                            >
-                              + Lamp
-                            </button>
-                            <button
-                              onClick={() => handleAddBulb("spot")}
-                              className="px-2 py-1 bg-amber-950 text-amber-400 hover:bg-amber-900 border border-amber-700/50 rounded-lg text-[9px] font-bold uppercase transition-all"
-                            >
-                              + Spot
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
                       <LightControls
                         bulbs={bulbs}
                         setBulbs={setBulbs}
@@ -1671,281 +567,29 @@ export default function PaintItMasterCanvas({
           </div>
         )}
 
-        {/* 📱 VSCODE TERMINAL-STYLE MOBILE BOTTOM DRAWER PANEL (MOBILE ONLY: block md:hidden) */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-neutral-950/95 backdrop-blur-2xl border-t border-neutral-850 shadow-2xl flex flex-col transition-all duration-200"
-          style={{ height: isMobileDrawerCollapsed ? "44px" : `${mobileDrawerHeight}px` }}
-        >
-          {/* Drag Handle & Control Bar */}
-          <div
-            onTouchStart={handleMobileTouchStart}
-            onTouchMove={handleMobileTouchMove}
-            onTouchEnd={handleMobileTouchEnd}
-            onPointerDown={handleMobileTouchStart}
-            onPointerMove={handleMobileTouchMove}
-            onPointerUp={handleMobileTouchEnd}
-            className="h-9 border-b border-neutral-850 px-3 flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-1 rounded-full bg-neutral-700 mx-auto" />
-              <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">
-                🛠️ Studio Tools
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMobileDrawerCollapsed(!isMobileDrawerCollapsed);
-                if (isMobileDrawerCollapsed) {
-                  setMobileDrawerHeight(260);
-                }
-              }}
-              className="px-2.5 py-0.5 rounded-lg bg-neutral-900 border border-neutral-800 text-[10px] font-mono font-bold uppercase text-[#FF8C38] hover:text-white transition-all flex items-center gap-1"
-            >
-              <span>{isMobileDrawerCollapsed ? "▲ Open Panel" : "▼ Collapse"}</span>
-            </button>
-          </div>
-
-          {/* Horizontal Tab Pills Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-1.5 border-b border-neutral-850/60 shrink-0 no-scrollbar">
-            {[
-              { id: "colors", label: "🎨 Paints" },
-              { id: "finishes", label: "✨ Sheen" },
-              ...(!config.hideFloorTab ? [{ id: "textures", label: "🪵 Floor" }] : []),
-              ...(!config.hideLightingTab
-                ? [
-                    { id: "sun", label: "☀️ Sun & Sky" },
-                    { id: "lighting", label: "💡 Bulbs" },
-                  ]
-                : []),
-              ...(!config.hideAssemblyPanel && config.isAdmin
-                ? [{ id: "assembly", label: "🛠️ Assembly" }]
-                : []),
-            ].map((tab) => {
-              const isSelected = mobileTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setMobileTab(tab.id as any);
-                    if (isMobileDrawerCollapsed) {
-                      setIsMobileDrawerCollapsed(false);
-                      setMobileDrawerHeight(260);
-                    }
-                  }}
-                  className={`px-3 py-1 rounded-xl text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all ${
-                    isSelected && !isMobileDrawerCollapsed
-                      ? "bg-[#FF8C38] text-neutral-950 shadow-md"
-                      : "bg-neutral-900 text-neutral-400 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Drawer Body Content */}
-          {!isMobileDrawerCollapsed && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {/* 🎨 PAINTS TAB */}
-              {mobileTab === "colors" && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
-                    <span>SELECT PAINT SWATCH</span>
-                    <span className="text-[#FF8C38] font-bold">Double-Tap Wall To Apply</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                    {paintsList.map((paint) => {
-                      const targetKey = activeSelectedWall || "wall_back";
-                      const currentStates = config.wallSurfaceStates || {};
-                      const isSelected = currentStates[targetKey]?.color === paint.code;
-                      return (
-                        <button
-                          key={paint.id || paint.code}
-                          onClick={() => handleColorChange(paint.code)}
-                          className={`p-2 rounded-xl border flex items-center gap-2 text-left transition-all ${
-                            isSelected
-                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white shadow"
-                              : "bg-neutral-900 border-neutral-850 text-neutral-300"
-                          }`}
-                        >
-                          <div
-                            className="w-5 h-5 rounded-lg border border-white/20 shrink-0"
-                            style={{ backgroundColor: paint.code }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <span className="text-[10px] font-bold block truncate">{paint.name}</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* ✨ FINISHES TAB */}
-              {mobileTab === "finishes" && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-neutral-400 block">
-                    Select Wall Paint Sheen
-                  </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: "EMULSION", label: "Matte" },
-                      { id: "SATIN", label: "Satin" },
-                      { id: "GLOSS", label: "Gloss" },
-                    ].map((finish) => {
-                      const targetKey = activeSelectedWall || "wall_back";
-                      const currentStates = config.wallSurfaceStates || {};
-                      const isSelected = currentStates[targetKey]?.finish === finish.id;
-
-                      return (
-                        <button
-                          key={finish.id}
-                          onClick={() => handleFinishChange(finish.id as WallFinishType)}
-                          className={`p-2 rounded-xl border text-center transition-all text-xs font-bold ${
-                            isSelected
-                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-orange-300 shadow"
-                              : "bg-neutral-900 border-neutral-850 text-neutral-300"
-                          }`}
-                        >
-                          {finish.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => handleApplyFinishToAllWalls(
-                      (config.wallSurfaceStates?.[activeSelectedWall || "wall_back"]?.finish as WallFinishType) || "EMULSION"
-                    )}
-                    className="w-full py-1.5 text-[10px] font-mono font-bold uppercase text-[#FF8C38] bg-[#FF8C38]/15 rounded-xl border border-[#FF8C38]/30 text-center"
-                  >
-                    ✨ Finish All Walls
-                  </button>
-                </div>
-              )}
-
-              {/* 🪵 TEXTURES TAB */}
-              {mobileTab === "textures" && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-neutral-400 block">
-                    Floor Texture
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {TEXTURE_PRESETS.filter((t) => t.category === "FLOOR").map((texture) => {
-                      const isSelected = (config.activeFloorTextureId || "floor_oak") === texture.id;
-                      return (
-                        <button
-                          key={texture.id}
-                          onClick={() => onConfigChange?.({ activeFloorTextureId: texture.id })}
-                          className={`p-2 rounded-xl border text-left flex items-center gap-2 ${
-                            isSelected
-                              ? "bg-[#FF8C38]/25 border-[#FF8C38] text-white"
-                              : "bg-neutral-900 border-neutral-850 text-neutral-300"
-                          }`}
-                        >
-                          <span className="text-sm">🪵</span>
-                          <span className="text-[10px] font-bold truncate">{texture.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* ☀️ SUN & SKY TAB */}
-              {mobileTab === "sun" && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-neutral-400 block">
-                    Daylight Environment
-                  </span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      { key: "dawn", label: "🌅 Dawn" },
-                      { key: "morning", label: "☀️ Morning" },
-                      { key: "midday", label: "🌤️ Midday" },
-                      { key: "goldenHour", label: "🌇 Golden" },
-                      { key: "sunset", label: "🌆 Sunset" },
-                      { key: "night", label: "🌙 Night" },
-                    ].map((p) => {
-                      const isSelected = config.timeOfDay === p.key;
-                      return (
-                        <button
-                          key={p.key}
-                          onClick={() => onConfigChange?.({ timeOfDay: p.key as LightingPresetKey })}
-                          className={`py-1.5 text-[10px] font-bold rounded-xl border text-center ${
-                            isSelected
-                              ? "bg-[#FF8C38] text-black border-[#FF8C38] font-black shadow"
-                              : "bg-neutral-900 text-neutral-300 border-neutral-800"
-                          }`}
-                        >
-                          {p.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* 💡 LIGHTING BULBS TAB */}
-              {mobileTab === "lighting" && (
-                <div className="space-y-2">
-                  <LightControls
-                    bulbs={bulbs}
-                    setBulbs={setBulbs}
-                    isNightMode={config.timeOfDay === "night"}
-                    setIsNightMode={(val) =>
-                      onConfigChange?.({ timeOfDay: val ? "night" : "morning" })
-                    }
-                    selectedBulbId={selectedBulbId}
-                    onSelectBulb={setSelectedBulbId}
-                    isPainterMode={!config.isAdmin}
-                  />
-                </div>
-              )}
-
-              {/* 🛠️ ASSEMBLY TAB */}
-              {mobileTab === "assembly" && config.isAdmin && (
-                <div className="space-y-2">
-                  <MasterModelAssemblyPanel
-                    activeRoomModelUrl={config.modelUrl}
-                    activeStudioMode={studioMode}
-                    selectedFurnitureId={selectedFurnitureId}
-                    placedAssets={placedFurnitureAssets}
-                    transformMode={furnitureTransformMode}
-                    onTransformModeChange={setFurnitureTransformMode}
-                    onUpdateTransform={(id, updates) => {
-                      setPlacedFurnitureAssets((prev) =>
-                        prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-                      );
-                    }}
-                    onSelectRoomModel={(newModelUrl) => {
-                      onConfigChange?.({ modelUrl: newModelUrl });
-                    }}
-                    onSelectStudioMode={setStudioMode}
-                    onAddFurnitureAsset={handleAddFurnitureAsset}
-                    onSelectFurnitureInstance={setSelectedFurnitureId}
-                    onDeleteFurnitureInstance={(id) => {
-                      setPlacedFurnitureAssets((prev) => prev.filter((item) => item.id !== id));
-                      if (selectedFurnitureId === id) {
-                        setSelectedFurnitureId(null);
-                      }
-                    }}
-                    onClearAllFurniture={() => {
-                      setPlacedFurnitureAssets([]);
-                      setSelectedFurnitureId(null);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* 📱 MOBILE BOTTOM TOOLS DRAWER */}
+        <CanvasMobileToolsDrawer
+          config={config}
+          paintsList={paintsList}
+          activeSelectedWall={activeSelectedWall}
+          bulbs={bulbs}
+          setBulbs={setBulbs}
+          selectedBulbId={selectedBulbId}
+          setSelectedBulbId={setSelectedBulbId}
+          studioMode={studioMode}
+          setStudioMode={setStudioMode}
+          selectedFurnitureId={selectedFurnitureId}
+          setSelectedFurnitureId={setSelectedFurnitureId}
+          placedFurnitureAssets={placedFurnitureAssets}
+          setPlacedFurnitureAssets={setPlacedFurnitureAssets}
+          furnitureTransformMode={furnitureTransformMode}
+          setFurnitureTransformMode={setFurnitureTransformMode}
+          handleAddFurnitureAsset={handleAddFurnitureAsset}
+          handleColorChange={handleColorChange}
+          handleFinishChange={handleFinishChange}
+          handleApplyFinishToAllWalls={handleApplyFinishToAllWalls}
+          onConfigChange={onConfigChange}
+        />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserSessionData } from '@/types/index';
+import { authApi, setStoredAuthToken, removeStoredAuthToken, getStoredAuthToken } from '@/lib/apiClient';
 
 interface AuthContextType {
   user: UserSessionData | null;
@@ -13,12 +14,10 @@ interface AuthContextType {
   login: (accessToken: string, refreshToken: string, userData: UserSessionData) => void;
   logout: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
-  updateUser: (updatedData: Partial<UserSessionData>) => void; // ✅ Centralized updater tool
+  updateUser: (updatedData: Partial<UserSessionData>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserSessionData | null>(null);
@@ -26,15 +25,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
-  // Load the initial session cache when the application boots up
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('paintit_access_token');
+      const storedToken = getStoredAuthToken();
       const storedUser = localStorage.getItem('paintit_user_data');
 
       if (storedToken && storedUser) {
         setAccessToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          setUser(null);
+        }
       }
       setLoading(false);
     };
@@ -45,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccessToken(token);
     setUser(userData);
 
-    localStorage.setItem('paintit_access_token', token);
+    setStoredAuthToken(token);
     localStorage.setItem('paintit_refresh_token', refresh);
     localStorage.setItem('paintit_user_data', JSON.stringify(userData));
 
@@ -64,17 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       if (accessToken) {
-        await fetch(`${BACKEND_API_URL}/api/auth/logout`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
+        await authApi.post('/api/auth/logout');
       }
     } catch (err) {
-      console.error("Session logout cleanup communication failure:", err);
+      console.error("Session logout cleanup error:", err);
     } finally {
       setAccessToken(null);
       setUser(null);
-      localStorage.removeItem('paintit_access_token');
+      removeStoredAuthToken();
       localStorage.removeItem('paintit_refresh_token');
       localStorage.removeItem('paintit_user_data');
       router.push('/login');
@@ -86,33 +85,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const currentRefreshToken = localStorage.getItem('paintit_refresh_token');
       if (!currentRefreshToken) throw new Error("No active refresh references available.");
 
-      const response = await fetch(`${BACKEND_API_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: currentRefreshToken })
+      const data = await authApi.post<{ accessToken: string }>('/api/auth/refresh', {
+        refreshToken: currentRefreshToken,
       });
 
-      if (!response.ok) throw new Error("Refresh token lease has expired.");
-
-      const data = await response.json();
       setAccessToken(data.accessToken);
-      localStorage.setItem('paintit_access_token', data.accessToken);
+      setStoredAuthToken(data.accessToken);
       return true;
     } catch (err) {
       setAccessToken(null);
       setUser(null);
-      localStorage.clear();
+      removeStoredAuthToken();
+      localStorage.removeItem('paintit_refresh_token');
+      localStorage.removeItem('paintit_user_data');
       return false;
     }
   };
 
-  // ✅ Centralized context broadcast engine
   const updateUser = (updatedData: Partial<UserSessionData>) => {
     setUser((prevUser) => {
       if (!prevUser) return null;
-
       const mergedUser = { ...prevUser, ...updatedData };
-      // Save the updated object back to the browser disk cache
       localStorage.setItem('paintit_user_data', JSON.stringify(mergedUser));
       return mergedUser;
     });
@@ -127,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login,
       logout,
       refreshSession,
-      updateUser // Exposed globally
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

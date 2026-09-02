@@ -18,46 +18,44 @@ import ShareCollaborateSection from "@/components/landing/ShareCollaborateSectio
 import FAQSection from "@/components/landing/FAQSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import FooterSection from "@/components/landing/FooterSection";
-import CookieConsentBanner from "@/components/landing/CookieConsentBanner";
 
 function LandingPageContent() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 selection:bg-[#FF8C38]/30 selection:text-[#FF8C38] relative overflow-x-hidden ${
-      isDark ? "bg-black text-white" : "bg-[#FAF8F5] text-stone-900"
+    <div className={`min-h-screen relative font-sans selection:bg-[#FF8C38] selection:text-black transition-colors duration-300 ${
+      isDark ? "bg-black text-neutral-100" : "bg-[#FAF8F5] text-stone-900"
     }`}>
-      {/* Sticky Navigation */}
+      {/* 1. Universal Top Header Navbar Navigation Engine */}
       <LandingNavbar />
 
-      {/* Main Landing Sections */}
-      <main className="relative z-10">
-        {/* 1. Hero Section + Interactive Room Visual */}
+      <main className="space-y-0">
+        {/* 2. Section 1: Hero Section */}
         <Hero />
 
-        {/* 2. Section 2: The Problem (Lighting Shift Comparison) */}
+        {/* 3. Section 2: Pain Point Problem / Solution Gap */}
         <ProblemSection />
 
-        {/* 3. Section 3: The 4-Step PaintIT Journey */}
+        {/* 4. Section 3: Step-by-Step 3D Studio Process Workflow */}
         <ProcessSection />
 
-        {/* 4. Section 4: Two Sides of PaintIT (Homeowner & Painter Split) */}
+        {/* 5. Section 4: Dual Product Ecosystem (Painters + Homeowners) */}
         <TwoSidesSection />
 
-        {/* 5. Section 5: The Connection (Story Arc) */}
+        {/* 6. Section 5: Real Connection Story (Ibadan Hostel Refurbishment Proof) */}
         <ConnectionStorySection />
 
-        {/* 6. Section 6: Interactive Product Showcase (Dark Studio UI) */}
+        {/* 7. Section 6: Interactive 3D Room Color Customizer Demo Studio */}
         <InteractiveDemoSection />
 
-        {/* 7. Section 7: Why Visualization Matters (3 Pillars) */}
+        {/* 7. Section 7: Why Visualization Closes Painting Bids Faster */}
         <WhyVisualizationSection />
 
-        {/* 8. Section 8: Dedicated For Painting Professionals */}
+        {/* 8. Section 8: Dedicated For Painters / Contractors */}
         <ForPaintersSection />
 
-        {/* 9. Section 9: Dedicated For Homeowners (Transformation) */}
+        {/* 9. Section 9: Dedicated For Homeowners */}
         <ForHomeownersSection />
 
         {/* 10. Section 10: Concept Link Sharing & Collaboration */}
@@ -72,9 +70,6 @@ function LandingPageContent() {
 
       {/* Footer */}
       <FooterSection />
-
-      {/* Discrete Cookie Consent Banner */}
-      <CookieConsentBanner />
     </div>
   );
 }
