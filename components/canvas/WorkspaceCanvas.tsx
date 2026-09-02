@@ -19,6 +19,7 @@ interface CanvasProps {
   onSurfaceSelect: (meshName: string) => void;
   bulbs: BulbState[];
   cameraConfig: DBCameraConfig;
+  onSaveCameraConfig?: (cameraData: DBCameraConfig) => void;
   roomTextures?: Record<string, string>;
   activeTextures?: Record<string, string>;
   materialSwaps?: Record<string, string>;
@@ -47,6 +48,7 @@ export default function WorkspaceCanvas({
   onSurfaceSelect,
   bulbs,
   cameraConfig,
+  onSaveCameraConfig,
   roomTextures: _roomTextures,
   activeTextures,
   materialSwaps,
@@ -101,7 +103,6 @@ export default function WorkspaceCanvas({
     }
   }, [scene, materials, onModelLoaded]);
 
-  const wallNormalMap = useMemo(() => generateWallNormalMap(512, 512), []);
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const initialCamSet = useRef<boolean>(false);
 
@@ -122,28 +123,6 @@ export default function WorkspaceCanvas({
     }
   }, [cameraConfig]);
 
-  useFrame(() => {
-    if (!controlsRef.current) return;
-
-    let targetX = cameraConfig.target ? cameraConfig.target[0] : -1.94;
-    const targetY = cameraConfig.target ? cameraConfig.target[1] : 2.7;
-    let targetZ = cameraConfig.target ? cameraConfig.target[2] : 0.05;
-
-    if (activeSurface === 'wallLeft') {
-      targetX = -2.5;
-    } else if (activeSurface === 'wallRight') {
-      targetX = -0.5;
-    } else if (activeSurface === 'wallBack' || activeSurface === 'wallFront') {
-      targetZ = -1.0;
-    }
-
-    controlsRef.current.target.x = THREE.MathUtils.lerp(controlsRef.current.target.x, targetX, 0.08);
-    controlsRef.current.target.y = THREE.MathUtils.lerp(controlsRef.current.target.y, targetY, 0.08);
-    controlsRef.current.target.z = THREE.MathUtils.lerp(controlsRef.current.target.z, targetZ, 0.08);
-
-    controlsRef.current.update();
-  });
-
   // ⚡ DYNAMIC PAINT & FINISH MATERIAL TRAVERSAL LOOP
   useEffect(() => {
     if (!clonedScene) return;
@@ -158,18 +137,12 @@ export default function WorkspaceCanvas({
 
         const targetKey = WALL_MAPPING[meshName] || meshName;
         const category = getMeshCategory(meshName);
-        
-        const activeTextureId = activeTextures?.[meshName] || activeTextures?.[category];
+
+        const surfaceColor = roomColors[targetKey] || roomColors[meshName];
+        const surfaceFinish = roomFinishes?.[targetKey] || roomFinishes?.[meshName] || 'EMULSION';
+        const customTexture = activeTextures?.[targetKey] || activeTextures?.[meshName];
         const swapMaterialName = materialSwaps?.[meshName];
 
-        if (activeTextureId && activeTextureId !== "original") {
-          const preset = TEXTURE_PRESETS.find((p) => p.id === activeTextureId);
-          if (preset) {
-            const mat = new THREE.MeshStandardMaterial({
-              map: preset.generateTexture(),
-              roughness: preset.roughness,
-              metalness: preset.metalness,
-              side: THREE.DoubleSide,
             });
             if (preset.clearcoat) (mat as unknown as { clearcoat: number }).clearcoat = preset.clearcoat;
             node.material = mat;
@@ -278,13 +251,30 @@ export default function WorkspaceCanvas({
       <OrbitControls
         ref={controlsRef}
         enableZoom={true}
-        enablePan={false}
+        enablePan={true}
         enableDamping
         dampingFactor={0.05}
         minDistance={0.1}
-        maxDistance={1.8}
-        minPolarAngle={0.1}
-        maxPolarAngle={Math.PI / 2.05}
+        maxDistance={50.0}
+        minPolarAngle={0.01}
+        maxPolarAngle={Math.PI - 0.01}
+        onChange={() => {
+          if (!controlsRef.current) return;
+          const target = controlsRef.current.target;
+          const pos = controlsRef.current.object.position;
+          onSaveCameraConfig?.({
+            position: [
+              parseFloat(pos.x.toFixed(3)),
+              parseFloat(pos.y.toFixed(3)),
+              parseFloat(pos.z.toFixed(3)),
+            ],
+            target: [
+              parseFloat(target.x.toFixed(3)),
+              parseFloat(target.y.toFixed(3)),
+              parseFloat(target.z.toFixed(3)),
+            ],
+          });
+        }}
       />
     </>
   );

@@ -322,13 +322,13 @@ function ClientInteractiveCanvas({
       <OrbitControls
         ref={controlsRef}
         enableZoom={true}
-        enablePan={false}
+        enablePan={true}
         enableDamping
         dampingFactor={0.05}
         minDistance={0.1}
-        maxDistance={1.8}
-        minPolarAngle={0.1}
-        maxPolarAngle={Math.PI / 2.05}
+        maxDistance={50.0}
+        minPolarAngle={0.01}
+        maxPolarAngle={Math.PI - 0.01}
       />
     </>
   );

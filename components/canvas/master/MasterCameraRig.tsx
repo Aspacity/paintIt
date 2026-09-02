@@ -155,17 +155,40 @@ export default function MasterCameraRig({
       ref={controlsRef}
       makeDefault
       target={savedCameraConfig?.target ?? [0, 1.2, 0]}
-      minPolarAngle={!isAdmin ? (85 * Math.PI) / 180 : (savedCameraConfig?.minPolarAngle ?? 0.01)}
-      maxPolarAngle={!isAdmin ? (85 * Math.PI) / 180 : ((levaConfig.maxPolarAngleDeg * Math.PI) / 180)}
+      minPolarAngle={savedCameraConfig?.minPolarAngle ?? 0.01}
+      maxPolarAngle={savedCameraConfig?.maxPolarAngle ?? ((levaConfig.maxPolarAngleDeg * Math.PI) / 180)}
       minDistance={savedCameraConfig?.minDistance ?? levaConfig.minDistance ?? 0.2}
-      maxDistance={savedCameraConfig?.maxDistance ?? levaConfig.maxDistance ?? 15.0}
+      maxDistance={savedCameraConfig?.maxDistance ?? levaConfig.maxDistance ?? 50.0}
       enableRotate={true} // 🔄 Horizontal 360° rotation around room enabled!
-      enablePan={isAdmin} // 🎥 Position panning enabled ONLY for Admin in Playground!
+      enablePan={true} // 🎥 Position panning enabled for all users!
       screenSpacePanning={true} // ↕️↔️ Pan along screen plane up, down, left, right along any axis!
       panSpeed={1.2}
       enableZoom={enableZoom} // 🔍 Zoom in and out allowed!
       enableDamping={true}
       dampingFactor={0.08}
+      onChange={() => {
+        if (!controlsRef.current) return;
+        const target = controlsRef.current.target;
+        const currentFov = (camera as THREE.PerspectiveCamera).fov || 45;
+        const payload: CameraConfigPayload = {
+          minDistance: controlsRef.current.minDistance,
+          maxDistance: controlsRef.current.maxDistance,
+          maxPolarAngle: controlsRef.current.maxPolarAngle,
+          minPolarAngle: controlsRef.current.minPolarAngle,
+          fov: currentFov,
+          position: [
+            parseFloat(camera.position.x.toFixed(3)),
+            parseFloat(camera.position.y.toFixed(3)),
+            parseFloat(camera.position.z.toFixed(3)),
+          ],
+          target: [
+            parseFloat(target.x.toFixed(3)),
+            parseFloat(target.y.toFixed(3)),
+            parseFloat(target.z.toFixed(3)),
+          ],
+        };
+        onSaveCameraConfig?.(payload);
+      }}
       touches={{
         ONE: THREE.TOUCH.ROTATE,
         TWO: THREE.TOUCH.DOLLY_PAN,

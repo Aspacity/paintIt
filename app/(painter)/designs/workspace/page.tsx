@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 
+import { CameraConfigPayload } from "@/components/canvas/master/MasterCameraRig";
+
 export default function Painter3DStudioWorkspacePage() {
   const { user } = useAuth();
   const { showToast } = useAlert();
@@ -19,6 +21,8 @@ export default function Painter3DStudioWorkspacePage() {
   const [roomModelUrl, setRoomModelUrl] = useState<string>("/models/shells/spacious-lux.glb");
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDayPreset>("day");
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [savedCameraConfig, setSavedCameraConfig] = useState<CameraConfigPayload | null>(null);
+  const [bulbsList, setBulbsList] = useState<any[]>([]);
 
   const [wallSurfaceStates, setWallSurfaceStates] = useState<
     Record<string, { color: string; finish: WallFinishType }>
@@ -43,10 +47,19 @@ export default function Painter3DStudioWorkspacePage() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          name: "Painter 3D Studio Workspace Preview",
-          room_data: wallSurfaceStates,
+          name: `Painter Preview (${new Date().toLocaleDateString()})`,
+          room_data: {
+            modelUrl: roomModelUrl,
+            wallColors: wallSurfaceStates,
+            wallFinishes: { activeWallFinish },
+            floorTexture: activeFloorTexture,
+          },
           finish: activeWallFinish,
-          lighting_settings: { timeOfDay },
+          camera_settings: savedCameraConfig || undefined,
+          lighting_settings: {
+            timeOfDay,
+            bulbs: bulbsList,
+          },
           master_design_id: "default-scene",
         }),
       });
@@ -139,6 +152,8 @@ export default function Painter3DStudioWorkspacePage() {
       {/* 3D MASTER CANVAS VIEWPORT FOR PAINTER WORKFLOW */}
       <div className={`flex-1 relative overflow-hidden ${isDark ? "bg-black" : "bg-[#FAF8F5]"}`}>
         <PaintItMasterCanvas
+          savedCameraConfig={savedCameraConfig}
+          onSaveCameraConfig={(cam) => setSavedCameraConfig(cam)}
           config={{
             mode: "sandbox",
             modelUrl: roomModelUrl,
@@ -161,6 +176,7 @@ export default function Painter3DStudioWorkspacePage() {
             if (newCfg.activeFloorTextureId) setActiveFloorTexture(newCfg.activeFloorTextureId);
             if (newCfg.wallSurfaceStates) setWallSurfaceStates(newCfg.wallSurfaceStates);
             if (newCfg.timeOfDay) setTimeOfDay(newCfg.timeOfDay);
+            if (newCfg.bulbs) setBulbsList(newCfg.bulbs);
           }}
         />
       </div>

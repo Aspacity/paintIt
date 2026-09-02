@@ -340,6 +340,7 @@ function WorkspaceContent() {
             hideLightingTab: false,
           }}
           savedCameraConfig={savedCameraConfig}
+          onSaveCameraConfig={(cam) => setSavedCameraConfig(cam)}
           onSaveLightingConfig={(data) => {
             setLightingSettings({
               timeOfDay: data.timeOfDay,
