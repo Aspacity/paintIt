@@ -5,15 +5,15 @@ import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { LightingPresetKey, MASTER_LIGHTING_PRESETS } from "@/config/lightingPresets";
-import { TEXTURE_PRESETS } from "@/config/texturePresets";
-import { PAINTS } from "@/config/paints";
+import { TEXTURE_PRESETS } from "@/utils/generateFloorTextures";
+import { REAL_PAINTS_CATALOG } from "@/config/paints";
 import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 
-import MasterLightingEngine, { LightFixtureConfig } from "./master/MasterLightingEngine";
+import MasterLightingEngine from "./master/MasterLightingEngine";
 import MasterCameraRig, { CameraConfigPayload } from "./master/MasterCameraRig";
 import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
-import LightControls from "@/components/canvas/LightControls";
+import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
 import { ModularAssetInstance } from "./ModularAssetInstance";
 import { FurnishItAssetItem } from "@/config/furnishItAssets";
@@ -22,10 +22,9 @@ import { PlacedObjectTransform } from "@/types/modular";
 import { CanvasTopStatusBar, CameraViewPreset } from "./master/CanvasTopStatusBar";
 import { CanvasMobileToolsDrawer } from "./master/CanvasMobileToolsDrawer";
 import { threeCache } from "@/utils/threeCacheManager";
-import { saveModelLightingConfigGlobal } from "@/utils/offlineDBSync";
 
 export type WallFinishType = "EMULSION" | "SATIN" | "GLOSS";
-export type TimeOfDayPreset = "dawn" | "morning" | "midday" | "goldenHour" | "sunset" | "night" | "day";
+export type TimeOfDayPreset = LightingPresetKey | "day";
 
 export interface SurfaceState {
   color: string;
@@ -33,7 +32,7 @@ export interface SurfaceState {
 }
 
 export interface MasterCanvasConfig {
-  mode: "demo" | "painter" | "sandbox";
+  mode: "demo" | "painter" | "sandbox" | "admin";
   modelUrl: string;
   timeOfDay: TimeOfDayPreset;
   sunAzimuthOverride?: number;
@@ -41,7 +40,7 @@ export interface MasterCanvasConfig {
   sunIntensityOverride?: number;
   ambientIntensityOverride?: number;
   sunColorOverride?: string;
-  bulbs?: LightFixtureConfig[];
+  bulbs?: BulbState[];
   activeWallColor: string;
   activeWallFinish: WallFinishType;
   activeCeilingType: "Ceiling_FlatModern" | "Ceiling_Tray" | "Ceiling_POP" | "Ceiling_Cove" | "Ceiling_Linear";
@@ -303,7 +302,7 @@ export default function PaintItMasterCanvas({
     Array<{ id: string; asset: FurnishItAssetItem; transform: PlacedObjectTransform }>
   >([]);
 
-  const [bulbs, setBulbs] = useState<LightFixtureConfig[]>(config.bulbs || []);
+  const [bulbs, setBulbs] = useState<BulbState[]>(config.bulbs || []);
   const [selectedBulbId, setSelectedBulbId] = useState<string | null>(null);
 
   const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -314,7 +313,7 @@ export default function PaintItMasterCanvas({
     Array<{ id: string; position: THREE.Vector3; color: string }>
   >([]);
 
-  const [paintsList, setPaintsList] = useState<any[]>(PAINTS);
+  const [paintsList, setPaintsList] = useState<any[]>(REAL_PAINTS_CATALOG);
 
   const handleSurfaceSelect = (rawName: string, category: string, point: THREE.Vector3) => {
     setSelectedPoint(point);
@@ -418,11 +417,20 @@ export default function PaintItMasterCanvas({
           className="w-full h-full"
         >
           <MasterCameraRig
-            preset={cameraPreset}
+            targetPreset={cameraPreset}
             savedCameraConfig={savedCameraConfig}
             onSaveCameraConfig={onSaveCameraConfig}
           />
-          <MasterLightingEngine config={config} bulbs={bulbs} />
+          <MasterLightingEngine
+            timeOfDay={config.timeOfDay}
+            sunAzimuthOverride={config.sunAzimuthOverride}
+            sunElevationOverride={config.sunElevationOverride}
+            sunIntensityOverride={config.sunIntensityOverride}
+            sunColorOverride={config.sunColorOverride}
+            ambientIntensityOverride={config.ambientIntensityOverride}
+            bulbs={bulbs}
+            isAdmin={config.isAdmin}
+          />
 
           <CanvasSceneMeshEngine
             config={config}
@@ -435,9 +443,14 @@ export default function PaintItMasterCanvas({
           {placedFurnitureAssets.map((item) => (
             <ModularAssetInstance
               key={item.id}
-              instanceId={item.id}
-              gltfPath={item.asset.gltfPath}
-              transform={item.transform}
+              objectData={{
+                instance_id: item.id,
+                asset_id: item.asset.id,
+                model_url: item.asset.modelUrl || (item.asset as any).gltfPath,
+                name: item.asset.name,
+                category: item.asset.category as any,
+                transform: item.transform,
+              }}
               isSelected={selectedFurnitureId === item.id}
               transformMode={furnitureTransformMode}
               onSelect={() => {
@@ -446,7 +459,7 @@ export default function PaintItMasterCanvas({
               }}
               onTransformChange={(updates) => {
                 setPlacedFurnitureAssets((prev) =>
-                  prev.map((it) => (it.id === item.id ? { ...it, transform: { ...it.transform, ...updates } } : it))
+                  prev.map((it) => (it.id === item.id ? { ...it, transform: updates } : it))
                 );
               }}
             />

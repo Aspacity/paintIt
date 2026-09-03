@@ -1,48 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AlertProvider } from "@/context/AlertContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { TrafficTracker } from "@/components/analytics/TrafficTracker";
-import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine"; // Rendered below
+import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine";
 import { FeedbackModalPopup } from "@/components/ui/FeedbackModalPopup";
 import { ConsentBanner } from "@/components/consent/ConsentBanner";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-  display: "swap",
-  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-  adjustFontFallback: false,
-});
-
-// ✅ SAFE SERVER-SIDE SEO EXTRACTIONS (No "use client" at the top)
+// ✅ SAFE SERVER-SIDE SEO EXTRACTIONS
 export const metadata: Metadata = {
   title: {
     default: "PaintIt // Interactive 3D Room Studio & Color Customizer",
     template: "%s | PaintIT",
   },
   manifest: "/manifest.json",
-  description: "See your colors before the first brush stroke. The premium architectural visualization tool designed for modern interior designers, decorators, and painters to close bids faster.",
+  description:
+    "Empowering paint contractors and clients with photorealistic 3D spatial room visualization, real-time lighting previews, and seamless bid estimation.",
   keywords: [
-    "3D interior visualization",
-    "Paint simulator",
-    "Room customizer",
-    "Interior design software",
-    "Hostel painting portfolio",
-    "Architectural paint visualizer"
+    "3D Room Painting",
+    "Paint Customizer",
+    "Painter Contractor Tools",
+    "Dulux Paints 3D",
+    "PaintIt Studio",
   ],
-  authors: [{ name: "PaintIT Team" }],
+  authors: [{ name: "PaintIT Engineering Team" }],
   creator: "PaintIT",
-  publisher: "PaintIT",
 
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://paintit-six.vercel.app",
-    title: "See Your Room Colors Instantly in 3D | PaintIT",
-    description: "Eradicate paint choice guesswork. Let clients customize walls, view ambient daylight shifts, and finalize space aesthetics interactively before buying paint.",
+    url: "https://paint-it-six.vercel.app",
+    title: "PaintIT // Win Painting Bids with Photorealistic 3D Visualizations",
+    description:
+      "Transform flat color swatches into immersive 3D room experiences. Give clients absolute confidence before the first drop of paint touches their wall.",
     siteName: "PaintIT",
     images: [
       {
@@ -92,7 +83,7 @@ export default function RootLayout({
       lang="en"
       className="scroll-smooth"
     >
-      <body className={`${jakarta.variable} font-sans bg-black text-neutral-100 antialiased overflow-x-hidden`}>
+      <body className="font-sans bg-black text-neutral-100 antialiased overflow-x-hidden">
         {/* ✅ Injects browser runtime hooks cleanly on server-side layouts */}
         <ServiceWorkerRegisterEngine />
 

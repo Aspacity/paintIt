@@ -3,7 +3,7 @@ import { useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useControls, button } from "leva";
-import { CameraViewPreset } from "../PaintItMasterCanvas";
+import { CameraViewPreset } from "./CanvasTopStatusBar";
 import * as THREE from "three";
 
 export interface CameraConfigPayload {

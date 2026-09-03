@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import OfflineSyncBanner from "@/components/canvas/master/OfflineSyncBanner";
+import { OfflineSyncBanner } from "@/components/ui/OfflineSyncBanner";
 
 export type CameraViewPreset = "FULL_ROOM" | "SEATING_FOCUS" | "ACCENT_WALL" | "TOP_DOWN";
 

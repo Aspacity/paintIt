@@ -7,6 +7,7 @@ import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 import { StepOnboarding } from "@/components/ui/StepOnboarding";
 import { OnboardingStep } from "@/types/index";
+import { paintitApi } from "@/lib/apiClient";
 
 interface SavedVisualization {
   id: string;
@@ -27,8 +28,6 @@ export default function HomeownerClientHubDashboard() {
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
-
   const clientOnboardingSteps: OnboardingStep[] = [
     { id: 1, label: "Explore Catalogs", description: "Browse verified local painters and contractors." },
     { id: 2, label: "Select 3D Room", description: "Choose a room design template from the public 3D catalog." },
@@ -39,32 +38,9 @@ export default function HomeownerClientHubDashboard() {
   // FETCH SAVED VISUALIZATIONS FROM BACKEND
   useEffect(() => {
     const fetchSavedVisualizations = async () => {
-      const activeToken =
-        accessToken ||
-        (typeof window !== "undefined"
-          ? localStorage.getItem("paintit_access_token") ||
-          localStorage.getItem("token") ||
-          localStorage.getItem("accessToken")
-          : null);
-
-      if (!activeToken) {
-        setIsLoadingData(false);
-        return;
-      }
-
       try {
-        const response = await fetch(`${BACKEND_API_URL}/api/visualizations`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${activeToken}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setSavedDesigns(data.visualizations || []);
-        }
+        const data = await paintitApi.get<{ visualizations: SavedVisualization[] }>("/api/visualizations");
+        setSavedDesigns(data.visualizations || []);
       } catch (err) {
         console.error("Failed fetching client saved designs:", err);
       } finally {
@@ -73,40 +49,21 @@ export default function HomeownerClientHubDashboard() {
     };
 
     fetchSavedVisualizations();
-  }, [accessToken, BACKEND_API_URL]);
+  }, []);
 
   // DELETE SAVED DESIGN
   const handleDeleteDesign = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-
-    const activeToken =
-      accessToken ||
-      (typeof window !== "undefined"
-        ? localStorage.getItem("paintit_access_token") ||
-        localStorage.getItem("token")
-        : null);
-
-    if (!activeToken) return;
+    if (!confirm("Are you sure you want to delete this saved 3D design concept?")) return;
 
     setDeletingId(id);
     try {
-      const response = await fetch(`${BACKEND_API_URL}/api/visualizations/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${activeToken}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (response.ok) {
-        setSavedDesigns((prev) => prev.filter((design) => design.id !== id));
-        showToast({ message: "Design removed from your Hub.", severity: "success" });
-      } else {
-        showToast({ message: "Failed to delete design layout.", severity: "error" });
-      }
+      await paintitApi.delete(`/api/visualizations/${id}`);
+      setSavedDesigns((prev) => prev.filter((item) => item.id !== id));
+      showToast({ message: "Design deleted successfully.", severity: "success" });
     } catch (err) {
       console.error(err);
-      showToast({ message: "Network connection error.", severity: "error" });
+      showToast({ message: "Failed to delete design.", severity: "error" });
     } finally {
       setDeletingId(null);
     }

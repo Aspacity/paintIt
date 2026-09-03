@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface OfflineSyncBannerProps {
   onSyncToLiveServer?: () => void;
   isSavingLocally?: boolean;
-  lastSavedTimestamp?: string | null;
+  lastSavedTimestamp?: string | number | null;
 }
 
 export function OfflineSyncBanner({

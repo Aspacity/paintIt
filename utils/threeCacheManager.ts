@@ -15,14 +15,13 @@ class ThreeCacheManager {
    */
   public getOrCreateTexture(
     cacheKey: string,
-    generator: () => HTMLCanvasElement
+    generator: () => THREE.CanvasTexture
   ): THREE.CanvasTexture {
     if (this.textureCache.has(cacheKey)) {
       return this.textureCache.get(cacheKey)!;
     }
 
-    const canvas = generator();
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture = generator();
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(4, 4);

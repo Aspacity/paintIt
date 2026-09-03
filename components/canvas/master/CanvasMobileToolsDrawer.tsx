@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import LightControls from "@/components/canvas/LightControls";
 import { MasterModelAssemblyPanel } from "@/components/canvas/master/MasterModelAssemblyPanel";
-import { TEXTURE_PRESETS } from "@/config/texturePresets";
+import { TEXTURE_PRESETS } from "@/utils/generateFloorTextures";
 import { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
 
 export type MobileTabType = "colors" | "finishes" | "textures" | "sun" | "lighting" | "assembly";

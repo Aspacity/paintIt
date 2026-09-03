@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useSearchParams } from "next/navigation";
+import { authApi } from "@/lib/apiClient";
 
 function LoginContent() {
   const [email, setEmail] = useState<string>("");
@@ -29,19 +30,16 @@ function LoginContent() {
     const urlName = searchParams?.get("name");
     const urlRole = searchParams?.get("role") || "PAINTER";
 
-    if (urlToken && urlRefresh) {
-      showToast({ message: "Google Sign-In successful! Logging you in...", severity: "success" });
+    if (urlToken && urlRefresh && urlEmail) {
       login(urlToken, urlRefresh, {
         id: "oauth-user",
-        email: urlEmail || "member@aspacity.com",
-        fullName: urlName || "Aspacity Member",
-        role: (urlRole.toUpperCase() === "PAINTER" ? "PAINTER" : "CONSUMER"),
+        email: urlEmail,
+        fullName: urlName || "Google Account",
+        role: urlRole.toUpperCase() === "PAINTER" ? "PAINTER" : "CONSUMER",
       });
-      setTimeout(() => {
-        window.location.href = redirect || "/dashboard";
-      }, 150);
+      showToast({ message: "Welcome back! Google login successful.", severity: "success" });
     }
-  }, [searchParams, login, redirect, showToast]);
+  }, [searchParams, login, showToast]);
 
   const handleExecuteLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,18 +51,12 @@ function LoginContent() {
 
     setSubmitting(true);
     try {
-      const response = await fetch(`${BACKEND_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.toLowerCase().trim(),
-          password
-        }),
+      const data = await authApi.post("/api/auth/login", {
+        email: email.toLowerCase().trim(),
+        password,
       });
 
-      const data = await response.json();
-
-      if (response.status === 403 && (data.error?.includes("verify") || data.requiresVerification)) {
+      if (data.requiresVerification) {
         const targetEmail = data.email || email.toLowerCase().trim();
         sessionStorage.setItem("paintit_verification_email", targetEmail);
         showToast({ message: "Account unverified. Verification code sent!", severity: "info" });
@@ -72,9 +64,6 @@ function LoginContent() {
         return;
       }
 
-      if (!response.ok) {
-        throw new Error(data.error || "Authentication failed.");
-      }
 
       showToast({ message: "Login successful! Syncing profile...", severity: "success" });
 

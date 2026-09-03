@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 import { UserRole } from "@/types";
+import { authApi } from "@/lib/apiClient";
 
 function RegisterFormContent() {
   const router = useRouter();
@@ -22,8 +23,6 @@ function RegisterFormContent() {
   const [password, setPassword] = useState<string>("");
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
   const handleExecuteSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -39,22 +38,12 @@ function RegisterFormContent() {
 
     setSubmitting(true);
     try {
-      const response = await fetch(`${BACKEND_API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: fullName.trim(),
-          email: email.toLowerCase().trim(),
-          password,
-          role: initialRole,
-        }),
+      await authApi.post("/api/auth/register", {
+        fullName: fullName.trim(),
+        email: email.toLowerCase().trim(),
+        password,
+        role: initialRole,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Account registration rejected.");
-      }
 
       sessionStorage.setItem("paintit_verification_email", email.toLowerCase().trim());
       showToast({ message: "Registration successful! Verification token sent.", severity: "success" });
@@ -69,7 +58,8 @@ function RegisterFormContent() {
 
   const handleGoogleSignup = () => {
     showToast({ message: "Initiating Google Sign-Up...", severity: "info" });
-    window.location.href = `${BACKEND_API_URL}/api/auth/google?role=${initialRole}`;
+    const authBase = process.env.NEXT_PUBLIC_AUTH_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    window.location.href = `${authBase}/api/auth/google?role=${initialRole}`;
   };
 
   return (
