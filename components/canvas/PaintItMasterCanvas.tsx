@@ -19,6 +19,7 @@ import { ModularAssetInstance } from "./ModularAssetInstance";
 import { FurnishItAssetItem } from "@/config/furnishItAssets";
 import { PlacedObjectTransform } from "@/types/modular";
 
+import { Leva } from "leva";
 import { CanvasTopStatusBar, CameraViewPreset } from "./master/CanvasTopStatusBar";
 import { CanvasMobileToolsDrawer } from "./master/CanvasMobileToolsDrawer";
 import { threeCache } from "@/utils/threeCacheManager";
@@ -408,6 +409,9 @@ export default function PaintItMasterCanvas({
     <div className={`w-full h-full relative overflow-hidden select-none flex flex-col transition-colors duration-300 ${
       isDark ? "bg-black" : "bg-[#FAF8F5]"
     }`}>
+      {/* Global Leva GUI Controller (Hidden for Painters and Homeowners) */}
+      <Leva hidden={!config.isAdmin} />
+
       {/* 3D R3F CANVAS ENGINE */}
       <div className="w-full h-full relative flex-1">
         <Canvas

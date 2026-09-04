@@ -29,7 +29,7 @@ interface MasterCameraRigProps {
 export default function MasterCameraRig({
   targetPreset,
   enableZoom = true,
-  isAdmin = true,
+  isAdmin = false,
   savedCameraConfig,
   onSaveCameraConfig,
 }: MasterCameraRigProps) {
@@ -109,7 +109,7 @@ export default function MasterCameraRig({
         onSaveCameraConfig?.(payload);
       }),
     }),
-    { render: (get) => isAdmin && Boolean(get) }
+    [isAdmin]
   );
 
   // Dynamic Camera FOV Update
