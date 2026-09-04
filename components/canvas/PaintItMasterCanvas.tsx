@@ -339,7 +339,6 @@ export default function PaintItMasterCanvas({
     setSelectedPoint(point);
     setActiveSelectedWall(key);
 
-    const activeColor = config.activeWallColor || "#C4B199";
     const currentStates = config.wallSurfaceStates || {
       wall_back: { color: "#C4B199", finish: "EMULSION" },
       wall_left: { color: "#C4B199", finish: "EMULSION" },
@@ -348,19 +347,30 @@ export default function PaintItMasterCanvas({
       ceiling: { color: "#FFFFFF", finish: "EMULSION" },
     };
 
+    const currentColorOnWall = currentStates[key]?.color || config.activeWallColor || "#C4B199";
+
+    // 🎨 Locate current color index and cycle to the NEXT color on the paint list
+    const catalogList = paintsList && paintsList.length > 0 ? paintsList : REAL_PAINTS_CATALOG;
+    const currentIndex = catalogList.findIndex(
+      (p) => p.hex?.toLowerCase() === currentColorOnWall.toLowerCase()
+    );
+
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % catalogList.length : 0;
+    const nextColor = catalogList[nextIndex]?.hex || "#FF8C38";
+
     const currentFinish = currentStates[key]?.finish || config.activeWallFinish || "EMULSION";
     const updatedStates = {
       ...currentStates,
-      [key]: { color: activeColor, finish: currentFinish },
+      [key]: { color: nextColor, finish: currentFinish },
     };
 
     setPaintSplashes((prev) => [
       ...prev,
-      { id: `splash-${Date.now()}`, position: point.clone(), color: activeColor },
+      { id: `splash-${Date.now()}`, position: point.clone(), color: nextColor },
     ]);
 
     onConfigChange?.({
-      activeWallColor: activeColor,
+      activeWallColor: nextColor,
       wallSurfaceStates: updatedStates,
     });
   };
