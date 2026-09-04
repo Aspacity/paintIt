@@ -102,6 +102,7 @@ function CanvasSceneMeshEngine({
   isPaintDormant: boolean;
   cameraPreset: CameraViewPreset | null;
 }) {
+  const lastTapRef = useRef<{ time: number; meshName: string }>({ time: 0, meshName: "" });
   const [gltfScene, setGltfScene] = useState<THREE.Group | null>(null);
 
   useEffect(() => {
@@ -255,7 +256,17 @@ function CanvasSceneMeshEngine({
           if (e.object instanceof THREE.Mesh) {
             const rawName = e.object.name;
             const category = getMeshCategory(rawName);
-            onSurfaceSelect?.(rawName, category, e.point);
+            const now = Date.now();
+            const isDoubleTap =
+              lastTapRef.current.meshName === rawName && now - lastTapRef.current.time < 350;
+
+            lastTapRef.current = { time: now, meshName: rawName };
+
+            if (isDoubleTap) {
+              onDoubleClickSurface?.(rawName, category, e.point);
+            } else {
+              onSurfaceSelect?.(rawName, category, e.point);
+            }
           }
         }}
         onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
@@ -321,6 +332,37 @@ export default function PaintItMasterCanvas({
     const key = resolveWallKey(rawName);
     setActiveSelectedWall(key);
     onSurfaceSelect?.(rawName, category, point);
+  };
+
+  const handleDoubleClickSurface = (rawName: string, category: string, point: THREE.Vector3) => {
+    const key = resolveWallKey(rawName);
+    setSelectedPoint(point);
+    setActiveSelectedWall(key);
+
+    const activeColor = config.activeWallColor || "#C4B199";
+    const currentStates = config.wallSurfaceStates || {
+      wall_back: { color: "#C4B199", finish: "EMULSION" },
+      wall_left: { color: "#C4B199", finish: "EMULSION" },
+      wall_right: { color: "#C4B199", finish: "EMULSION" },
+      wall_front: { color: "#C4B199", finish: "EMULSION" },
+      ceiling: { color: "#FFFFFF", finish: "EMULSION" },
+    };
+
+    const currentFinish = currentStates[key]?.finish || config.activeWallFinish || "EMULSION";
+    const updatedStates = {
+      ...currentStates,
+      [key]: { color: activeColor, finish: currentFinish },
+    };
+
+    setPaintSplashes((prev) => [
+      ...prev,
+      { id: `splash-${Date.now()}`, position: point.clone(), color: activeColor },
+    ]);
+
+    onConfigChange?.({
+      activeWallColor: activeColor,
+      wallSurfaceStates: updatedStates,
+    });
   };
 
   const handleColorChange = (colorHex: string) => {
@@ -422,6 +464,7 @@ export default function PaintItMasterCanvas({
         >
           <MasterCameraRig
             targetPreset={cameraPreset}
+            isAdmin={config.isAdmin}
             savedCameraConfig={savedCameraConfig}
             onSaveCameraConfig={onSaveCameraConfig}
           />
@@ -439,6 +482,7 @@ export default function PaintItMasterCanvas({
           <CanvasSceneMeshEngine
             config={config}
             onSurfaceSelect={handleSurfaceSelect}
+            onDoubleClickSurface={handleDoubleClickSurface}
             selectedSurfacePoint={selectedPoint}
             isPaintDormant={studioMode === "FURNITURE"}
             cameraPreset={cameraPreset}
@@ -543,7 +587,7 @@ export default function PaintItMasterCanvas({
                           { key: "morning", label: "☀️ Morning" },
                           { key: "midday", label: "🌤️ Midday" },
                           { key: "goldenHour", label: "🌇 Golden" },
-                          { key: "sunset", label: "🌆 Sunset" },
+                          { key: "sunset", label: "<ctrl42> Sunset" },
                           { key: "night", label: "🌙 Night" },
                         ].map((p) => {
                           const isSelected = config.timeOfDay === p.key;
