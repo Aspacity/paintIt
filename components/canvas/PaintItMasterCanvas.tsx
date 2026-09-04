@@ -587,7 +587,7 @@ export default function PaintItMasterCanvas({
 
         {/* 🛠️ LEFT FLOATING ADMIN ASSEMBLY & CATALOG PANEL */}
         {!config.hideAssemblyPanel && config.isAdmin && (
-          <div className="hidden md:flex absolute top-16 left-3 z-30 pointer-events-auto">
+          <div className="hidden md:flex absolute top-36 left-3 z-30 pointer-events-auto">
             <MasterModelAssemblyPanel
               activeRoomModelUrl={config.modelUrl}
               activeStudioMode={studioMode}
@@ -674,7 +674,7 @@ export default function PaintItMasterCanvas({
                           { key: "morning", label: "☀️ Morning" },
                           { key: "midday", label: "🌤️ Midday" },
                           { key: "goldenHour", label: "🌇 Golden" },
-                          { key: "sunset", label: "<ctrl42> Sunset" },
+                          { key: "sunset", label: "🌆 Sunset" },
                           { key: "night", label: "🌙 Night" },
                         ].map((p) => {
                           const isSelected = config.timeOfDay === p.key;
@@ -693,6 +693,78 @@ export default function PaintItMasterCanvas({
                           );
                         })}
                       </div>
+
+                      {config.isAdmin && (
+                        <div className="space-y-2.5 pt-2 border-t border-neutral-850">
+                          <span className="text-[9px] font-mono uppercase text-[#FF8C38] font-bold block">
+                            👑 Admin Sun Positioning Controls
+                          </span>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[9px] font-mono text-neutral-300">
+                              <span>Sun Azimuth Angle (°)</span>
+                              <span className="font-bold text-white">{config.sunAzimuthOverride ?? 145}°</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={0}
+                              max={360}
+                              step={1}
+                              value={config.sunAzimuthOverride ?? 145}
+                              onChange={(e) => onConfigChange?.({ sunAzimuthOverride: parseFloat(e.target.value) })}
+                              className="w-full accent-[#FF8C38] bg-neutral-900 h-1.5 rounded-lg cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[9px] font-mono text-neutral-300">
+                              <span>Sun Elevation Height (°)</span>
+                              <span className="font-bold text-white">{config.sunElevationOverride ?? 45}°</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={0}
+                              max={90}
+                              step={1}
+                              value={config.sunElevationOverride ?? 45}
+                              onChange={(e) => onConfigChange?.({ sunElevationOverride: parseFloat(e.target.value) })}
+                              className="w-full accent-[#FF8C38] bg-neutral-900 h-1.5 rounded-lg cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[9px] font-mono text-neutral-300">
+                              <span>Sunlight Intensity</span>
+                              <span className="font-bold text-white">{config.sunIntensityOverride ?? 2.5}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={0.1}
+                              max={10.0}
+                              step={0.1}
+                              value={config.sunIntensityOverride ?? 2.5}
+                              onChange={(e) => onConfigChange?.({ sunIntensityOverride: parseFloat(e.target.value) })}
+                              className="w-full accent-[#FF8C38] bg-neutral-900 h-1.5 rounded-lg cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[9px] font-mono text-neutral-300">
+                              <span>Ambient Fill Brightness</span>
+                              <span className="font-bold text-white">{config.ambientIntensityOverride ?? 1.2}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min={0.1}
+                              max={5.0}
+                              step={0.1}
+                              value={config.ambientIntensityOverride ?? 1.2}
+                              onChange={(e) => onConfigChange?.({ ambientIntensityOverride: parseFloat(e.target.value) })}
+                              className="w-full accent-[#FF8C38] bg-neutral-900 h-1.5 rounded-lg cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
