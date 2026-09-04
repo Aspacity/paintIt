@@ -70,7 +70,15 @@ export interface PaintItMasterCanvasProps {
 
 function getMeshCategory(name: string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
   const lower = name.toLowerCase();
-  if (lower.includes("wall")) return "WALL";
+  if (
+    lower.includes("wall") ||
+    lower.includes("toilet") ||
+    lower.includes("restroom") ||
+    lower.includes("bath") ||
+    lower.includes("partition")
+  ) {
+    return "WALL";
+  }
   if (lower.includes("floor") || lower.includes("ground") || lower.includes("base")) return "FLOOR";
   if (lower.includes("ceiling") || lower.includes("roof")) return "CEILING";
   return "OTHER";
@@ -78,11 +86,11 @@ function getMeshCategory(name: string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
 
 function resolveWallKey(name: string): string {
   const lower = name.toLowerCase();
+  if (lower.includes("toilet") || lower.includes("restroom") || lower.includes("bath")) return "toilet";
   if (lower.includes("back")) return "wall_back";
   if (lower.includes("left")) return "wall_left";
   if (lower.includes("right")) return "wall_right";
   if (lower.includes("front") || lower.includes("accent")) return "wall_front";
-  if (lower.includes("toilet") || lower.includes("restroom") || lower.includes("bath")) return "toilet";
   if (lower.includes("ceiling")) return "ceiling";
   return "wall_back";
 }
@@ -191,7 +199,12 @@ function CanvasSceneMeshEngine({
         }
 
         // 2. Pure Architectural Wall Paint & Sheen Engine
-        const isWall = meshName.toLowerCase().includes("wall") || category === "WALL";
+        const isWall =
+          meshName.toLowerCase().includes("wall") ||
+          meshName.toLowerCase().includes("toilet") ||
+          meshName.toLowerCase().includes("restroom") ||
+          meshName.toLowerCase().includes("bath") ||
+          category === "WALL";
         const isCeiling = meshName.toLowerCase().includes("ceiling") || meshName.toLowerCase().includes("roof");
 
         if (isWall || isCeiling) {
@@ -428,7 +441,7 @@ export default function PaintItMasterCanvas({
 
   const handleApplyFinishToAllWalls = (finish: WallFinishType) => {
     const currentStates = config.wallSurfaceStates || {};
-    const keys = ["wall_back", "wall_left", "wall_right", "wall_front"];
+    const keys = ["wall_back", "wall_left", "wall_right", "wall_front", "toilet"];
     const updatedStates = { ...currentStates };
 
     keys.forEach((k) => {
