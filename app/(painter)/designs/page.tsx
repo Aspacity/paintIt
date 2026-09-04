@@ -25,6 +25,8 @@ interface SavedVisualization {
   created_at: string;
 }
 
+import { paintitApi } from "@/lib/apiClient";
+
 export default function Painter3DStudioDashboardHub() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
@@ -46,52 +48,37 @@ export default function Painter3DStudioDashboardHub() {
   const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
   const [designTargetForDelete, setDesignTargetForDelete] = useState<SavedVisualization | null>(null);
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
-
   useEffect(() => {
     let isMounted = true;
 
     const loadDashboardStudioData = async () => {
-      if (!accessToken) {
-        if (isMounted) setIsLoading(false);
-        return;
-      }
+      const fallbackCatalog: MasterTemplate[] = [
+        { id: "tmpl_living_lux", title: "Luxury Minimalist Living Room", category: "INTERIOR", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "🛋️" },
+        { id: "tmpl_bed_nordic", title: "Nordic Executive Bedroom Layout", category: "INTERIOR", model_url: "", plan_type: "RENTAL", price: "2500.00", thumbnail_icon: "🛏️" },
+        { id: "tmpl_office_corp", title: "Corporate Creative Office", category: "COMMERCIAL", model_url: "", plan_type: "BUY", price: "6000.00", thumbnail_icon: "🏢" },
+        { id: "tmpl_accent_geometric", title: "Geometric POP Accent Wall", category: "ACCENT", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "📐" }
+      ];
 
       try {
-        const fallbackCatalog: MasterTemplate[] = [
-          { id: "tmpl_living_lux", title: "Luxury Minimalist Living Room", category: "INTERIOR", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "🛋️" },
-          { id: "tmpl_bed_nordic", title: "Nordic Executive Bedroom Layout", category: "INTERIOR", model_url: "", plan_type: "RENTAL", price: "2500.00", thumbnail_icon: "🛏️" },
-          { id: "tmpl_office_corp", title: "Corporate Creative Office", category: "COMMERCIAL", model_url: "", plan_type: "BUY", price: "6000.00", thumbnail_icon: "🏢" },
-          { id: "tmpl_accent_geometric", title: "Geometric POP Accent Wall", category: "ACCENT", model_url: "", plan_type: "FREE", price: "0.00", thumbnail_icon: "📐" }
-        ];
-
-        const catalogRes = await fetch(`${BACKEND_API_URL}/api/visualizations/catalog`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" }
-        }).catch(() => null);
-
-        if (isMounted) {
-          if (catalogRes && catalogRes.ok) {
-            const catData = await catalogRes.json();
+        // Fetch catalog designs
+        try {
+          const catData = await paintitApi.get<{ catalog: MasterTemplate[] }>("/api/visualizations/catalog");
+          if (isMounted) {
             setCatalog(catData.catalog?.length ? catData.catalog : fallbackCatalog);
-          } else {
-            setCatalog(fallbackCatalog);
           }
+        } catch {
+          if (isMounted) setCatalog(fallbackCatalog);
         }
 
-        const savedRes = await fetch(`${BACKEND_API_URL}/api/visualizations`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
+        // Fetch user's saved visualizations if logged in
+        if (accessToken) {
+          try {
+            const savedData = await paintitApi.get<{ visualizations: SavedVisualization[] }>("/api/visualizations");
+            if (isMounted) setSavedDesigns(savedData.visualizations || []);
+          } catch {
+            if (isMounted) setSavedDesigns([]);
           }
-        }).catch(() => null);
-
-        if (isMounted && savedRes && savedRes.ok) {
-          const savedData = await savedRes.json();
-          setSavedDesigns(savedData.visualizations || []);
         }
-
       } catch (err) {
         console.error("3D Studio data processing exception:", err);
       } finally {
@@ -102,7 +89,7 @@ export default function Painter3DStudioDashboardHub() {
     loadDashboardStudioData();
 
     return () => { isMounted = false; };
-  }, [accessToken, BACKEND_API_URL]);
+  }, [accessToken]);
 
   useEffect(() => {
     if (!redirectUrl) return;
@@ -111,24 +98,12 @@ export default function Painter3DStudioDashboardHub() {
 
   const shareToWhatsAppStream = async (design: SavedVisualization) => {
     try {
-      const res = await fetch(`${BACKEND_API_URL}/api/visualizations/${design.id}/share`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const whatsappText = encodeURIComponent(
-          `Hello! Check out the custom 3D wall color scheme layout I designed for your property on PaintIT: ${window.location.origin}/view/${data.shareId}`
-        );
-        window.open(`https://wa.me/?text=${whatsappText}`, "_blank");
-        showToast({ message: "WhatsApp link generated successfully.", severity: "success" });
-      } else {
-        throw new Error("Sharing endpoint failure.");
-      }
+      const data = await paintitApi.post<{ shareId: string }>(`/api/visualizations/${design.id}/share`);
+      const whatsappText = encodeURIComponent(
+        `Hello! Check out the custom 3D wall color scheme layout I designed for your property on PaintIT: ${window.location.origin}/view/${data.shareId}`
+      );
+      window.open(`https://wa.me/?text=${whatsappText}`, "_blank");
+      showToast({ message: "WhatsApp link generated successfully.", severity: "success" });
     } catch (err) {
       console.error("Link generation failure:", err);
       navigator.clipboard.writeText(`${window.location.origin}/workspace?id=${design.id}`);
@@ -162,19 +137,12 @@ export default function Painter3DStudioDashboardHub() {
     if (!designTargetForDelete) return;
 
     try {
-      const res = await fetch(`${BACKEND_API_URL}/api/visualizations/${designTargetForDelete.id}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${accessToken}` }
-      });
-
-      if (res.ok) {
-        setSavedDesigns((prev) => prev.filter(item => item.id !== designTargetForDelete.id));
-        showToast({ message: "Project mockup deleted.", severity: "success" });
-      } else {
-        showToast({ message: "Failed removing entry.", severity: "error" });
-      }
+      await paintitApi.delete(`/api/visualizations/${designTargetForDelete.id}`);
+      setSavedDesigns((prev) => prev.filter(item => item.id !== designTargetForDelete.id));
+      showToast({ message: "Project mockup deleted.", severity: "success" });
     } catch (err) {
       console.error("Delete exception:", err);
+      showToast({ message: "Failed removing entry.", severity: "error" });
     }
   };
 

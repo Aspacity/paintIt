@@ -29,6 +29,8 @@ interface RawBackendLead {
   isLocked?: boolean;
 }
 
+import { paintitApi } from "@/lib/apiClient";
+
 export default function PainterLeadsAndGigsPage() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
@@ -39,8 +41,6 @@ export default function PainterLeadsAndGigsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [filterSource, setFilterSource] = useState<string>("ALL");
 
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
-
   useEffect(() => {
     const fetchLeads = async () => {
       if (!accessToken) {
@@ -49,17 +49,8 @@ export default function PainterLeadsAndGigsPage() {
       }
 
       try {
-        const res = await fetch(`${BACKEND_API_URL}/api/leads/me`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const rawLeads: RawBackendLead[] = data.pipelineLeads || data.leads || [];
+        const data = await paintitApi.get<{ pipelineLeads?: RawBackendLead[]; leads?: RawBackendLead[] }>("/api/leads/me");
+        const rawLeads: RawBackendLead[] = data.pipelineLeads || data.leads || [];
 
           const formattedLeads: InboundLead[] = rawLeads.map((item) => {
             let meta: Record<string, unknown> = {};
@@ -116,7 +107,6 @@ export default function PainterLeadsAndGigsPage() {
           });
 
           setLeads(formattedLeads);
-        }
       } catch (err) {
         console.error("Error fetching leads:", err);
       } finally {
@@ -125,7 +115,7 @@ export default function PainterLeadsAndGigsPage() {
     };
 
     fetchLeads();
-  }, [accessToken, BACKEND_API_URL]);
+  }, [accessToken]);
 
   const filteredLeads = leads.filter((lead) => {
     if (filterSource === "ALL") return true;

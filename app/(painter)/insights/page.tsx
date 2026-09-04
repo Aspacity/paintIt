@@ -12,6 +12,8 @@ interface PerformanceMetrics {
   conversionRate: number;
 }
 
+import { paintitApi } from '@/lib/apiClient';
+
 export default function PainterInsightsAnalyticsPage() {
   const { accessToken } = useAuth();
   const { theme } = useTheme();
@@ -19,23 +21,12 @@ export default function PainterInsightsAnalyticsPage() {
 
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchPerformanceMetrics = async () => {
       try {
-        const response = await fetch(`${BACKEND_API_URL}/api/analytics/overview`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMetrics(data.metrics);
-        }
+        const data = await paintitApi.get<{ metrics: PerformanceMetrics }>('/api/analytics/overview');
+        setMetrics(data.metrics);
       } catch (error) {
         console.error("Failed fetching performance tracking metrics:", error);
       } finally {
@@ -46,7 +37,7 @@ export default function PainterInsightsAnalyticsPage() {
     if (accessToken) {
       fetchPerformanceMetrics();
     }
-  }, [accessToken, BACKEND_API_URL]);
+  }, [accessToken]);
 
   if (loading) {
     return (
