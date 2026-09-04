@@ -116,7 +116,15 @@ function CanvasSceneMeshEngine({
 
   useEffect(() => {
     let active = true;
-    const loader = new (require("three/examples/jsm/loaders/GLTFLoader").GLTFLoader)();
+    const { GLTFLoader } = require("three/examples/jsm/loaders/GLTFLoader.js");
+    const { DRACOLoader } = require("three/examples/jsm/loaders/DRACOLoader.js");
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
     loader.load(
       config.modelUrl,
       (gltf: any) => {
@@ -127,6 +135,7 @@ function CanvasSceneMeshEngine({
     );
     return () => {
       active = false;
+      dracoLoader.dispose();
     };
   }, [config.modelUrl]);
 
