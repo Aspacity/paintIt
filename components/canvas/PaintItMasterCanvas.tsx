@@ -23,6 +23,7 @@ import { Leva } from "leva";
 import { CanvasTopStatusBar, CameraViewPreset } from "./master/CanvasTopStatusBar";
 import { CanvasMobileToolsDrawer } from "./master/CanvasMobileToolsDrawer";
 import { threeCache } from "@/utils/threeCacheManager";
+import { paintitApi } from "@/lib/apiClient";
 
 export type WallFinishType = "EMULSION" | "SATIN" | "GLOSS";
 export type TimeOfDayPreset = LightingPresetKey | "day";
@@ -333,12 +334,29 @@ export default function PaintItMasterCanvas({
   const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
   const [rightTab, setRightTab] = useState<"sun" | "lighting">("sun");
-
   const [paintSplashes, setPaintSplashes] = useState<
     Array<{ id: string; position: THREE.Vector3; color: string }>
   >([]);
 
   const [paintsList, setPaintsList] = useState<any[]>(REAL_PAINTS_CATALOG);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDatabasePaints = async () => {
+      try {
+        const data = await paintitApi.get<{ paints: any[] }>("/api/paints");
+        if (isMounted && data.paints && data.paints.length > 0) {
+          setPaintsList(data.paints);
+        }
+      } catch {
+        // Maintain config/paints.ts defaults when offline or unconfigured
+      }
+    };
+    fetchDatabasePaints();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSurfaceSelect = (rawName: string, category: string, point: THREE.Vector3) => {
     setSelectedPoint(point);
@@ -357,6 +375,7 @@ export default function PaintItMasterCanvas({
       wall_left: { color: "#C4B199", finish: "EMULSION" },
       wall_right: { color: "#C4B199", finish: "EMULSION" },
       wall_front: { color: "#C4B199", finish: "EMULSION" },
+      toilet: { color: "#C4B199", finish: "EMULSION" },
       ceiling: { color: "#FFFFFF", finish: "EMULSION" },
     };
 
@@ -365,11 +384,12 @@ export default function PaintItMasterCanvas({
     // 🎨 Locate current color index and cycle to the NEXT color on the paint list
     const catalogList = paintsList && paintsList.length > 0 ? paintsList : REAL_PAINTS_CATALOG;
     const currentIndex = catalogList.findIndex(
-      (p) => p.hex?.toLowerCase() === currentColorOnWall.toLowerCase()
+      (p) => (p.code || p.hex)?.toLowerCase() === currentColorOnWall.toLowerCase()
     );
 
     const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % catalogList.length : 0;
-    const nextColor = catalogList[nextIndex]?.hex || "#FF8C38";
+    const nextPaint = catalogList[nextIndex];
+    const nextColor = nextPaint?.code || nextPaint?.hex || "#FF8C38";
 
     const currentFinish = currentStates[key]?.finish || config.activeWallFinish || "EMULSION";
     const updatedStates = {
@@ -555,6 +575,40 @@ export default function PaintItMasterCanvas({
           }}
           onSelectCameraPreset={(preset) => setCameraPreset(preset)}
         />
+
+        {/* 🛠️ LEFT FLOATING ADMIN ASSEMBLY & CATALOG PANEL */}
+        {!config.hideAssemblyPanel && config.isAdmin && (
+          <div className="hidden md:flex absolute top-16 left-3 z-30 pointer-events-auto">
+            <MasterModelAssemblyPanel
+              activeRoomModelUrl={config.modelUrl}
+              activeStudioMode={studioMode}
+              selectedFurnitureId={selectedFurnitureId}
+              placedAssets={placedFurnitureAssets.map((f) => ({
+                id: f.id,
+                assetId: f.asset.id,
+                name: f.asset.name,
+                modelUrl: f.asset.modelUrl || (f.asset as any).gltfPath,
+                position: f.transform.position,
+                rotation: f.transform.rotation,
+                scale: f.transform.scale,
+              }))}
+              transformMode={furnitureTransformMode}
+              onTransformModeChange={setFurnitureTransformMode}
+              onSelectRoomModel={(url) => onConfigChange?.({ modelUrl: url })}
+              onSelectStudioMode={setStudioMode}
+              onAddFurnitureAsset={handleAddFurnitureAsset}
+              onSelectFurnitureInstance={setSelectedFurnitureId}
+              onDeleteFurnitureInstance={(id) => {
+                setPlacedFurnitureAssets((prev) => prev.filter((p) => p.id !== id));
+                if (selectedFurnitureId === id) setSelectedFurnitureId(null);
+              }}
+              onClearAllFurniture={() => {
+                setPlacedFurnitureAssets([]);
+                setSelectedFurnitureId(null);
+              }}
+            />
+          </div>
+        )}
 
         {/* ☀️ RIGHT FLOATING PANEL (Lighting & Sky) */}
         {!config.hideLightingTab && (

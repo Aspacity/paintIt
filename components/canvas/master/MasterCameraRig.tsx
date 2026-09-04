@@ -108,8 +108,7 @@ export default function MasterCameraRig({
 
         onSaveCameraConfig?.(payload);
       }),
-    }),
-    [isAdmin]
+    })
   );
 
   // Dynamic Camera FOV Update
