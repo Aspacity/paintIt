@@ -3,11 +3,11 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { paintitApi } from "@/lib/apiClient";
 
 export function TrafficTracker() {
   const pathname = usePathname();
   const currentSectionRef = useRef<string>("HERO");
-  const BACKEND_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
 
   // 📡 1. Heartbeat Interval Loop (Kept Lightweight)
   useEffect(() => {
@@ -20,20 +20,18 @@ export function TrafficTracker() {
     let runningDuration = 0;
     const heartbeatTimer = setInterval(() => {
       runningDuration += 10;
-      fetch(`${BACKEND_URL}/api/analytics/heartbeat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      paintitApi
+        .post("/api/analytics/heartbeat", {
           visitorToken,
           duration: runningDuration,
           currentSection: currentSectionRef.current,
-          deviceType: window.innerWidth < 768 ? "MOBILE" : "DESKTOP"
+          deviceType: window.innerWidth < 768 ? "MOBILE" : "DESKTOP",
         })
-      }).catch(() => null);
+        .catch(() => null);
     }, 10000);
 
     return () => clearInterval(heartbeatTimer);
-  }, [BACKEND_URL]);
+  }, []);
 
   // 🗺️ 2. Route Path Tracker Engine
   useEffect(() => {
@@ -48,10 +46,8 @@ export function TrafficTracker() {
     let trackingType = "platform_landing";
     let painterId: string | null = null;
 
-    // Split paths to locate parameters safely
     const pathSegments = pathname.split("/").filter(Boolean);
 
-    // ✅ CASE A: Handling public profile and sub-design paths
     if (pathSegments[0] === "painter" && pathSegments[1]) {
       painterId = pathSegments[1];
       trackingType = "profile_view";
@@ -59,39 +55,31 @@ export function TrafficTracker() {
       if (pathSegments[2] === "designs") {
         trackingType = "design_view";
       }
-    }
-    // ✅ CASE B: Handling internal dashboard workspace hits (Forces mapping back to your stats counters!)
-    else if (pathSegments[0] === "dashboard") {
-      // Pull token data safely from memory to ensure the owner's metric catches the hit
+    } else if (pathSegments[0] === "dashboard") {
       const cachedUserData = localStorage.getItem("paintit_user_data");
       if (cachedUserData) {
         try {
           const parsed = JSON.parse(cachedUserData);
           painterId = parsed.id || parsed._id;
-          trackingType = "profile_view"; // Counts internal tests during preview runs
+          trackingType = "profile_view";
         } catch { /**/ }
       }
     }
 
-    // 🎯 CACHE LOCK SYSTEM
     const sessionTrackingKey = `tracked_${trackingType}_${painterId || "platform"}`;
     const alreadyTrackedInThisSession = sessionStorage.getItem(sessionTrackingKey);
 
     const startTime = Date.now();
 
-    // 🚀 Only fires if not locked in this specific layout context instance
     if (!alreadyTrackedInThisSession && painterId) {
-      fetch(`${BACKEND_URL}/api/analytics/track`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      paintitApi
+        .post("/api/analytics/track", {
           pagePath: pathname,
           type: trackingType,
           painterId,
           visitorToken,
-          isExitEvent: false
+          isExitEvent: false,
         })
-      })
         .then(() => {
           sessionStorage.setItem(sessionTrackingKey, "true");
         })
@@ -106,21 +94,26 @@ export function TrafficTracker() {
         painterId,
         visitorToken,
         durationSeconds,
-        isExitEvent: true
+        isExitEvent: true,
       });
 
+      const backendUrl = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
       if (navigator.sendBeacon) {
-        navigator.sendBeacon(`${BACKEND_URL}/api/analytics/track`, new Blob([exitPayload], { type: "application/json" }));
+        navigator.sendBeacon(`${backendUrl}/api/analytics/track`, new Blob([exitPayload], { type: "application/json" }));
       } else {
-        fetch(`${BACKEND_URL}/api/analytics/track`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: exitPayload,
-          keepalive: true
-        }).catch(() => null);
+        paintitApi
+          .post("/api/analytics/track", {
+            pagePath: pathname,
+            type: trackingType,
+            painterId,
+            visitorToken,
+            durationSeconds,
+            isExitEvent: true,
+          })
+          .catch(() => null);
       }
     };
-  }, [pathname, BACKEND_URL]);
+  }, [pathname]);
 
   return null;
 }

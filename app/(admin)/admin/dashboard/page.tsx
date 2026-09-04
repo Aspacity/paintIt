@@ -54,7 +54,7 @@ interface AnalyticsData {
   interactions: InteractionLog[];
 }
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || "http://localhost:5000";
+import { paintitApi } from "@/lib/apiClient";
 
 export default function AdminAnalyticsDashboard() {
   const { accessToken } = useAuth();
@@ -68,25 +68,11 @@ export default function AdminAnalyticsDashboard() {
 
   const fetchAdminData = async () => {
     try {
-      const token = accessToken || localStorage.getItem("paintit_access_token") || "";
+      const json = await paintitApi.get<AnalyticsData>("/api/admin/analytics");
+      setData(json);
 
-      // 1. Fetch dashboard metrics
-      const res = await fetch(`${BACKEND_API_URL}/api/admin/analytics`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
-
-      // 2. Fetch role-tailored user feedbacks for Master Admin Panel
-      const feedbackRes = await fetch(`${BACKEND_API_URL}/api/feedback/admin/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (feedbackRes.ok) {
-        const fbJson = await feedbackRes.json();
-        setFeedbacks(fbJson.feedbacks || []);
-      }
+      const fbJson = await paintitApi.get<{ feedbacks: UserFeedbackEntry[] }>("/api/feedback/admin/all");
+      setFeedbacks(fbJson.feedbacks || []);
     } catch (err) {
       console.error(err);
       showToast({ message: "⚠️ Could not sync admin metrics directory.", severity: "error" });
@@ -103,22 +89,11 @@ export default function AdminAnalyticsDashboard() {
 
   const handleMarkResolved = async (id: number) => {
     try {
-      const token = accessToken || localStorage.getItem("paintit_access_token") || "";
-      const res = await fetch(`${BACKEND_API_URL}/api/feedback/admin/${id}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "RESOLVED" }),
-      });
-
-      if (res.ok) {
-        showToast({ message: "Feedback marked as RESOLVED!", severity: "success" });
-        setFeedbacks((prev) =>
-          prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" } : f))
-        );
-      }
+      await paintitApi.put(`/api/feedback/admin/${id}/status`, { status: "RESOLVED" });
+      showToast({ message: "Feedback marked as RESOLVED!", severity: "success" });
+      setFeedbacks((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" } : f))
+      );
     } catch (err) {
       showToast({ message: "Feedback marked as RESOLVED locally.", severity: "success" });
       setFeedbacks((prev) =>
