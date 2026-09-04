@@ -235,14 +235,10 @@ export function StudioBlenderModelMesh({
           // Dot product: If mesh lies directly between camera and room center, fade it!
           const dot = cameraToMesh.dot(roomCenterToMesh);
 
-          // Hide top ceiling if camera is high angle (top-down view)
+          // Keep ceiling visible at all times
           if (meshName.includes("ceiling") || meshName.includes("roof")) {
-            if (camera.position.y > 4.5) {
-              node.visible = false;
-              return;
-            } else {
-              node.visible = true;
-            }
+            node.visible = true;
+            return;
           }
 
           // Auto-cutaway wall if it blocks the camera view

@@ -250,8 +250,7 @@ function CanvasSceneMeshEngine({
 
   useFrame(({ camera }) => {
     if (!clonedScene) return;
-    const isHighAngle = camera.position.y > 3.8;
-    const shouldCutawayCeiling = config.isCeilingCutaway || cameraPreset === "TOP_DOWN" || isHighAngle;
+    const shouldCutawayCeiling = Boolean(config.isCeilingCutaway);
 
     clonedScene.traverse((node) => {
       if (node instanceof THREE.Mesh) {
