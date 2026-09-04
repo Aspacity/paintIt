@@ -10,6 +10,7 @@ interface CanvasTopStatusBarProps {
   activeWallFinish: string;
   isSavingLocally?: boolean;
   lastSavedTimestamp?: number | null;
+  isAdmin?: boolean;
   onSyncToLiveServer?: () => Promise<void>;
   onSelectCameraPreset: (preset: CameraViewPreset) => void;
 }
@@ -19,6 +20,7 @@ export function CanvasTopStatusBar({
   activeWallFinish,
   isSavingLocally,
   lastSavedTimestamp,
+  isAdmin = false,
   onSyncToLiveServer,
   onSelectCameraPreset,
 }: CanvasTopStatusBarProps) {
@@ -47,27 +49,29 @@ export function CanvasTopStatusBar({
         />
       </div>
 
-      {/* Camera Preset Buttons */}
-      <div className="flex items-center gap-1 bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 p-1 rounded-2xl pointer-events-auto shadow-2xl">
-        <button
-          onClick={() => onSelectCameraPreset("FULL_ROOM")}
-          className="px-2.5 py-1 text-[9px] font-black uppercase rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-        >
-          🏠 Room
-        </button>
-        <button
-          onClick={() => onSelectCameraPreset("SEATING_FOCUS")}
-          className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-        >
-          🛋️ Focus
-        </button>
-        <button
-          onClick={() => onSelectCameraPreset("ACCENT_WALL")}
-          className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
-        >
-          🎨 Wall
-        </button>
-      </div>
+      {/* Camera Preset Buttons (Only visible for Admin setup mode) */}
+      {isAdmin && (
+        <div className="flex items-center gap-1 bg-neutral-950/85 backdrop-blur-xl border border-neutral-800 p-1 rounded-2xl pointer-events-auto shadow-2xl">
+          <button
+            onClick={() => onSelectCameraPreset("FULL_ROOM")}
+            className="px-2.5 py-1 text-[9px] font-black uppercase rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
+          >
+            🏠 Room
+          </button>
+          <button
+            onClick={() => onSelectCameraPreset("SEATING_FOCUS")}
+            className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
+          >
+            🛋️ Focus
+          </button>
+          <button
+            onClick={() => onSelectCameraPreset("ACCENT_WALL")}
+            className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-all"
+          >
+            🎨 Wall
+          </button>
+        </div>
+      )}
     </div>
   );
 }

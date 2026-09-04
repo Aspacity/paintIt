@@ -524,6 +524,7 @@ export default function PaintItMasterCanvas({
           activeWallFinish={config.activeWallFinish}
           isSavingLocally={isSavingLocally}
           lastSavedTimestamp={lastSavedTimestamp}
+          isAdmin={config.isAdmin}
           onSyncToLiveServer={async () => {
             if (onConfigChange && config.wallSurfaceStates) {
               onConfigChange(config);
