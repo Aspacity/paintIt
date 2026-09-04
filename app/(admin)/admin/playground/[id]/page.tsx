@@ -11,7 +11,7 @@ import { CameraConfigPayload } from '@/components/canvas/master/MasterCameraRig'
 
 import ConfirmModal from '@/components/modals/ConfirmModal';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_PAINTIT_API_URL || 'http://localhost:5000';
+import { paintitApi } from '@/lib/apiClient';
 
 function PlaygroundCanvasContent() {
   const routeParams = useParams();
@@ -25,23 +25,10 @@ function PlaygroundCanvasContent() {
 
   const handleDeleteModel = async () => {
     setIsDeleting(true);
-    const token = accessToken || localStorage.getItem('paintit_access_token') || '';
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/visualizations/catalog/${dynamicId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (res.ok) {
-        showToast({ message: '🗑️ Model frame deleted successfully!', severity: 'success' });
-        router.push('/admin/playground');
-      } else {
-        throw new Error('Delete model rejected.');
-      }
+      await paintitApi.delete(`/api/visualizations/catalog/${dynamicId}`);
+      showToast({ message: '🗑️ Model frame deleted successfully!', severity: 'success' });
+      router.push('/admin/playground');
     } catch {
       showToast({ message: '❌ Failed to delete model frame from database.', severity: 'error' });
     } finally {
@@ -126,9 +113,8 @@ function PlaygroundCanvasContent() {
     let isMounted = true;
     const hydratePlayground = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/visualizations/catalog/${dynamicId}`);
-        if (res.ok && isMounted) {
-          const data = await res.json();
+        const data = await paintitApi.get<any>(`/api/visualizations/catalog/${dynamicId}`);
+        if (isMounted && data) {
           if (data.title) setDesignTitle(data.title);
           if (data.model_url) setModelUrl(data.model_url);
 
@@ -212,23 +198,11 @@ function PlaygroundCanvasContent() {
         },
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/visualizations/catalog/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify(payload),
+      await paintitApi.post('/api/visualizations/catalog/save', payload);
+      showToast({
+        message: '💾 Master Studio configuration saved to database successfully!',
+        severity: 'success',
       });
-
-      if (res.ok) {
-        showToast({
-          message: '💾 Master Studio configuration saved to database successfully!',
-          severity: 'success',
-        });
-      } else {
-        throw new Error('Save catalog rejected.');
-      }
     } catch {
       showToast({
         message: 'Saved locally to session memory.',
