@@ -111,13 +111,18 @@ export default function MasterCameraRig({
     })
   );
 
-  // Dynamic Camera FOV Update
+  // Dynamic Camera FOV Update with Mobile Viewport Framing Optimization
   useEffect(() => {
     const pCam = camera as THREE.PerspectiveCamera;
-    if (pCam.isPerspectiveCamera && levaConfig.fov) {
-      // eslint-disable-next-line react-hooks/immutability
-      pCam.fov = levaConfig.fov;
-      pCam.updateProjectionMatrix();
+    if (pCam.isPerspectiveCamera) {
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+      const baseFov = levaConfig.fov ?? 45;
+      const targetFov = isMobile ? Math.max(baseFov, 58) : baseFov;
+
+      if (pCam.fov !== targetFov) {
+        pCam.fov = targetFov;
+        pCam.updateProjectionMatrix();
+      }
     }
   }, [camera, levaConfig.fov]);
 

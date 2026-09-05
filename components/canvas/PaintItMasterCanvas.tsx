@@ -138,6 +138,8 @@ function CanvasSceneMeshEngine({
   selectedSurfacePoint,
   isPaintDormant,
   cameraPreset,
+  onLoadStart,
+  onLoadSuccess,
 }: {
   config: MasterCanvasConfig;
   onSurfaceSelect?: (rawName: string, category: string, point: THREE.Vector3) => void;
@@ -145,12 +147,15 @@ function CanvasSceneMeshEngine({
   selectedSurfacePoint: THREE.Vector3 | null;
   isPaintDormant: boolean;
   cameraPreset: CameraViewPreset | null;
+  onLoadStart?: () => void;
+  onLoadSuccess?: () => void;
 }) {
   const lastTapRef = useRef<{ time: number; meshName: string }>({ time: 0, meshName: "" });
   const [gltfScene, setGltfScene] = useState<THREE.Group | null>(null);
 
   useEffect(() => {
     let active = true;
+    onLoadStart?.();
     const { GLTFLoader } = require("three/examples/jsm/loaders/GLTFLoader.js");
     const { DRACOLoader } = require("three/examples/jsm/loaders/DRACOLoader.js");
 
@@ -166,7 +171,10 @@ function CanvasSceneMeshEngine({
       loader.load(
         targetUrl,
         (gltf: any) => {
-          if (active) setGltfScene(gltf.scene);
+          if (active) {
+            setGltfScene(gltf.scene);
+            onLoadSuccess?.();
+          }
         },
         undefined,
         (err: any) => {
@@ -378,8 +386,46 @@ export default function PaintItMasterCanvas({
   isSavingLocally,
   lastSavedTimestamp,
 }: PaintItMasterCanvasProps) {
+  const { showToast } = useAlert();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  const [modelLoadingStatus, setModelLoadingStatus] = useState<"loading" | "loaded">("loading");
+  const [isTakingLong, setIsTakingLong] = useState<boolean>(false);
+
+  useEffect(() => {
+    setModelLoadingStatus("loading");
+    setIsTakingLong(false);
+
+    const timeoutId = setTimeout(() => {
+      setIsTakingLong(true);
+      showToast({
+        message: "⏱️ 3D model asset is taking longer than expected to download. Please wait a moment...",
+        severity: "info",
+      });
+    }, 45000);
+
+    const intervalId = setInterval(() => {
+      showToast({
+        message: "⏱️ Still downloading 3D model environment assets... Please stand by.",
+        severity: "info",
+      });
+    }, 45000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [config.modelUrl, showToast]);
+
+  const handleModelLoadStart = React.useCallback(() => {
+    setModelLoadingStatus("loading");
+  }, []);
+
+  const handleModelLoadSuccess = React.useCallback(() => {
+    setModelLoadingStatus("loaded");
+    setIsTakingLong(false);
+  }, []);
 
   const [selectedPoint, setSelectedPoint] = useState<THREE.Vector3 | null>(null);
   const [activeSelectedWall, setActiveSelectedWall] = useState<string | null>(null);
@@ -629,6 +675,8 @@ export default function PaintItMasterCanvas({
             selectedSurfacePoint={selectedPoint}
             isPaintDormant={studioMode === "FURNITURE"}
             cameraPreset={cameraPreset}
+            onLoadStart={handleModelLoadStart}
+            onLoadSuccess={handleModelLoadSuccess}
           />
 
           {placedFurnitureAssets.map((item) => (
@@ -660,6 +708,23 @@ export default function PaintItMasterCanvas({
             <MasterPaintSplashRipple key={splash.id} position={splash.position} color={splash.color} />
           ))}
         </Canvas>
+
+        {/* 🎨 3D MODEL LOADING NOTIFICATION OVERLAY & 45s TIMEOUT ALERT */}
+        {modelLoadingStatus === "loading" && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-fade-in flex items-center gap-3 bg-neutral-950/90 backdrop-blur-2xl border border-[#FF8C38]/40 px-4 py-2.5 rounded-2xl shadow-2xl">
+            <div className="w-4 h-4 border-2 border-[#FF8C38] border-t-transparent rounded-full animate-spin shrink-0" />
+            <div className="text-left">
+              <p className="text-[11px] font-bold text-white tracking-wide leading-tight">
+                🎨 Preparing 3D Room Environment...
+              </p>
+              <span className="text-[9px] font-mono text-neutral-400 block leading-tight">
+                {isTakingLong
+                  ? "⏱️ High detail 3D model asset downloading... Please wait."
+                  : "Please wait a few seconds while model assets load."}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* 📱 TOP CENTER FLOATING CAMERA & STATUS BAR */}
         <CanvasTopStatusBar
