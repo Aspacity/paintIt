@@ -395,6 +395,14 @@ export default function PaintItMasterCanvas({
   const [bulbs, setBulbs] = useState<BulbState[]>(config.bulbs || []);
   const [selectedBulbId, setSelectedBulbId] = useState<string | null>(null);
 
+  const handleSetBulbs: React.Dispatch<React.SetStateAction<BulbState[]>> = (action) => {
+    setBulbs((prev) => {
+      const nextBulbs = typeof action === "function" ? action(prev) : action;
+      onConfigChange?.({ bulbs: nextBulbs });
+      return nextBulbs;
+    });
+  };
+
   useEffect(() => {
     if (config.bulbs && config.bulbs.length > 0) {
       setBulbs(config.bulbs);
@@ -407,8 +415,11 @@ export default function PaintItMasterCanvas({
       if (!config.modelUrl) return;
       const onlineConfig = await fetchOnlineModelLightingConfig(config.modelUrl);
       if (isMounted && onlineConfig) {
-        if (onlineConfig.bulbs && onlineConfig.bulbs.length > 0 && (!config.bulbs || config.bulbs.length === 0)) {
+        if (onlineConfig.bulbs && onlineConfig.bulbs.length > 0) {
           setBulbs(onlineConfig.bulbs);
+          if (!config.bulbs || config.bulbs.length === 0) {
+            onConfigChange?.({ bulbs: onlineConfig.bulbs });
+          }
         }
       }
     };
@@ -865,7 +876,7 @@ export default function PaintItMasterCanvas({
                     <div className="space-y-3">
                       <LightControls
                         bulbs={bulbs}
-                        setBulbs={setBulbs}
+                        setBulbs={handleSetBulbs}
                         isNightMode={config.timeOfDay === "night"}
                         setIsNightMode={(isNight) => onConfigChange?.({ timeOfDay: isNight ? "night" : "morning" })}
                         selectedBulbId={selectedBulbId}
@@ -887,7 +898,7 @@ export default function PaintItMasterCanvas({
           activeSelectedWall={activeSelectedWall}
           onSelectWallSurface={(wallKey) => setActiveSelectedWall(wallKey)}
           bulbs={bulbs}
-          setBulbs={setBulbs}
+          setBulbs={handleSetBulbs}
           selectedBulbId={selectedBulbId}
           setSelectedBulbId={setSelectedBulbId}
           studioMode={studioMode}
