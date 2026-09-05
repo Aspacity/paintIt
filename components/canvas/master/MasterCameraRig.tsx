@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useControls, button } from "leva";
@@ -15,6 +15,7 @@ export interface CameraConfigPayload {
   position: [number, number, number];
   target: [number, number, number];
   preset?: CameraViewPreset | null;
+  maxPanRadius?: number;
 }
 
 interface MasterCameraRigProps {
@@ -43,23 +44,37 @@ export default function MasterCameraRig({
       minDistance: {
         value: savedCameraConfig?.minDistance ?? 0.2,
         min: 0.1,
-        max: 10.0,
+        max: 5.0,
         step: 0.1,
         label: "Min Zoom (m)",
       },
       maxDistance: {
-        value: savedCameraConfig?.maxDistance ?? 15.0,
+        value: savedCameraConfig?.maxDistance ?? 6.0,
         min: 2.0,
-        max: 50.0,
-        step: 0.5,
+        max: 15.0,
+        step: 0.2,
         label: "Max Zoom (m)",
       },
       maxPolarAngleDeg: {
-        value: Math.round(((savedCameraConfig?.maxPolarAngle ?? Math.PI - 0.05) * 180) / Math.PI),
+        value: Math.round(((savedCameraConfig?.maxPolarAngle ?? (Math.PI / 2 - 0.05)) * 180) / Math.PI),
         min: 30,
-        max: 180,
+        max: 90,
         step: 1,
         label: "Max Tilt (deg)",
+      },
+      minPolarAngleDeg: {
+        value: Math.round(((savedCameraConfig?.minPolarAngle ?? 0.05) * 180) / Math.PI),
+        min: 1,
+        max: 60,
+        step: 1,
+        label: "Min Tilt (deg)",
+      },
+      maxPanRadius: {
+        value: savedCameraConfig?.maxPanRadius ?? 3.0,
+        min: 1.0,
+        max: 8.0,
+        step: 0.2,
+        label: "Pan Radius (m)",
       },
       fov: {
         value: savedCameraConfig?.fov ?? 45,
@@ -82,8 +97,10 @@ export default function MasterCameraRig({
         if (!controlsRef.current) return;
         const target = controlsRef.current.target;
         const minDist = (get("📷 Camera & Viewport Controls.minDistance") as number) ?? 0.2;
-        const maxDist = (get("📷 Camera & Viewport Controls.maxDistance") as number) ?? 15.0;
-        const maxTiltDeg = (get("📷 Camera & Viewport Controls.maxPolarAngleDeg") as number) ?? 175;
+        const maxDist = (get("📷 Camera & Viewport Controls.maxDistance") as number) ?? 6.0;
+        const maxTiltDeg = (get("📷 Camera & Viewport Controls.maxPolarAngleDeg") as number) ?? 87;
+        const minTiltDeg = (get("📷 Camera & Viewport Controls.minPolarAngleDeg") as number) ?? 3;
+        const panRadius = (get("📷 Camera & Viewport Controls.maxPanRadius") as number) ?? 3.0;
         const currentFov = (get("📷 Camera & Viewport Controls.fov") as number) ?? 45;
         const presetChoice = get("📷 Camera & Viewport Controls.cameraPreset") as CameraViewPreset;
 
@@ -91,8 +108,9 @@ export default function MasterCameraRig({
           minDistance: minDist,
           maxDistance: maxDist,
           maxPolarAngle: (maxTiltDeg * Math.PI) / 180,
-          minPolarAngle: 0.01,
+          minPolarAngle: (minTiltDeg * Math.PI) / 180,
           fov: currentFov,
+          maxPanRadius: panRadius,
           position: [
             parseFloat(camera.position.x.toFixed(2)),
             parseFloat(camera.position.y.toFixed(2)),
@@ -111,12 +129,29 @@ export default function MasterCameraRig({
     })
   );
 
+  // 🛡️ Room Boundary Enforcement (Frame-by-Frame Clamping)
+  useFrame(() => {
+    if (!controlsRef.current) return;
+    const target = controlsRef.current.target;
+    const maxPan = levaConfig.maxPanRadius ?? savedCameraConfig?.maxPanRadius ?? 3.0;
+
+    // Clamp OrbitControls target position inside room box
+    target.x = THREE.MathUtils.clamp(target.x, -maxPan, maxPan);
+    target.y = THREE.MathUtils.clamp(target.y, 0.2, 3.0);
+    target.z = THREE.MathUtils.clamp(target.z, -maxPan, maxPan);
+
+    // Prevent camera position from dropping below floor level
+    if (camera.position.y < 0.1) {
+      camera.position.y = 0.1;
+    }
+  });
+
   // Dynamic Camera FOV Update with Mobile Viewport Framing Optimization
   useEffect(() => {
     const pCam = camera as THREE.PerspectiveCamera;
     if (pCam.isPerspectiveCamera) {
       const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-      const baseFov = levaConfig.fov ?? 45;
+      const baseFov = levaConfig.fov ?? savedCameraConfig?.fov ?? 45;
       const targetFov = isMobile ? Math.max(baseFov, 58) : baseFov;
 
       if (pCam.fov !== targetFov) {
@@ -124,7 +159,7 @@ export default function MasterCameraRig({
         pCam.updateProjectionMatrix();
       }
     }
-  }, [camera, levaConfig.fov]);
+  }, [camera, levaConfig.fov, savedCameraConfig?.fov]);
 
   // Handle Preset Changes from props or Leva GUI
   const activePreset = targetPreset || levaConfig.cameraPreset;
@@ -154,20 +189,23 @@ export default function MasterCameraRig({
     }
   }, [activePreset, camera, savedCameraConfig]);
 
+  const maxPolarAngleRad = (levaConfig.maxPolarAngleDeg * Math.PI) / 180;
+  const minPolarAngleRad = (levaConfig.minPolarAngleDeg * Math.PI) / 180;
+
   return (
     <OrbitControls
       ref={controlsRef}
       makeDefault
       target={savedCameraConfig?.target ?? [0, 1.2, 0]}
-      minPolarAngle={savedCameraConfig?.minPolarAngle ?? 0.01}
-      maxPolarAngle={savedCameraConfig?.maxPolarAngle ?? ((levaConfig.maxPolarAngleDeg * Math.PI) / 180)}
-      minDistance={savedCameraConfig?.minDistance ?? levaConfig.minDistance ?? 0.2}
-      maxDistance={savedCameraConfig?.maxDistance ?? levaConfig.maxDistance ?? 50.0}
-      enableRotate={true} // 🔄 Horizontal 360° rotation around room enabled!
-      enablePan={true} // 🎥 Position panning enabled for all users!
-      screenSpacePanning={true} // ↕️↔️ Pan along screen plane up, down, left, right along any axis!
+      minPolarAngle={minPolarAngleRad}
+      maxPolarAngle={maxPolarAngleRad}
+      minDistance={levaConfig.minDistance ?? savedCameraConfig?.minDistance ?? 0.2}
+      maxDistance={levaConfig.maxDistance ?? savedCameraConfig?.maxDistance ?? 6.0}
+      enableRotate={true}
+      enablePan={true}
+      screenSpacePanning={true}
       panSpeed={1.2}
-      enableZoom={enableZoom} // 🔍 Zoom in and out allowed!
+      enableZoom={enableZoom}
       enableDamping={true}
       dampingFactor={0.08}
       onChange={() => {
@@ -180,6 +218,7 @@ export default function MasterCameraRig({
           maxPolarAngle: controlsRef.current.maxPolarAngle,
           minPolarAngle: controlsRef.current.minPolarAngle,
           fov: currentFov,
+          maxPanRadius: levaConfig.maxPanRadius,
           position: [
             parseFloat(camera.position.x.toFixed(3)),
             parseFloat(camera.position.y.toFixed(3)),

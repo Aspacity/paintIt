@@ -1,4 +1,5 @@
 import { BulbState } from "@/components/canvas/LightControls";
+import { CameraConfigPayload } from "@/components/canvas/master/MasterCameraRig";
 
 export interface ModelLightingConfig {
   modelUrl: string;
@@ -8,6 +9,7 @@ export interface ModelLightingConfig {
   ambientIntensity?: number;
   timeOfDay?: string;
   bulbs: BulbState[];
+  cameraSettings?: CameraConfigPayload | null;
 }
 
 /**
@@ -150,7 +152,7 @@ export async function fetchOnlineModelLightingConfig(modelUrl: string): Promise<
 
     if (res.ok) {
       const data = await res.json();
-      if (data && Array.isArray(data.bulbs) && data.bulbs.length > 0) {
+      if (data && (Array.isArray(data.bulbs) || data.cameraSettings)) {
         const config: ModelLightingConfig = {
           modelUrl: data.modelUrl || modelUrl,
           sunAzimuth: data.sunAzimuth,
@@ -158,7 +160,8 @@ export async function fetchOnlineModelLightingConfig(modelUrl: string): Promise<
           sunIntensity: data.sunIntensity,
           ambientIntensity: data.ambientIntensity,
           timeOfDay: data.timeOfDay,
-          bulbs: data.bulbs,
+          bulbs: data.bulbs || [],
+          cameraSettings: data.cameraSettings || null,
         };
 
         // Cache in LocalStorage and memory registry

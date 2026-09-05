@@ -192,7 +192,7 @@ function PlaygroundCanvasContent() {
         throw new Error(errJson.error || errJson.details || `Save returned HTTP ${res.status}`);
       }
 
-      // 2. Sync Lightbulbs & Sun Setup globally to model_lighting_configs table in Neon DB
+      // 2. Sync Lightbulbs, Sun Setup & Camera Config globally to model_lighting_configs table in Neon DB
       await saveModelLightingConfigGlobal({
         modelUrl: modelUrl,
         sunAzimuth: lightingSettings.sunAzimuthOverride,
@@ -201,6 +201,7 @@ function PlaygroundCanvasContent() {
         ambientIntensity: lightingSettings.ambientIntensityOverride,
         timeOfDay: tod,
         bulbs: bulbsList,
+        cameraSettings: savedCameraConfig,
       });
 
       showToast({

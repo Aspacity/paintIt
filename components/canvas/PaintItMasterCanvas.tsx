@@ -101,6 +101,21 @@ function getMeshIdentifiers(meshOrName: THREE.Object3D | string): { allNames: st
 
 function getMeshCategory(meshOrName: THREE.Object3D | string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
   const { allNames } = getMeshIdentifiers(meshOrName);
+
+  // 🚪 Doors, frames, hinges, handles, and locks must NEVER be classified as walls or ceilings
+  const isDoorOrFixture =
+    allNames.includes("door") ||
+    allNames.includes("dver") ||
+    allNames.includes("frame") ||
+    allNames.includes("hinge") ||
+    allNames.includes("knob") ||
+    allNames.includes("handle") ||
+    allNames.includes("sash") ||
+    allNames.includes("latch") ||
+    allNames.includes("lock");
+
+  if (isDoorOrFixture) return "OTHER";
+
   if (
     allNames.includes("wall") ||
     allNames.includes("toilet") ||
@@ -122,13 +137,28 @@ function getMeshCategory(meshOrName: THREE.Object3D | string): "WALL" | "FLOOR" 
 
 function resolveWallKey(meshOrName: THREE.Object3D | string): string {
   const { allNames } = getMeshIdentifiers(meshOrName);
+
+  // 🚪 Ignore doors & architectural fixtures completely
+  const isDoorOrFixture =
+    allNames.includes("door") ||
+    allNames.includes("dver") ||
+    allNames.includes("frame") ||
+    allNames.includes("hinge") ||
+    allNames.includes("knob") ||
+    allNames.includes("handle") ||
+    allNames.includes("sash") ||
+    allNames.includes("latch") ||
+    allNames.includes("lock");
+
+  if (isDoorOrFixture) return "";
+
   if (allNames.includes("toilet") || allNames.includes("restroom") || allNames.includes("bath") || allNames.includes("cube.016")) return "toilet";
   if (allNames.includes("back") || allNames.includes("cube.036")) return "wall_back";
   if (allNames.includes("left") || allNames.includes("cube.035")) return "wall_left";
   if (allNames.includes("right") || allNames.includes("cube.037")) return "wall_right";
   if (allNames.includes("front") || allNames.includes("accent") || allNames.includes("cube.034")) return "wall_front";
   if (allNames.includes("ceiling") || allNames.includes("cube.038")) return "ceiling";
-  return "wall_back";
+  return "";
 }
 
 function CanvasSceneMeshEngine({
@@ -339,7 +369,9 @@ function CanvasSceneMeshEngine({
           if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
             const category = getMeshCategory(e.object);
+            if (category !== "WALL" && category !== "CEILING") return;
             const key = resolveWallKey(e.object);
+            if (!key) return;
             const rawName = e.object.name || e.object.parent?.name || key;
             const now = Date.now();
             const isDoubleTap =
@@ -359,7 +391,9 @@ function CanvasSceneMeshEngine({
           if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
             const category = getMeshCategory(e.object);
+            if (category !== "WALL" && category !== "CEILING") return;
             const key = resolveWallKey(e.object);
+            if (!key) return;
             const rawName = e.object.name || e.object.parent?.name || key;
             onDoubleClickSurface?.(rawName, category, e.point);
           }
@@ -455,6 +489,12 @@ export default function PaintItMasterCanvas({
     }
   }, [config.bulbs]);
 
+  const [internalCameraConfig, setInternalCameraConfig] = useState<CameraConfigPayload | null>(savedCameraConfig || null);
+
+  useEffect(() => {
+    if (savedCameraConfig) setInternalCameraConfig(savedCameraConfig);
+  }, [savedCameraConfig]);
+
   useEffect(() => {
     let isMounted = true;
     const hydrateLighting = async () => {
@@ -467,13 +507,16 @@ export default function PaintItMasterCanvas({
             onConfigChange?.({ bulbs: onlineConfig.bulbs });
           }
         }
+        if (onlineConfig.cameraSettings && !savedCameraConfig) {
+          setInternalCameraConfig(onlineConfig.cameraSettings);
+        }
       }
     };
     hydrateLighting();
     return () => {
       isMounted = false;
     };
-  }, [config.modelUrl]);
+  }, [config.modelUrl, savedCameraConfig]);
 
   const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
@@ -654,8 +697,11 @@ export default function PaintItMasterCanvas({
           <MasterCameraRig
             targetPreset={cameraPreset}
             isAdmin={config.isAdmin}
-            savedCameraConfig={savedCameraConfig}
-            onSaveCameraConfig={onSaveCameraConfig}
+            savedCameraConfig={savedCameraConfig || internalCameraConfig}
+            onSaveCameraConfig={(payload) => {
+              setInternalCameraConfig(payload);
+              onSaveCameraConfig?.(payload);
+            }}
           />
           <MasterLightingEngine
             timeOfDay={config.timeOfDay}

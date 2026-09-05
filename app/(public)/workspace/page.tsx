@@ -381,6 +381,7 @@ function WorkspaceContent() {
                 wallBack: states.wall_back?.color || prev.wallBack,
                 wallLeft: states.wall_left?.color || prev.wallLeft,
                 wallRight: states.wall_right?.color || prev.wallRight,
+                toilet: states.toilet?.color || prev.toilet,
                 ceiling: states.ceiling?.color || prev.ceiling,
               }));
               setRoomFinishes((prev) => ({
@@ -389,6 +390,7 @@ function WorkspaceContent() {
                 wallBack: states.wall_back?.finish || prev.wallBack,
                 wallLeft: states.wall_left?.finish || prev.wallLeft,
                 wallRight: states.wall_right?.finish || prev.wallRight,
+                toilet: states.toilet?.finish || prev.toilet,
               }));
             }
           }}
