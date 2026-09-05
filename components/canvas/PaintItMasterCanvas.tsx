@@ -69,30 +69,62 @@ export interface PaintItMasterCanvasProps {
   lastSavedTimestamp?: number | null;
 }
 
-function getMeshCategory(name: string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
-  const lower = name.toLowerCase();
+function getMeshIdentifiers(meshOrName: THREE.Object3D | string): { allNames: string; primaryName: string } {
+  const namesToTest: string[] = [];
+  let primaryName = "";
+
+  if (typeof meshOrName === "string") {
+    namesToTest.push(meshOrName);
+    primaryName = meshOrName;
+  } else if (meshOrName) {
+    primaryName = meshOrName.name || "";
+    if (meshOrName.name) namesToTest.push(meshOrName.name);
+    if (meshOrName.parent?.name) namesToTest.push(meshOrName.parent.name);
+    if ((meshOrName as THREE.Mesh).material) {
+      const mat = (meshOrName as THREE.Mesh).material;
+      if (Array.isArray(mat)) {
+        mat.forEach((m) => m.name && namesToTest.push(m.name));
+      } else if (mat.name) {
+        namesToTest.push(mat.name);
+      }
+    }
+  }
+
+  return {
+    allNames: namesToTest.join(" ").toLowerCase(),
+    primaryName,
+  };
+}
+
+function getMeshCategory(meshOrName: THREE.Object3D | string): "WALL" | "FLOOR" | "CEILING" | "OTHER" {
+  const { allNames } = getMeshIdentifiers(meshOrName);
   if (
-    lower.includes("wall") ||
-    lower.includes("toilet") ||
-    lower.includes("restroom") ||
-    lower.includes("bath") ||
-    lower.includes("partition")
+    allNames.includes("wall") ||
+    allNames.includes("toilet") ||
+    allNames.includes("restroom") ||
+    allNames.includes("bath") ||
+    allNames.includes("partition") ||
+    allNames.includes("cube.016") ||
+    allNames.includes("cube.034") ||
+    allNames.includes("cube.035") ||
+    allNames.includes("cube.036") ||
+    allNames.includes("cube.037")
   ) {
     return "WALL";
   }
-  if (lower.includes("floor") || lower.includes("ground") || lower.includes("base")) return "FLOOR";
-  if (lower.includes("ceiling") || lower.includes("roof")) return "CEILING";
+  if (allNames.includes("floor") || allNames.includes("ground") || allNames.includes("base") || allNames.includes("wood floor")) return "FLOOR";
+  if (allNames.includes("ceiling") || allNames.includes("roof")) return "CEILING";
   return "OTHER";
 }
 
-function resolveWallKey(name: string): string {
-  const lower = name.toLowerCase();
-  if (lower.includes("toilet") || lower.includes("restroom") || lower.includes("bath")) return "toilet";
-  if (lower.includes("back")) return "wall_back";
-  if (lower.includes("left")) return "wall_left";
-  if (lower.includes("right")) return "wall_right";
-  if (lower.includes("front") || lower.includes("accent")) return "wall_front";
-  if (lower.includes("ceiling")) return "ceiling";
+function resolveWallKey(meshOrName: THREE.Object3D | string): string {
+  const { allNames } = getMeshIdentifiers(meshOrName);
+  if (allNames.includes("toilet") || allNames.includes("restroom") || allNames.includes("bath") || allNames.includes("cube.016")) return "toilet";
+  if (allNames.includes("back") || allNames.includes("cube.036")) return "wall_back";
+  if (allNames.includes("left") || allNames.includes("cube.035")) return "wall_left";
+  if (allNames.includes("right") || allNames.includes("cube.037")) return "wall_right";
+  if (allNames.includes("front") || allNames.includes("accent") || allNames.includes("cube.034")) return "wall_front";
+  if (allNames.includes("ceiling") || allNames.includes("cube.038")) return "ceiling";
   return "wall_back";
 }
 
@@ -151,7 +183,7 @@ function CanvasSceneMeshEngine({
       if (node instanceof THREE.Mesh) {
         const meshName = node.name;
         const nameLower = meshName.toLowerCase();
-        const category = getMeshCategory(meshName);
+        const category = getMeshCategory(node);
 
         const isGlassPane =
           (nameLower.includes("glass") || nameLower.includes("window") || nameLower.includes("pane") || nameLower.includes("glazing")) &&
@@ -209,16 +241,11 @@ function CanvasSceneMeshEngine({
         }
 
         // 2. Pure Architectural Wall Paint & Sheen Engine
-        const isWall =
-          meshName.toLowerCase().includes("wall") ||
-          meshName.toLowerCase().includes("toilet") ||
-          meshName.toLowerCase().includes("restroom") ||
-          meshName.toLowerCase().includes("bath") ||
-          category === "WALL";
-        const isCeiling = meshName.toLowerCase().includes("ceiling") || meshName.toLowerCase().includes("roof");
+        const isWall = category === "WALL";
+        const isCeiling = category === "CEILING";
 
         if (isWall || isCeiling) {
-          const key = resolveWallKey(meshName);
+          const key = resolveWallKey(node);
           const wallState = config.wallSurfaceStates?.[key];
           const wallColor = wallState?.color || (isCeiling ? "#FFFFFF" : config.activeWallColor);
           const wallFinish = wallState?.finish || config.activeWallFinish;
@@ -276,8 +303,9 @@ function CanvasSceneMeshEngine({
           e.stopPropagation();
           if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
-            const rawName = e.object.name;
-            const category = getMeshCategory(rawName);
+            const category = getMeshCategory(e.object);
+            const key = resolveWallKey(e.object);
+            const rawName = e.object.name || e.object.parent?.name || key;
             const now = Date.now();
             const isDoubleTap =
               lastTapRef.current.meshName === rawName && now - lastTapRef.current.time < 350;
@@ -295,8 +323,9 @@ function CanvasSceneMeshEngine({
           e.stopPropagation();
           if (isPaintDormant) return;
           if (e.object instanceof THREE.Mesh) {
-            const rawName = e.object.name;
-            const category = getMeshCategory(rawName);
+            const category = getMeshCategory(e.object);
+            const key = resolveWallKey(e.object);
+            const rawName = e.object.name || e.object.parent?.name || key;
             onDoubleClickSurface?.(rawName, category, e.point);
           }
         }}
@@ -423,6 +452,7 @@ export default function PaintItMasterCanvas({
       wall_left: { color: "#C4B199", finish: "EMULSION" },
       wall_right: { color: "#C4B199", finish: "EMULSION" },
       wall_front: { color: "#C4B199", finish: "EMULSION" },
+      toilet: { color: "#C4B199", finish: "EMULSION" },
       ceiling: { color: "#FFFFFF", finish: "EMULSION" },
     };
 
@@ -452,6 +482,7 @@ export default function PaintItMasterCanvas({
       wall_left: { color: "#C4B199", finish: "EMULSION" },
       wall_right: { color: "#C4B199", finish: "EMULSION" },
       wall_front: { color: "#C4B199", finish: "EMULSION" },
+      toilet: { color: "#C4B199", finish: "EMULSION" },
       ceiling: { color: "#FFFFFF", finish: "EMULSION" },
     };
 

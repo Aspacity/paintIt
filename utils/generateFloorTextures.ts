@@ -400,6 +400,7 @@ export function getMeshCategory(meshName: string): TextureCategory | "WALL" | "O
     name.includes("ceiling") ||
     name.includes("roof") ||
     name.includes("toilet") ||
+    name.includes("cube.016") ||
     ["left", "right", "back", "front"].includes(name)
   ) {
     return "WALL";

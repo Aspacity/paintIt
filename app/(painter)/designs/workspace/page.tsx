@@ -31,6 +31,7 @@ export default function Painter3DStudioWorkspacePage() {
     wall_left: { color: "#F2F1E9", finish: "EMULSION" },
     wall_right: { color: "#9BA498", finish: "EMULSION" },
     wall_front: { color: "#C4B199", finish: "EMULSION" },
+    toilet: { color: "#C4B199", finish: "EMULSION" },
     ceiling: { color: "#FFFFFF", finish: "EMULSION" },
   });
 

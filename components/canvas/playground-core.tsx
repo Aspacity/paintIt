@@ -130,6 +130,8 @@ const WALL_MAPPING: Record<string, string> = {
   right: 'wallRight',
   back: 'wallBack',
   front: 'wallFront',
+  toilet: 'toilet',
+  'cube.016': 'toilet',
   roof: 'ceiling'
 };
 
