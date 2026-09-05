@@ -10,6 +10,7 @@ import { CameraConfigPayload } from '@/components/canvas/master/MasterCameraRig'
 
 import ConfirmModal from '@/components/modals/ConfirmModal';
 
+import { saveModelLightingConfigGlobal } from '@/config/roomModelLightingConfigs';
 import { paintitApi } from '@/lib/apiClient';
 
 function PlaygroundCanvasContent() {
@@ -25,11 +26,12 @@ function PlaygroundCanvasContent() {
   const handleDeleteModel = async () => {
     setIsDeleting(true);
     try {
-      await paintitApi.delete(`/api/visualizations/catalog/${dynamicId}`);
+      const res = await fetch(`/api/visualizations/catalog/${dynamicId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed deleting from catalog');
       showToast({ message: '🗑️ Model frame deleted successfully!', severity: 'success' });
       router.push('/admin/playground');
-    } catch {
-      showToast({ message: '❌ Failed to delete model frame from database.', severity: 'error' });
+    } catch (err: any) {
+      showToast({ message: `❌ Failed to delete model frame: ${err.message}`, severity: 'error' });
     } finally {
       setIsDeleting(false);
       setDeleteModalOpen(false);
@@ -87,42 +89,45 @@ function PlaygroundCanvasContent() {
     let isMounted = true;
     const hydratePlayground = async () => {
       try {
-        const data = await paintitApi.get<any>(`/api/visualizations/catalog/${dynamicId}`);
-        if (isMounted && data) {
-          if (data.title) setDesignTitle(data.title);
-          if (data.model_url) setModelUrl(data.model_url);
+        const res = await fetch(`/api/visualizations/catalog/${dynamicId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data) {
+            if (data.title) setDesignTitle(data.title);
+            if (data.model_url) setModelUrl(data.model_url);
 
-          if (data.default_room_data) {
-            const rd = data.default_room_data;
-            if (rd.wallColors) setRoomColors((prev) => ({ ...prev, ...rd.wallColors }));
-            if (rd.wallFinishes) setRoomFinishes((prev) => ({ ...prev, ...rd.wallFinishes }));
-            if (rd.floorTexture) setActiveFloorTexture(rd.floorTexture);
-          }
-
-          if (data.camera_settings) {
-            setSavedCameraConfig((prev) => ({
-              ...prev,
-              ...data.camera_settings,
-            }));
-          }
-
-          if (data.lighting_settings) {
-            let ls = data.lighting_settings;
-            if (typeof ls === 'string') {
-              try { ls = JSON.parse(ls); } catch { ls = {}; }
+            if (data.default_room_data) {
+              const rd = data.default_room_data;
+              if (rd.wallColors) setRoomColors((prev) => ({ ...prev, ...rd.wallColors }));
+              if (rd.wallFinishes) setRoomFinishes((prev) => ({ ...prev, ...rd.wallFinishes }));
+              if (rd.floorTexture) setActiveFloorTexture(rd.floorTexture);
             }
-            if (Array.isArray(ls) && ls.length > 0) {
-              const firstObj = typeof ls[0] === 'object' ? ls[0] : {};
-              setLightingSettings((prev) => ({ ...prev, ...firstObj }));
-              if (firstObj.timeOfDay) setIsNightMode(firstObj.timeOfDay === 'night');
-            } else if (typeof ls === 'object' && ls !== null) {
-              setLightingSettings((prev) => ({ ...prev, ...ls }));
-              if (ls.timeOfDay) setIsNightMode(ls.timeOfDay === 'night');
-            }
-          }
 
-          if (data.global_environment?.isNightMode !== undefined) {
-            setIsNightMode(data.global_environment.isNightMode);
+            if (data.camera_settings) {
+              setSavedCameraConfig((prev) => ({
+                ...prev,
+                ...data.camera_settings,
+              }));
+            }
+
+            if (data.lighting_settings) {
+              let ls = data.lighting_settings;
+              if (typeof ls === 'string') {
+                try { ls = JSON.parse(ls); } catch { ls = {}; }
+              }
+              if (Array.isArray(ls) && ls.length > 0) {
+                const firstObj = typeof ls[0] === 'object' ? ls[0] : {};
+                setLightingSettings((prev) => ({ ...prev, ...firstObj }));
+                if (firstObj.timeOfDay) setIsNightMode(firstObj.timeOfDay === 'night');
+              } else if (typeof ls === 'object' && ls !== null) {
+                setLightingSettings((prev) => ({ ...prev, ...ls }));
+                if (ls.timeOfDay) setIsNightMode(ls.timeOfDay === 'night');
+              }
+            }
+
+            if (data.global_environment?.isNightMode !== undefined) {
+              setIsNightMode(data.global_environment.isNightMode);
+            }
           }
         }
       } catch (err) {
@@ -142,19 +147,22 @@ function PlaygroundCanvasContent() {
   const handleSavePlaygroundSetup = async () => {
     setIsSaving(true);
     try {
+      const bulbsList = lightingSettings.bulbs || [];
+      const tod = isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning');
+
       const payload = {
         id: dynamicId,
         title: designTitle,
         model_url: modelUrl,
         camera_settings: savedCameraConfig,
         lighting_settings: {
-          timeOfDay: isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning'),
+          timeOfDay: tod,
           sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
           sunElevationOverride: lightingSettings.sunElevationOverride,
           sunIntensityOverride: lightingSettings.sunIntensityOverride,
           ambientIntensityOverride: lightingSettings.ambientIntensityOverride,
           sunColorOverride: lightingSettings.sunColorOverride,
-          bulbs: lightingSettings.bulbs || [],
+          bulbs: bulbsList,
         },
         default_room_data: {
           modelUrl,
@@ -164,18 +172,46 @@ function PlaygroundCanvasContent() {
         },
         global_environment: {
           isNightMode,
+          sunAzimuth: lightingSettings.sunAzimuthOverride,
+          sunElevation: lightingSettings.sunElevationOverride,
+          sunIntensity: lightingSettings.sunIntensityOverride,
+          ambientIntensity: lightingSettings.ambientIntensityOverride,
+          timeOfDay: tod,
         },
       };
 
-      await paintitApi.post('/api/visualizations/catalog/save', payload);
+      // 1. Save Master Catalog item to Neon Database
+      const res = await fetch('/api/visualizations/catalog/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || errJson.details || `Save returned HTTP ${res.status}`);
+      }
+
+      // 2. Sync Lightbulbs & Sun Setup globally to model_lighting_configs table in Neon DB
+      await saveModelLightingConfigGlobal({
+        modelUrl: modelUrl,
+        sunAzimuth: lightingSettings.sunAzimuthOverride,
+        sunElevation: lightingSettings.sunElevationOverride,
+        sunIntensity: lightingSettings.sunIntensityOverride,
+        ambientIntensity: lightingSettings.ambientIntensityOverride,
+        timeOfDay: tod,
+        bulbs: bulbsList,
+      });
+
       showToast({
         message: '💾 Master Studio configuration saved to database successfully!',
         severity: 'success',
       });
-    } catch {
+    } catch (err: any) {
+      console.error('Playground save error:', err);
       showToast({
-        message: 'Saved locally to session memory.',
-        severity: 'info',
+        message: `❌ Database save error: ${err.message || 'Unknown error'}`,
+        severity: 'error',
       });
     } finally {
       setIsSaving(false);

@@ -25,6 +25,8 @@ import { CanvasTopStatusBar, CameraViewPreset } from "./master/CanvasTopStatusBa
 import { CanvasMobileToolsDrawer } from "./master/CanvasMobileToolsDrawer";
 import { threeCache } from "@/utils/threeCacheManager";
 import { paintitApi } from "@/lib/apiClient";
+import { formatModelUrl, getS3FallbackUrl } from "@/utils/modelUrlResolver";
+import { fetchOnlineModelLightingConfig } from "@/config/roomModelLightingConfigs";
 
 export type WallFinishType = "EMULSION" | "SATIN" | "GLOSS";
 export type TimeOfDayPreset = LightingPresetKey | "day";
@@ -158,14 +160,38 @@ function CanvasSceneMeshEngine({
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-    loader.load(
-      config.modelUrl,
-      (gltf: any) => {
-        if (active) setGltfScene(gltf.scene);
-      },
-      undefined,
-      (err: any) => console.error("Error loading 3D GLTF model:", err)
-    );
+    const primaryUrl = formatModelUrl(config.modelUrl);
+
+    const tryLoadUrl = (targetUrl: string, onFail: () => void) => {
+      loader.load(
+        targetUrl,
+        (gltf: any) => {
+          if (active) setGltfScene(gltf.scene);
+        },
+        undefined,
+        (err: any) => {
+          console.warn(`[GLTFLoader] Failed loading ${targetUrl}:`, err);
+          onFail();
+        }
+      );
+    };
+
+    const s3Url = getS3FallbackUrl(config.modelUrl);
+
+    tryLoadUrl(primaryUrl, () => {
+      if (s3Url && s3Url !== primaryUrl) {
+        tryLoadUrl(s3Url, () => {
+          tryLoadUrl("/models/selfcon.glb", () => {
+            console.error("[GLTFLoader] All model loading attempts failed.");
+          });
+        });
+      } else {
+        tryLoadUrl("/models/selfcon.glb", () => {
+          console.error("[GLTFLoader] All model loading attempts failed.");
+        });
+      }
+    });
+
     return () => {
       active = false;
       dracoLoader.dispose();
@@ -368,6 +394,29 @@ export default function PaintItMasterCanvas({
 
   const [bulbs, setBulbs] = useState<BulbState[]>(config.bulbs || []);
   const [selectedBulbId, setSelectedBulbId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (config.bulbs && config.bulbs.length > 0) {
+      setBulbs(config.bulbs);
+    }
+  }, [config.bulbs]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const hydrateLighting = async () => {
+      if (!config.modelUrl) return;
+      const onlineConfig = await fetchOnlineModelLightingConfig(config.modelUrl);
+      if (isMounted && onlineConfig) {
+        if (onlineConfig.bulbs && onlineConfig.bulbs.length > 0 && (!config.bulbs || config.bulbs.length === 0)) {
+          setBulbs(onlineConfig.bulbs);
+        }
+      }
+    };
+    hydrateLighting();
+    return () => {
+      isMounted = false;
+    };
+  }, [config.modelUrl]);
 
   const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);

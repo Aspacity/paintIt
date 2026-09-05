@@ -3,32 +3,26 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 const AWS_CDN_BASE = process.env.NEXT_PUBLIC_3D_CDN_URL || "https://d2bzch6iq8q85.cloudfront.net";
+const AWS_S3_BASE = process.env.NEXT_PUBLIC_S3_MODELS_URL || "https://paintit-3d-models-prod.s3.amazonaws.com";
 
 /**
- * Resolves 3D model URLs with AWS CloudFront as Primary and GitHub/local path as Fallback.
- * 1. First Attempt: AWS CloudFront CDN (e.g. https://d2bzch6iq8q85.cloudfront.net/models/shells/spacious-lux.glb)
- * 2. Second Attempt (Fallback): GitHub local path (e.g. /models/shells/spacious-lux.glb)
+ * Resolves 3D model URLs across AWS CloudFront, AWS S3, and local public directory.
  */
-export function getModelUrls(rawUrl: string): { primaryUrl: string; fallbackUrl: string } {
-  if (!rawUrl) return { primaryUrl: "", fallbackUrl: "" };
+export function getModelUrls(rawUrl: string): { primaryUrl: string; s3Url: string; fallbackUrl: string } {
+  if (!rawUrl) return { primaryUrl: "/models/selfcon.glb", s3Url: "https://paintit-3d-models-prod.s3.amazonaws.com/models/selfcon.glb", fallbackUrl: "/models/selfcon.glb" };
 
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
-    if (rawUrl.includes("cloudfront.net")) {
-      try {
-        const urlObj = new URL(rawUrl);
-        return { primaryUrl: rawUrl, fallbackUrl: urlObj.pathname };
-      } catch {
-        return { primaryUrl: rawUrl, fallbackUrl: rawUrl };
-      }
-    }
-    return { primaryUrl: rawUrl, fallbackUrl: rawUrl };
+    return { primaryUrl: rawUrl, s3Url: rawUrl, fallbackUrl: rawUrl };
   }
 
   const cleanPath = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
-  const primaryUrl = `${AWS_CDN_BASE}${cleanPath}`;
-  const fallbackUrl = cleanPath;
+  const fullPath = cleanPath.startsWith("/models/") ? cleanPath : `/models${cleanPath}`;
 
-  return { primaryUrl, fallbackUrl };
+  const primaryUrl = `${AWS_CDN_BASE}${fullPath}`;
+  const s3Url = `${AWS_S3_BASE}${fullPath}`;
+  const fallbackUrl = fullPath;
+
+  return { primaryUrl, s3Url, fallbackUrl };
 }
 
 /**

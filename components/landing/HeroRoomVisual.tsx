@@ -88,9 +88,20 @@ export default function HeroRoomVisual() {
   const [isDragging, setIsDragging] = useState(false);
   const [activeColor, setActiveColor] = useState<ColorPreset>(COLOR_PRESETS[0]);
   const [activeLighting, setActiveLighting] = useState<LightingPreset>(LIGHTING_PRESETS[1]);
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    setContainerWidth(containerRef.current.clientWidth);
+    const handleResize = () => {
+      if (containerRef.current) setContainerWidth(containerRef.current.clientWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -217,7 +228,7 @@ export default function HeroRoomVisual() {
           className="absolute inset-y-0 left-0 overflow-hidden transition-all duration-75"
           style={{ width: `${sliderPosition}%` }}
         >
-          <div className="relative w-full h-full" style={{ width: containerRef.current ? containerRef.current.clientWidth : "100%" }}>
+          <div className="relative w-full h-full" style={{ width: containerWidth ? `${containerWidth}px` : "100%" }}>
             <Image
               src="/images/raw_unpainted_room.jpg"
               alt="Original Unpainted Space"

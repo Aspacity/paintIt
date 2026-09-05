@@ -11,7 +11,6 @@ interface SceneProps {
 }
 
 export default function Scene({ activeSurface }: SceneProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
 
   // 1. INITIAL POSITION LOCK: Force the camera target on the very first render mount
