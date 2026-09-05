@@ -426,40 +426,71 @@ export default function PaintItMasterCanvas({
 
   const [modelLoadingStatus, setModelLoadingStatus] = useState<"loading" | "loaded">("loading");
   const [isTakingLong, setIsTakingLong] = useState<boolean>(false);
+  const isLoadedRef = useRef<boolean>(false);
+  const showToastRef = useRef(showToast);
 
   useEffect(() => {
+    showToastRef.current = showToast;
+  }, [showToast]);
+
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearLoadingTimers = React.useCallback(() => {
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    isLoadedRef.current = false;
     setModelLoadingStatus("loading");
     setIsTakingLong(false);
+    clearLoadingTimers();
 
-    const timeoutId = setTimeout(() => {
-      setIsTakingLong(true);
-      showToast({
-        message: "⏱️ 3D model asset is taking longer than expected to download. Please wait a moment...",
-        severity: "info",
-      });
+    timeoutIdRef.current = setTimeout(() => {
+      if (!isLoadedRef.current) {
+        setIsTakingLong(true);
+        showToastRef.current?.({
+          message: "⏱️ 3D model asset is taking longer than expected to download. Please wait a moment...",
+          severity: "info",
+        });
+      }
     }, 45000);
 
-    const intervalId = setInterval(() => {
-      showToast({
-        message: "⏱️ Still downloading 3D model environment assets... Please stand by.",
-        severity: "info",
-      });
+    intervalIdRef.current = setInterval(() => {
+      if (!isLoadedRef.current) {
+        showToastRef.current?.({
+          message: "⏱️ Still downloading 3D model environment assets... Please stand by.",
+          severity: "info",
+        });
+      } else {
+        clearLoadingTimers();
+      }
     }, 45000);
 
     return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
+      clearLoadingTimers();
     };
-  }, [config.modelUrl, showToast]);
+  }, [config.modelUrl, clearLoadingTimers]);
 
   const handleModelLoadStart = React.useCallback(() => {
-    setModelLoadingStatus("loading");
+    if (!isLoadedRef.current) {
+      setModelLoadingStatus("loading");
+    }
   }, []);
 
   const handleModelLoadSuccess = React.useCallback(() => {
+    isLoadedRef.current = true;
     setModelLoadingStatus("loaded");
     setIsTakingLong(false);
-  }, []);
+    clearLoadingTimers();
+  }, [clearLoadingTimers]);
 
   const [selectedPoint, setSelectedPoint] = useState<THREE.Vector3 | null>(null);
   const [activeSelectedWall, setActiveSelectedWall] = useState<string | null>(null);
