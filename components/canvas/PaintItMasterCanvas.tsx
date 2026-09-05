@@ -15,6 +15,7 @@ import MasterCameraRig, { CameraConfigPayload } from "./master/MasterCameraRig";
 import MasterPaintSplashRipple from "./master/MasterPaintSplashRipple";
 import LightControls, { BulbState } from "@/components/canvas/LightControls";
 import { MasterModelAssemblyPanel } from "./master/MasterModelAssemblyPanel";
+import { MasterPaintPickerPanel } from "./master/MasterPaintPickerPanel";
 import { ModularAssetInstance } from "./ModularAssetInstance";
 import { FurnishItAssetItem } from "@/config/furnishItAssets";
 import { PlacedObjectTransform } from "@/types/modular";
@@ -649,6 +650,19 @@ export default function PaintItMasterCanvas({
           </div>
         )}
 
+        {/* 🎨 FLOATING PAINT & FINISHES STUDIO PANEL (Draggable with 2 Tabs: Paint Colors & Sheens/Finishes) */}
+        <div className="hidden md:flex absolute top-36 left-3 md:left-88 z-30 pointer-events-auto">
+          <MasterPaintPickerPanel
+            paintsList={paintsList}
+            config={config}
+            activeSelectedWall={activeSelectedWall}
+            onSelectWallSurface={(wallKey) => setActiveSelectedWall(wallKey)}
+            onColorChange={handleColorChange}
+            onFinishChange={handleFinishChange}
+            onApplyFinishToAllWalls={handleApplyFinishToAllWalls}
+          />
+        </div>
+
         {/* ☀️ RIGHT FLOATING PANEL (Lighting & Sky) */}
         {!config.hideLightingTab && (
           <div
@@ -817,11 +831,12 @@ export default function PaintItMasterCanvas({
           </div>
         )}
 
-        {/* 📱 MOBILE BOTTOM TOOLS DRAWER */}
+        {/* 🛠️ STUDIO PAINT & FINISHES TOOLS DRAWER (Desktop & Mobile) */}
         <CanvasMobileToolsDrawer
           config={config}
           paintsList={paintsList}
           activeSelectedWall={activeSelectedWall}
+          onSelectWallSurface={(wallKey) => setActiveSelectedWall(wallKey)}
           bulbs={bulbs}
           setBulbs={setBulbs}
           selectedBulbId={selectedBulbId}

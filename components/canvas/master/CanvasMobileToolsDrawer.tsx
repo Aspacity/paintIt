@@ -12,6 +12,7 @@ interface CanvasMobileToolsDrawerProps {
   config: any;
   paintsList: any[];
   activeSelectedWall: string | null;
+  onSelectWallSurface?: (wallKey: string) => void;
   bulbs: any[];
   setBulbs: React.Dispatch<React.SetStateAction<any[]>>;
   selectedBulbId: string | null;
@@ -35,6 +36,7 @@ export function CanvasMobileToolsDrawer({
   config,
   paintsList,
   activeSelectedWall,
+  onSelectWallSurface,
   bulbs,
   setBulbs,
   selectedBulbId,
@@ -56,6 +58,15 @@ export function CanvasMobileToolsDrawer({
   const [mobileTab, setMobileTab] = useState<MobileTabType>("colors");
   const [isMobileDrawerCollapsed, setIsMobileDrawerCollapsed] = useState<boolean>(false);
   const [mobileDrawerHeight, setMobileDrawerHeight] = useState<number>(260);
+
+  const wallSurfaces = [
+    { key: "wall_back", label: "Back Wall" },
+    { key: "wall_left", label: "Left Wall" },
+    { key: "wall_right", label: "Right Wall" },
+    { key: "wall_front", label: "Front Wall" },
+    { key: "toilet", label: "Toilet Wall" },
+    { key: "ceiling", label: "Ceiling" },
+  ];
 
   return (
     <div
@@ -130,15 +141,44 @@ export function CanvasMobileToolsDrawer({
       {/* Drawer Body Content */}
       {!isMobileDrawerCollapsed && (
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {/* Surface Target Selector Bar */}
+          <div className="space-y-1 pb-2 border-b border-neutral-850">
+            <div className="flex items-center justify-between text-[9px] font-mono">
+              <span className="text-[#FF8C38] font-bold uppercase">
+                Active Surface: <span className="text-white">{activeSelectedWall ? activeSelectedWall.toUpperCase() : "BACK WALL"}</span>
+              </span>
+              <span className="text-neutral-500 font-medium">Or Double-Tap Wall in 3D</span>
+            </div>
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+              {wallSurfaces.map((surf) => {
+                const isSelected = (activeSelectedWall || "wall_back") === surf.key;
+                return (
+                  <button
+                    key={surf.key}
+                    type="button"
+                    onClick={() => onSelectWallSurface?.(surf.key)}
+                    className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded-lg uppercase whitespace-nowrap transition-all border ${
+                      isSelected
+                        ? "bg-[#FF8C38] text-black border-[#FF8C38] font-black"
+                        : "bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700"
+                    }`}
+                  >
+                    {surf.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* 🎨 PAINTS TAB */}
           {mobileTab === "colors" && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
                 <span>SELECT PAINT SWATCH</span>
-                <span className="text-[#FF8C38] font-bold">Double-Tap Wall To Apply</span>
+                <span className="text-[#FF8C38] font-bold">Paints Catalog</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
                 {paintsList.map((paint) => {
                   const targetKey = activeSelectedWall || "wall_back";
                   const currentStates = config.wallSurfaceStates || {};

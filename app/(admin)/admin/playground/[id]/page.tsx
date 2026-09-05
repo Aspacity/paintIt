@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Leva, useControls } from 'leva';
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import PaintItMasterCanvas, { MasterCanvasConfig, WallFinishType } from '@/components/canvas/PaintItMasterCanvas';
@@ -83,31 +82,6 @@ function PlaygroundCanvasContent() {
     timeOfDay: "morning",
   });
 
-  // 🎛️ LEVA GUI CONTROLLER FOR MASTER PLAYGROUND CAMERA & LIGHTING SYNC
-  const [levaCameraControls] = useControls('📷 Studio Camera & Viewport Limits', () => ({
-    minDistance: {
-      value: savedCameraConfig.minDistance,
-      min: 0.1,
-      max: 10.0,
-      step: 0.1,
-      label: 'Min Zoom Distance (m)',
-    },
-    maxDistance: {
-      value: savedCameraConfig.maxDistance,
-      min: 2.0,
-      max: 50.0,
-      step: 0.5,
-      label: 'Max Zoom Distance (m)',
-    },
-    fov: {
-      value: savedCameraConfig.fov,
-      min: 20,
-      max: 110,
-      step: 1,
-      label: 'Field of View (°)',
-    },
-  }));
-
   // Hydrate Template Data from Backend / Local DB
   useEffect(() => {
     let isMounted = true;
@@ -172,12 +146,7 @@ function PlaygroundCanvasContent() {
         id: dynamicId,
         title: designTitle,
         model_url: modelUrl,
-        camera_settings: {
-          ...savedCameraConfig,
-          minDistance: levaCameraControls?.minDistance ?? savedCameraConfig.minDistance ?? 0.2,
-          maxDistance: levaCameraControls?.maxDistance ?? savedCameraConfig.maxDistance ?? 15.0,
-          fov: levaCameraControls?.fov ?? savedCameraConfig.fov ?? 45,
-        },
+        camera_settings: savedCameraConfig,
         lighting_settings: {
           timeOfDay: isNightMode ? 'night' : (lightingSettings.timeOfDay || 'morning'),
           sunAzimuthOverride: lightingSettings.sunAzimuthOverride,
@@ -273,18 +242,6 @@ function PlaygroundCanvasContent() {
         cancelText="Cancel"
       />
 
-      {/* 🎛️ LEVA CAMERA GUI CONTROLLER CONTAINER */}
-      <div className="absolute top-20 right-80 z-40 pointer-events-auto">
-        <Leva
-          oneLineLabels
-          fill={false}
-          theme={{
-            sizes: { controlWidth: '110px', rootWidth: '260px' },
-            fontSizes: { root: '11px' },
-          }}
-        />
-      </div>
-
       {/* 🟢 UNIFIED MASTER CANVAS VIEWPORT */}
       <div className="w-full h-full relative overflow-hidden bg-neutral-950">
         <PaintItMasterCanvas
@@ -332,12 +289,7 @@ function PlaygroundCanvasContent() {
             isAdmin: true, // 👑 Full Master Admin lighting controls!
             hideLightingTab: false,
           }}
-          savedCameraConfig={{
-            ...savedCameraConfig,
-            minDistance: levaCameraControls?.minDistance ?? savedCameraConfig.minDistance ?? 0.2,
-            maxDistance: levaCameraControls?.maxDistance ?? savedCameraConfig.maxDistance ?? 15.0,
-            fov: levaCameraControls?.fov ?? savedCameraConfig.fov ?? 45,
-          }}
+          savedCameraConfig={savedCameraConfig}
           onSaveCameraConfig={(camData) => {
             setSavedCameraConfig(camData);
           }}
