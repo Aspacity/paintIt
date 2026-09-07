@@ -1,8 +1,7 @@
-"use client";
-
 import React, { useState, useRef } from "react";
 import { REAL_PAINTS_CATALOG } from "@/config/paints";
 import { WallFinishType } from "@/components/canvas/PaintItMasterCanvas";
+import { SplitType, WallSplitData, getLeafSegments } from "./WallSplitterTypes";
 
 interface MasterPaintPickerPanelProps {
   paintsList: any[];
@@ -12,6 +11,10 @@ interface MasterPaintPickerPanelProps {
   onColorChange: (colorHex: string) => void;
   onFinishChange: (finish: WallFinishType) => void;
   onApplyFinishToAllWalls: (finish: WallFinishType) => void;
+  wallSplits?: Record<string, WallSplitData>;
+  onSplitWall?: (targetKey: string, splitType: SplitType) => void;
+  onUndoSplit?: (wallKey: string) => void;
+  onResetWall?: (wallKey: string) => void;
 }
 
 export function MasterPaintPickerPanel({
@@ -22,8 +25,12 @@ export function MasterPaintPickerPanel({
   onColorChange,
   onFinishChange,
   onApplyFinishToAllWalls,
+  wallSplits = {},
+  onSplitWall,
+  onUndoSplit,
+  onResetWall,
 }: MasterPaintPickerPanelProps) {
-  const [activeTab, setActiveTab] = useState<"COLORS" | "FINISHES">("COLORS");
+  const [activeTab, setActiveTab] = useState<"COLORS" | "FINISHES" | "SPLIT">("COLORS");
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [customHex, setCustomHex] = useState<string>("#C4B199");
 
@@ -63,9 +70,15 @@ export function MasterPaintPickerPanel({
 
   const catalogPaints = paintsList && paintsList.length > 0 ? paintsList : REAL_PAINTS_CATALOG;
   const targetKey = activeSelectedWall || "wall_back";
+  const parentWallKey = targetKey.includes("::") ? targetKey.split("::")[0] : targetKey;
   const currentStates = config.wallSurfaceStates || {};
   const currentColor = currentStates[targetKey]?.color || config.activeWallColor || "#C4B199";
   const currentFinish = currentStates[targetKey]?.finish || config.activeWallFinish || "EMULSION";
+
+  // Wall Splitter Status for Active Parent Wall
+  const activeWallSplitData = wallSplits[parentWallKey];
+  const activeWallLeafSegments = activeWallSplitData ? getLeafSegments(activeWallSplitData.rootSegment) : [];
+  const hasSplits = activeWallLeafSegments.length > 1;
 
   return (
     <div
@@ -103,11 +116,11 @@ export function MasterPaintPickerPanel({
               <span className="text-[#FF8C38] font-bold uppercase">
                 Active Surface: <span className="text-white font-extrabold">{targetKey.toUpperCase()}</span>
               </span>
-              <span className="text-neutral-500 font-medium">Double-Tap Wall to Cycle</span>
+              <span className="text-neutral-500 font-medium">Click Wall to Select</span>
             </div>
             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
               {wallSurfaces.map((surf) => {
-                const isSelected = targetKey === surf.key;
+                const isSelected = parentWallKey === surf.key;
                 return (
                   <button
                     key={surf.key}
@@ -126,29 +139,40 @@ export function MasterPaintPickerPanel({
             </div>
           </div>
 
-          {/* 3. 2 Tab Buttons */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850 shrink-0">
+          {/* 3. 3 Tab Buttons */}
+          <div className="grid grid-cols-3 gap-1 p-1 bg-neutral-900/90 rounded-2xl border border-neutral-850 shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("COLORS")}
-              className={`py-1.5 text-[10px] font-bold uppercase rounded-xl transition-all ${
+              className={`py-1.5 text-[9px] font-bold uppercase rounded-xl transition-all ${
                 activeTab === "COLORS"
                   ? "bg-[#FF8C38] text-black shadow-md font-extrabold"
                   : "text-neutral-400 hover:text-white"
               }`}
             >
-              🎨 Paint Swatches
+              🎨 Paints
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("FINISHES")}
-              className={`py-1.5 text-[10px] font-bold uppercase rounded-xl transition-all ${
+              className={`py-1.5 text-[9px] font-bold uppercase rounded-xl transition-all ${
                 activeTab === "FINISHES"
                   ? "bg-[#FF8C38] text-black shadow-md font-extrabold"
                   : "text-neutral-400 hover:text-white"
               }`}
             >
-              ✨ Sheens & Finishes
+              ✨ Sheens
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("SPLIT")}
+              className={`py-1.5 text-[9px] font-bold uppercase rounded-xl transition-all ${
+                activeTab === "SPLIT"
+                  ? "bg-[#FF8C38] text-black shadow-md font-extrabold"
+                  : "text-neutral-400 hover:text-white"
+              }`}
+            >
+              ✂️ Split Wall
             </button>
           </div>
 
@@ -268,6 +292,129 @@ export function MasterPaintPickerPanel({
                     className="w-full py-2 text-[10px] font-mono font-bold uppercase text-[#FF8C38] bg-[#FF8C38]/15 hover:bg-[#FF8C38]/25 rounded-2xl border border-[#FF8C38]/30 transition-all text-center shadow-md active:scale-95"
                   >
                     ✨ Apply {currentFinish} Finish to All Walls
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: WALL SPLITTER */}
+            {activeTab === "SPLIT" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
+                  <span>TARGET SURFACE</span>
+                  <span className="text-[#FF8C38] font-extrabold uppercase">{targetKey.replace("wall_", "")}</span>
+                </div>
+
+                {/* 1. Choose Split Type Buttons */}
+                <div className="space-y-1">
+                  <span className="text-[9px] font-mono uppercase text-neutral-400 font-bold block">
+                    Choose Split Pattern (50/50 Subdivision)
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onSplitWall?.(targetKey, "HORIZONTAL")}
+                      className="p-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-[#FF8C38] rounded-2xl text-left transition-all group"
+                    >
+                      <span className="text-[11px] font-bold text-white block group-hover:text-[#FF8C38]">
+                        ➖ Horizontal
+                      </span>
+                      <span className="text-[8px] font-mono text-neutral-400 block">Top & Bottom</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onSplitWall?.(targetKey, "VERTICAL")}
+                      className="p-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-[#FF8C38] rounded-2xl text-left transition-all group"
+                    >
+                      <span className="text-[11px] font-bold text-white block group-hover:text-[#FF8C38]">
+                        🚪 Vertical
+                      </span>
+                      <span className="text-[8px] font-mono text-neutral-400 block">Left & Right</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onSplitWall?.(targetKey, "DIAGONAL_TL_BR")}
+                      className="p-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-[#FF8C38] rounded-2xl text-left transition-all group"
+                    >
+                      <span className="text-[11px] font-bold text-white block group-hover:text-[#FF8C38]">
+                        📐 Diagonal ↘
+                      </span>
+                      <span className="text-[8px] font-mono text-neutral-400 block">Top-Left to Bot-Right</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onSplitWall?.(targetKey, "DIAGONAL_TR_BL")}
+                      className="p-2 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-[#FF8C38] rounded-2xl text-left transition-all group"
+                    >
+                      <span className="text-[11px] font-bold text-white block group-hover:text-[#FF8C38]">
+                        📐 Diagonal ↙
+                      </span>
+                      <span className="text-[8px] font-mono text-neutral-400 block">Top-Right to Bot-Left</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Active Segments List */}
+                {hasSplits && (
+                  <div className="pt-2 border-t border-neutral-850 space-y-1.5">
+                    <span className="text-[9px] font-mono uppercase text-neutral-400 font-bold block">
+                      Active Wall Segments ({activeWallLeafSegments.length})
+                    </span>
+                    <div className="max-h-28 overflow-y-auto space-y-1 pr-1">
+                      {activeWallLeafSegments.map((seg) => {
+                        const isSelected = targetKey === seg.id;
+                        const segColor = currentStates[seg.id]?.color || currentColor;
+                        return (
+                          <button
+                            key={seg.id}
+                            type="button"
+                            onClick={() => onSelectWallSurface(seg.id)}
+                            className={`w-full p-1.5 rounded-xl border flex items-center justify-between text-left transition-all ${
+                              isSelected
+                                ? "bg-[#FF8C38]/20 border-[#FF8C38] text-white"
+                                : "bg-neutral-900 border-neutral-850 text-neutral-400 hover:border-neutral-700 hover:text-neutral-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div
+                                className="w-3.5 h-3.5 rounded-md border border-white/20 shrink-0 shadow-inner"
+                                style={{ backgroundColor: segColor }}
+                              />
+                              <span className="text-[9px] font-mono font-bold truncate">{seg.label}</span>
+                            </div>
+                            {isSelected && (
+                              <span className="text-[8px] font-mono text-[#FF8C38] font-bold shrink-0">
+                                ACTIVE
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Undo & Reset Controls */}
+                <div className="pt-2 border-t border-neutral-850 grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => onUndoSplit?.(parentWallKey)}
+                    disabled={!activeWallSplitData || activeWallSplitData.history.length === 0}
+                    className="py-1.5 text-[9px] font-mono font-bold uppercase text-neutral-300 bg-neutral-900 hover:bg-neutral-850 disabled:opacity-40 border border-neutral-800 rounded-xl transition-all text-center"
+                  >
+                    ↩️ Undo Split
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onResetWall?.(parentWallKey)}
+                    disabled={!hasSplits}
+                    className="py-1.5 text-[9px] font-mono font-bold uppercase text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 disabled:opacity-40 border border-rose-500/20 rounded-xl transition-all text-center"
+                  >
+                    🗑️ Reset Wall
                   </button>
                 </div>
               </div>

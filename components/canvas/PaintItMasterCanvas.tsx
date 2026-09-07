@@ -27,6 +27,8 @@ import { threeCache } from "@/utils/threeCacheManager";
 import { paintitApi } from "@/lib/apiClient";
 import { formatModelUrl, getS3FallbackUrl } from "@/utils/modelUrlResolver";
 import { fetchOnlineModelLightingConfig } from "@/config/roomModelLightingConfigs";
+import { WallSegment, WallSplitData, SplitType, subdivideSegment, getLeafSegments, findSegmentById, updateSegmentInTree } from "./master/WallSplitterTypes";
+import { WallSegmentMeshGroup } from "./master/WallSegmentMeshGroup";
 
 export type WallFinishType = "EMULSION" | "SATIN" | "GLOSS";
 export type TimeOfDayPreset = LightingPresetKey | "day";
@@ -136,6 +138,9 @@ function getMeshCategory(meshOrName: THREE.Object3D | string): "WALL" | "FLOOR" 
 }
 
 function resolveWallKey(meshOrName: THREE.Object3D | string): string {
+  if (typeof meshOrName === "string" && meshOrName.includes("::")) {
+    return meshOrName;
+  }
   const { allNames } = getMeshIdentifiers(meshOrName);
 
   // 🚪 Ignore doors & architectural fixtures completely
@@ -168,6 +173,8 @@ function CanvasSceneMeshEngine({
   selectedSurfacePoint,
   isPaintDormant,
   cameraPreset,
+  wallSplits,
+  activeSelectedWall,
   onLoadStart,
   onLoadSuccess,
 }: {
@@ -177,6 +184,8 @@ function CanvasSceneMeshEngine({
   selectedSurfacePoint: THREE.Vector3 | null;
   isPaintDormant: boolean;
   cameraPreset: CameraViewPreset | null;
+  wallSplits: Record<string, WallSplitData>;
+  activeSelectedWall: string | null;
   onLoadStart?: () => void;
   onLoadSuccess?: () => void;
 }) {
@@ -400,6 +409,19 @@ function CanvasSceneMeshEngine({
         }}
       />
 
+      <WallSegmentMeshGroup
+        gltfScene={gltfScene}
+        wallSplits={wallSplits}
+        wallSurfaceStates={config.wallSurfaceStates || {}}
+        activeWallColor={config.activeWallColor}
+        activeWallFinish={config.activeWallFinish}
+        activeSelectedWall={activeSelectedWall}
+        onSelectSegment={(segmentId, point) => {
+          onSurfaceSelect?.(segmentId, "WALL", point);
+        }}
+        resolveWallKey={resolveWallKey}
+      />
+
       {selectedSurfacePoint && (
         <mesh position={selectedSurfacePoint}>
           <ringGeometry args={[0.08, 0.12, 32]} />
@@ -547,7 +569,112 @@ export default function PaintItMasterCanvas({
     return () => {
       isMounted = false;
     };
-  }, [config.modelUrl, savedCameraConfig]);
+  }, [config.modelUrl, savedCameraConfig, onConfigChange]);
+
+  // ✂️ Wall Splitter State & History Engine
+  const [wallSplits, setWallSplits] = useState<Record<string, WallSplitData>>({});
+
+  const handleSplitWall = (targetKey: string, splitType: SplitType) => {
+    const parentWallKey = targetKey.includes("::") ? targetKey.split("::")[0] : targetKey;
+
+    setWallSplits((prev) => {
+      const currentSplitData = prev[parentWallKey];
+      const defaultColor = config.wallSurfaceStates?.[parentWallKey]?.color || config.activeWallColor || "#C4B199";
+      const defaultFinish = config.wallSurfaceStates?.[parentWallKey]?.finish || config.activeWallFinish || "EMULSION";
+
+      if (!currentSplitData) {
+        // Initial Root Segment Split
+        const rootSegment: WallSegment = {
+          id: parentWallKey,
+          parentWallKey,
+          label: parentWallKey.toUpperCase().replace("WALL_", ""),
+          minX: -0.5,
+          maxX: 0.5,
+          minY: -0.5,
+          maxY: 0.5,
+          color: defaultColor,
+          finish: defaultFinish,
+        };
+
+        const subdivided = subdivideSegment(rootSegment, splitType, defaultColor, defaultFinish);
+        const firstChildId = subdivided.children![0].id;
+        setActiveSelectedWall(firstChildId);
+
+        // Populate surface states for children
+        const newStates = { ...(config.wallSurfaceStates || {}) };
+        subdivided.children!.forEach((child) => {
+          newStates[child.id] = { color: child.color || defaultColor, finish: child.finish || defaultFinish };
+        });
+        onConfigChange?.({ wallSurfaceStates: newStates });
+
+        return {
+          ...prev,
+          [parentWallKey]: {
+            wallKey: parentWallKey,
+            rootSegment: subdivided,
+            history: [rootSegment],
+          },
+        };
+      } else {
+        // Nested Split on an existing segment
+        const targetNode = findSegmentById(currentSplitData.rootSegment, targetKey);
+        if (!targetNode) return prev;
+
+        const updatedRoot = updateSegmentInTree(currentSplitData.rootSegment, targetKey, (seg) =>
+          subdivideSegment(seg, splitType, defaultColor, defaultFinish)
+        );
+
+        const updatedTargetNode = findSegmentById(updatedRoot, targetKey);
+        if (updatedTargetNode?.children && updatedTargetNode.children.length > 0) {
+          setActiveSelectedWall(updatedTargetNode.children[0].id);
+          const newStates = { ...(config.wallSurfaceStates || {}) };
+          updatedTargetNode.children.forEach((child) => {
+            newStates[child.id] = { color: child.color || defaultColor, finish: child.finish || defaultFinish };
+          });
+          onConfigChange?.({ wallSurfaceStates: newStates });
+        }
+
+        return {
+          ...prev,
+          [parentWallKey]: {
+            ...currentSplitData,
+            rootSegment: updatedRoot,
+            history: [...currentSplitData.history, currentSplitData.rootSegment],
+          },
+        };
+      }
+    });
+  };
+
+  const handleUndoSplit = (wallKey: string) => {
+    setWallSplits((prev) => {
+      const splitData = prev[wallKey];
+      if (!splitData || splitData.history.length === 0) return prev;
+
+      const newHistory = [...splitData.history];
+      const previousRoot = newHistory.pop()!;
+
+      setActiveSelectedWall(wallKey);
+
+      return {
+        ...prev,
+        [wallKey]: {
+          ...splitData,
+          rootSegment: previousRoot,
+          history: newHistory,
+        },
+      };
+    });
+  };
+
+  const handleResetWall = (wallKey: string) => {
+    setWallSplits((prev) => {
+      const next = { ...prev };
+      delete next[wallKey];
+      return next;
+    });
+    setActiveSelectedWall(wallKey);
+  };
 
   const [rightPos, setRightPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(true);
@@ -752,6 +879,8 @@ export default function PaintItMasterCanvas({
             selectedSurfacePoint={selectedPoint}
             isPaintDormant={studioMode === "FURNITURE"}
             cameraPreset={cameraPreset}
+            wallSplits={wallSplits}
+            activeSelectedWall={activeSelectedWall}
             onLoadStart={handleModelLoadStart}
             onLoadSuccess={handleModelLoadSuccess}
           />
@@ -852,7 +981,7 @@ export default function PaintItMasterCanvas({
           </div>
         )}
 
-        {/* 🎨 FLOATING PAINT & FINISHES STUDIO PANEL (Draggable with 2 Tabs: Paint Colors & Sheens/Finishes) */}
+        {/* 🎨 FLOATING PAINT & FINISHES STUDIO PANEL (Draggable with 3 Tabs: Paint Colors, Sheens/Finishes, & Wall Splitter) */}
         <div className="hidden md:flex absolute top-36 left-3 md:left-88 z-30 pointer-events-auto">
           <MasterPaintPickerPanel
             paintsList={paintsList}
@@ -862,6 +991,10 @@ export default function PaintItMasterCanvas({
             onColorChange={handleColorChange}
             onFinishChange={handleFinishChange}
             onApplyFinishToAllWalls={handleApplyFinishToAllWalls}
+            wallSplits={wallSplits}
+            onSplitWall={handleSplitWall}
+            onUndoSplit={handleUndoSplit}
+            onResetWall={handleResetWall}
           />
         </div>
 
