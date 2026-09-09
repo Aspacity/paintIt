@@ -169,6 +169,7 @@ export default function Painter3DStudioWorkspacePage() {
             enableAutoCutaway: true,
             isAdmin: false,
             hideLightingTab: false,
+            bulbs: bulbsList,
           }}
           onConfigChange={(newCfg) => {
             if (newCfg.modelUrl) setRoomModelUrl(newCfg.modelUrl);

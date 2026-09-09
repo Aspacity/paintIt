@@ -48,7 +48,8 @@ export default function LightControls({
     setBulbs((prev) =>
       prev.map((bulb) => {
         if (bulb.id === id) {
-          const nextState = bulb.visible !== undefined ? !bulb.visible : !bulb.enabled;
+          const currentlyOn = bulb.enabled !== false && bulb.visible !== false;
+          const nextState = !currentlyOn;
           return { ...bulb, enabled: nextState, visible: nextState };
         }
         return bulb;

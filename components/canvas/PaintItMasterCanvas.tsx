@@ -548,17 +548,30 @@ export default function PaintItMasterCanvas({
     if (savedCameraConfig) setInternalCameraConfig(savedCameraConfig);
   }, [savedCameraConfig]);
 
+  const onConfigChangeRef = useRef(onConfigChange);
+  useEffect(() => {
+    onConfigChangeRef.current = onConfigChange;
+  }, [onConfigChange]);
+
+  const hydratedModelUrlRef = useRef<string | null>(null);
+
   useEffect(() => {
     let isMounted = true;
     const hydrateLighting = async () => {
       if (!config.modelUrl) return;
+      if (hydratedModelUrlRef.current === config.modelUrl) return;
+      hydratedModelUrlRef.current = config.modelUrl;
+
       const onlineConfig = await fetchOnlineModelLightingConfig(config.modelUrl);
       if (isMounted && onlineConfig) {
         if (onlineConfig.bulbs && onlineConfig.bulbs.length > 0) {
-          setBulbs(onlineConfig.bulbs);
-          if (!config.bulbs || config.bulbs.length === 0) {
-            onConfigChange?.({ bulbs: onlineConfig.bulbs });
-          }
+          setBulbs((prevBulbs) => {
+            if (prevBulbs.length > 0 || (config.bulbs && config.bulbs.length > 0)) {
+              return prevBulbs;
+            }
+            onConfigChangeRef.current?.({ bulbs: onlineConfig.bulbs });
+            return onlineConfig.bulbs;
+          });
         }
         if (onlineConfig.cameraSettings && !savedCameraConfig) {
           setInternalCameraConfig(onlineConfig.cameraSettings);
@@ -569,7 +582,7 @@ export default function PaintItMasterCanvas({
     return () => {
       isMounted = false;
     };
-  }, [config.modelUrl, savedCameraConfig, onConfigChange]);
+  }, [config.modelUrl, savedCameraConfig]);
 
   // ✂️ Wall Splitter State & History Engine
   const [wallSplits, setWallSplits] = useState<Record<string, WallSplitData>>({});
