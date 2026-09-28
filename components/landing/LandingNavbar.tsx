@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 import Logo from "@/components/common/Logo";
+import PWAInstallButton from "@/components/common/PWAInstallButton";
 
 export default function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -75,6 +76,9 @@ export default function LandingNavbar() {
               <span className="text-sm">{isDark ? "🌙" : "☀️"}</span>
               <span>{isDark ? "Dark" : "Light"}</span>
             </button>
+
+            {/* PWA Custom UI Install Button */}
+            <PWAInstallButton variant="navbar" />
 
             <Link
               href="/login"
@@ -216,6 +220,11 @@ export default function LandingNavbar() {
               >
                 Explore 3D Rooms
               </Link>
+
+              {/* PWA Install Button Mobile */}
+              <div className="pt-1">
+                <PWAInstallButton variant="button" className="w-full py-2.5" />
+              </div>
             </div>
           </motion.div>
         )}

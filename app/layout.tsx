@@ -7,6 +7,9 @@ import { TrafficTracker } from "@/components/analytics/TrafficTracker";
 import { ServiceWorkerRegisterEngine } from "./ServiceWorkerRegisterEngine";
 import { FeedbackModalPopup } from "@/components/ui/FeedbackModalPopup";
 import { ConsentBanner } from "@/components/consent/ConsentBanner";
+import { PWAProvider } from "@/context/PWAContext";
+import PWAInstallBanner from "@/components/common/PWAInstallBanner";
+import IOSInstallModal from "@/components/common/IOSInstallModal";
 
 // ✅ SAFE SERVER-SIDE SEO EXTRACTIONS
 export const metadata: Metadata = {
@@ -90,10 +93,14 @@ export default function RootLayout({
         <ThemeProvider>
           <AlertProvider>
             <AuthProvider>
-              <TrafficTracker />
-              {children}
-              <FeedbackModalPopup />
-              <ConsentBanner />
+              <PWAProvider>
+                <TrafficTracker />
+                {children}
+                <FeedbackModalPopup />
+                <ConsentBanner />
+                <PWAInstallBanner />
+                <IOSInstallModal />
+              </PWAProvider>
             </AuthProvider>
           </AlertProvider>
         </ThemeProvider>
