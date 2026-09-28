@@ -7,6 +7,7 @@ import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 import { UserRole } from "@/types";
 import { authApi } from "@/lib/apiClient";
+import RoleSelectionCardGroup from "@/components/auth/RoleSelectionCardGroup";
 
 function RegisterFormContent() {
   const router = useRouter();
@@ -16,8 +17,9 @@ function RegisterFormContent() {
   const isDark = theme === "dark";
 
   const isPainterParam = searchParams.get("role") === "painter";
-  const initialRole: UserRole = isPainterParam ? "PAINTER" : "CONSUMER";
+  const initialRole: UserRole = isPainterParam ? "PAINTER" : "PAINTER"; // Default to painter if param present, otherwise interactive selector
 
+  const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -42,11 +44,12 @@ function RegisterFormContent() {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
         password,
-        role: initialRole,
+        role: selectedRole,
       });
 
       sessionStorage.setItem("paintit_verification_email", email.toLowerCase().trim());
-      showToast({ message: "Registration successful! Verification token sent.", severity: "success" });
+      sessionStorage.setItem("paintit_pending_role", selectedRole);
+      showToast({ message: `Registration successful as ${selectedRole === "PAINTER" ? "Professional Painter" : "Homeowner/Client"}! Verification token sent.`, severity: "success" });
       router.push("/verify-otp");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "A network exception occurred.";
@@ -57,33 +60,35 @@ function RegisterFormContent() {
   };
 
   const handleGoogleSignup = () => {
-    showToast({ message: "Initiating Google Sign-Up...", severity: "info" });
+    showToast({ message: `Initiating Google Sign-Up as ${selectedRole === "PAINTER" ? "Painter" : "Client"}...`, severity: "info" });
     const authBase = process.env.NEXT_PUBLIC_AUTH_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    window.location.href = `${authBase}/api/auth/google?role=${initialRole}`;
+    window.location.href = `${authBase}/api/auth/google?role=${selectedRole}&prompt_role=true`;
   };
 
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Header Context */}
-      <div className="text-center">
-        {isPainterParam ? (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] text-[11px] font-bold mb-2 border border-[#FF8C38]/30">
-            <span>🎨</span>
-            <span>Professional Contractor Registration</span>
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] text-[11px] font-bold mb-2 border border-[#FF8C38]/30">
-            <span>🏡</span>
-            <span>Homeowner / Visitor Account</span>
-          </div>
-        )}
+      <div className="text-center space-y-1">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF8C38]/15 text-[#FF8C38] text-[11px] font-bold border border-[#FF8C38]/30">
+          <span>✨</span>
+          <span>Create Aspacity Account</span>
+        </div>
 
-        <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
-          Create Your Aspacity Account
+        <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-stone-900"}`}>
+          Join Aspacity PaintIT
         </h2>
-        <p className={`text-xs mt-1 leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
-          Your Aspacity account gives you access to PAINTIT and other Aspacity products.
+        <p className={`text-xs leading-normal ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Your account gives you access to 3D room customizers, color visualization & client proposals.
         </p>
+      </div>
+
+      {/* 🟢 STEP 1: PROMINENT INTERACTIVE ROLE SELECTION CARDS */}
+      <div className={`p-3.5 rounded-2xl border ${isDark ? "bg-black/60 border-neutral-800" : "bg-[#FAF8F5] border-stone-200"}`}>
+        <RoleSelectionCardGroup
+          selectedRole={selectedRole}
+          onSelectRole={(role) => setSelectedRole(role)}
+          disabled={submitting}
+        />
       </div>
 
       {/* Google Sign-Up Feature */}
@@ -114,7 +119,7 @@ function RegisterFormContent() {
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
           />
         </svg>
-        <span>Sign up with Google</span>
+        <span>Sign up with Google as {selectedRole === "PAINTER" ? "Painter 🎨" : "Client 🏡"}</span>
       </button>
 
       {/* Divider Line */}
@@ -195,14 +200,12 @@ function RegisterFormContent() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 mt-1 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+          className="w-full py-3.5 mt-1 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center justify-center gap-2 transform active:scale-95"
         >
           {submitting ? (
             <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-          ) : isPainterParam ? (
-            "Create Professional Account"
           ) : (
-            "Create Free Account"
+            `Create ${selectedRole === "PAINTER" ? "Professional Painter" : "Homeowner / Client"} Account`
           )}
         </button>
       </form>
@@ -215,22 +218,6 @@ function RegisterFormContent() {
             Log In
           </Link>
         </div>
-
-        {isPainterParam ? (
-          <div>
-            Looking to visualize your space as a homeowner?{" "}
-            <Link href="/register" className="text-[#FF8C38] font-bold hover:underline">
-              Sign up as Homeowner
-            </Link>
-          </div>
-        ) : (
-          <div>
-            Are you a painter or contractor?{" "}
-            <Link href="/register?role=painter" className="text-[#FF8C38] font-bold hover:underline">
-              Sign up as Professional
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );

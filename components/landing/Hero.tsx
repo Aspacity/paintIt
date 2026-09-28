@@ -64,24 +64,25 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5"
         >
           <Link
-            href="/search/designs"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-base font-bold shadow-lg hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center"
+            href="/register"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-base font-extrabold shadow-lg hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center flex items-center justify-center gap-2"
           >
-            Explore 3D Designs
+            <span>Get Started Free</span>
+            <span>→</span>
           </Link>
-          <a
-            href="#how-it-works"
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-full text-base font-semibold border shadow-xs transition-all text-center ${
+          <Link
+            href="/search/designs"
+            className={`w-full sm:w-auto px-7 py-3.5 rounded-full text-base font-semibold border shadow-xs transition-all text-center ${
               isDark
                 ? "bg-neutral-900 hover:bg-neutral-800 text-white border-neutral-700"
                 : "bg-white hover:bg-stone-100 text-stone-800 border-stone-300"
             }`}
           >
-            Explore how it works
-          </a>
+            Explore 3D Designs
+          </Link>
         </motion.div>
 
         {/* Dual Audience Entry Selector */}

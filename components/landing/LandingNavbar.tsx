@@ -84,9 +84,21 @@ export default function LandingNavbar() {
             >
               Log in
             </Link>
+
+            <Link
+              href="/register"
+              className={`text-sm font-bold px-4 py-2 rounded-full border transition-all ${
+                isDark
+                  ? "border-[#FF8C38]/50 text-[#FF8C38] hover:bg-[#FF8C38]/10"
+                  : "border-[#FF8C38] text-[#e06d19] hover:bg-[#FF8C38]/10"
+              }`}
+            >
+              Register
+            </Link>
+
             <Link
               href="/search/designs"
-              className="inline-flex items-center justify-center px-4.5 py-2.5 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-sm font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              className="inline-flex items-center justify-center px-4.5 py-2 rounded-full bg-[#FF8C38] hover:bg-[#ff9e54] text-black text-sm font-extrabold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0"
             >
               Explore 3D Rooms
             </Link>
@@ -178,19 +190,29 @@ export default function LandingNavbar() {
                 <span>{isDark ? "🌙 Mode: Dark (Switch to Light ☀️)" : "☀️ Mode: Light (Switch to Dark 🌙)"}</span>
               </button>
 
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`w-full text-center font-medium py-2.5 rounded-lg border ${
-                  isDark ? "text-neutral-200 border-neutral-700 bg-neutral-800" : "text-stone-800 border-stone-300 bg-white"
-                }`}
-              >
-                Log in
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`w-full text-center font-bold text-xs py-2.5 rounded-lg border ${
+                    isDark ? "text-neutral-200 border-neutral-700 bg-neutral-800" : "text-stone-800 border-stone-300 bg-white"
+                  }`}
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center font-extrabold text-xs py-2.5 rounded-lg border border-[#FF8C38] bg-[#FF8C38]/15 text-[#FF8C38]"
+                >
+                  Register Free
+                </Link>
+              </div>
+
               <Link
                 href="/search/designs"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center text-black bg-[#FF8C38] font-bold py-2.5 rounded-lg shadow-sm"
+                className="w-full text-center text-black bg-[#FF8C38] font-black py-2.5 rounded-lg shadow-sm text-xs uppercase"
               >
                 Explore 3D Rooms
               </Link>
