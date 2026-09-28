@@ -26,6 +26,8 @@ function LoginContent() {
 
   const [isWakingUpGoogle, setIsWakingUpGoogle] = useState<boolean>(false);
 
+  const processedOAuthRef = React.useRef(false);
+
   React.useEffect(() => {
     // Silent pre-warm ping to ensure Render backend is awake before user interacts
     fetch(`${BACKEND_API_URL}/api/health`).catch(() => null);
@@ -36,15 +38,16 @@ function LoginContent() {
     const urlName = searchParams?.get("name");
     const urlRole = searchParams?.get("role");
 
-    if (urlToken && urlRefresh && urlEmail) {
+    if (urlToken && urlRefresh && urlEmail && !processedOAuthRef.current) {
+      processedOAuthRef.current = true;
       const parsedRole = (urlRole || "CONSUMER").toUpperCase() as UserRole;
+      showToast({ message: "Welcome back! Google login successful.", severity: "success" });
       login(urlToken, urlRefresh, {
         id: "oauth-user",
         email: urlEmail,
         fullName: urlName || "Google Account",
         role: parsedRole,
       });
-      showToast({ message: "Welcome back! Google login successful.", severity: "success" });
     }
   }, [searchParams, login, showToast, BACKEND_API_URL]);
 

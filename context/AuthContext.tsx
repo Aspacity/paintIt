@@ -54,14 +54,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const roleUpper = (userData.role || "").toUpperCase();
     const emailLower = (userData.email || "").toLowerCase();
 
-    if (roleUpper === 'ADMIN' || emailLower === 'codelight001@gmail.com') {
-      router.push('/admin/dashboard');
-    } else if (roleUpper === 'PAINTER') {
-      router.push('/dashboard');
-    } else if (roleUpper === 'CONSUMER') {
-      router.push('/hub');
+    const targetPath = (roleUpper === 'ADMIN' || emailLower === 'codelight001@gmail.com')
+      ? '/admin/dashboard'
+      : (roleUpper === 'PAINTER' ? '/dashboard' : '/hub');
+
+    if (typeof window !== "undefined") {
+      window.location.href = targetPath;
     } else {
-      router.push('/hub');
+      router.push(targetPath);
     }
   };
 
