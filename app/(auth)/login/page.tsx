@@ -7,6 +7,7 @@ import { useAlert } from "@/context/AlertContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useSearchParams } from "next/navigation";
 import { authApi } from "@/lib/apiClient";
+import { UserRole } from "@/types";
 
 function LoginContent() {
   const [email, setEmail] = useState<string>("");
@@ -28,14 +29,15 @@ function LoginContent() {
     const urlRefresh = searchParams?.get("refresh");
     const urlEmail = searchParams?.get("email");
     const urlName = searchParams?.get("name");
-    const urlRole = searchParams?.get("role") || "PAINTER";
+    const urlRole = searchParams?.get("role");
 
     if (urlToken && urlRefresh && urlEmail) {
+      const parsedRole = (urlRole || "CONSUMER").toUpperCase() as UserRole;
       login(urlToken, urlRefresh, {
         id: "oauth-user",
         email: urlEmail,
         fullName: urlName || "Google Account",
-        role: urlRole.toUpperCase() === "PAINTER" ? "PAINTER" : "CONSUMER",
+        role: parsedRole,
       });
       showToast({ message: "Welcome back! Google login successful.", severity: "success" });
     }
@@ -92,7 +94,8 @@ function LoginContent() {
 
   const handleGoogleLogin = () => {
     showToast({ message: "Google Sign-In initiated. Redirecting...", severity: "info" });
-    window.location.href = `${BACKEND_API_URL}/api/auth/google`;
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://paint-it-six.vercel.app";
+    window.location.href = `${BACKEND_API_URL}/api/auth/google?frontend_url=${encodeURIComponent(currentOrigin)}`;
   };
 
   return (

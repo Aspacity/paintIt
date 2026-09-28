@@ -56,10 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (roleUpper === 'ADMIN' || emailLower === 'codelight001@gmail.com') {
       router.push('/admin/dashboard');
-    } else if (roleUpper === 'PAINTER' || roleUpper === 'CONSUMER') {
+    } else if (roleUpper === 'PAINTER') {
       router.push('/dashboard');
+    } else if (roleUpper === 'CONSUMER') {
+      router.push('/hub');
     } else {
-      router.push('/');
+      router.push('/hub');
     }
   };
 
