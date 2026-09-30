@@ -27,6 +27,13 @@ function VerifyOTPForm() {
   }, [searchParams]);
 
   useEffect(() => {
+    const urlEmail = searchParams?.get("email");
+    if (urlEmail) {
+      sessionStorage.setItem("paintit_verification_email", urlEmail.toLowerCase().trim());
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
@@ -34,7 +41,7 @@ function VerifyOTPForm() {
   }, [countdown]);
 
   const triggerAutoSubmit = async (completeCode: string) => {
-    const verificationEmail = sessionStorage.getItem("paintit_verification_email");
+    const verificationEmail = searchParams?.get("email") || sessionStorage.getItem("paintit_verification_email");
 
     if (!verificationEmail) {
       showToast({ message: "Verification context missing. Please request a code again.", severity: "error" });

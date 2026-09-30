@@ -83,7 +83,10 @@ class ApiService {
       const errorMessage =
         (typeof data === "object" && (data?.error || data?.message)) ||
         `HTTP Request failed with status ${response.status}`;
-      throw new Error(errorMessage);
+      const error: any = new Error(errorMessage);
+      error.status = response.status;
+      error.data = data;
+      throw error;
     }
 
     return data as T;

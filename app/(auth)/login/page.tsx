@@ -92,7 +92,28 @@ function LoginContent() {
         }, 100);
       }
 
-    } catch (err) {
+    } catch (err: any) {
+      const errorData = err?.data;
+      const isUnverified =
+        err?.status === 403 ||
+        errorData?.requiresVerification ||
+        err?.message?.toLowerCase().includes("not verified") ||
+        err?.message?.toLowerCase().includes("verification code");
+
+      if (isUnverified) {
+        const targetEmail = errorData?.email || email.toLowerCase().trim();
+        sessionStorage.setItem("paintit_verification_email", targetEmail);
+        showToast({
+          message: "🔒 Account unverified. A verification pin has been sent to your email! Redirecting to OTP verification...",
+          severity: "info",
+        });
+
+        setTimeout(() => {
+          window.location.href = `/verify-otp?email=${encodeURIComponent(targetEmail)}`;
+        }, 1200);
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : "An unexpected login error occurred.";
       showToast({ message: errorMessage, severity: "error" });
     } finally {
