@@ -7,6 +7,7 @@ import { useAlert } from "@/context/AlertContext";
 import { PainterVideoWalkthroughPlayer } from "@/components/dashboard/PainterVideoWalkthroughPlayer";
 import { paintitApi } from "@/lib/apiClient";
 import FeatureVotingPollCard, { FeaturePollData } from "@/components/ui/FeatureVotingPollCard";
+import BroadcastRichTextEditor from "@/components/admin/BroadcastRichTextEditor";
 
 interface SessionLog {
   id: string;
@@ -369,99 +370,21 @@ export default function AdminAnalyticsDashboard() {
       {/* 📢 ADMIN BROADCAST & POLL CONFIGURATION GRID                */}
       {/* ========================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Broadcast Notification Form */}
-        <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-xl">
-          <div className="border-b border-neutral-850 pb-3">
-            <h3 className="text-sm font-black uppercase text-[#FF8C38] tracking-wider flex items-center gap-2">
-              <span>📢 Broadcast Notification to Users</span>
-            </h3>
-            <p className="text-[11px] text-neutral-500 mt-0.5">
-              Send site-wide notifications about new features, fixed issues, or announcements to painters or clients.
-            </p>
-          </div>
-
-          <form onSubmit={handleBroadcastNotification} className="space-y-3.5">
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                Notification Category
-              </label>
-              <select
-                value={notifCategory}
-                onChange={(e) => setNotifCategory(e.target.value as any)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-[#FF8C38] focus:outline-none"
-              >
-                <option value="ANNOUNCEMENT">📢 Announcement</option>
-                <option value="NEW_FEATURE">✨ New Feature Release</option>
-                <option value="FIXED_ISSUE">🛠️ Fixed Issue / Bug Fix</option>
-                <option value="NEW_DEVELOPMENT">🚀 Platform Development</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                  Target Audience
-                </label>
-                <select
-                  value={notifTargetRole}
-                  onChange={(e) => setNotifTargetRole(e.target.value as any)}
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-neutral-200 focus:outline-none"
-                >
-                  <option value="ALL">🌐 All Users (Painters & Clients)</option>
-                  <option value="PAINTER">🎨 Painters Only</option>
-                  <option value="CLIENT">🏡 Clients / Homeowners Only</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                  CTA Action URL (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="/search/designs"
-                  value={notifActionUrl}
-                  onChange={(e) => setNotifActionUrl(e.target.value)}
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                Notification Title
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. 🎨 Wall Splitter Feature is Now Live!"
-                value={notifTitle}
-                onChange={(e) => setNotifTitle(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
-                Message Body
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Explain the update, fixed bug, or announcement..."
-                value={notifBody}
-                onChange={(e) => setNotifBody(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs text-neutral-200 focus:outline-none resize-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isBroadcasting}
-              className="w-full py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
-            >
-              {isBroadcasting ? "Sending Broadcast..." : "🚀 Broadcast Notification Now"}
-            </button>
-          </form>
-        </div>
+        {/* Broadcast Notification Rich Text Editor & Live Preview */}
+        <BroadcastRichTextEditor
+          title={notifTitle}
+          setTitle={setNotifTitle}
+          body={notifBody}
+          setBody={setNotifBody}
+          category={notifCategory}
+          setCategory={setNotifCategory as any}
+          targetRole={notifTargetRole}
+          setTargetRole={setNotifTargetRole as any}
+          actionUrl={notifActionUrl}
+          setActionUrl={setNotifActionUrl}
+          onSend={handleBroadcastNotification}
+          isBroadcasting={isBroadcasting}
+        />
 
         {/* Feature Poll Configurator Form */}
         <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-xl">
