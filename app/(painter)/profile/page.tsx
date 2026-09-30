@@ -222,7 +222,20 @@ export default function AccountProfileWorkspacePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => {
+              const slug = fullName ? fullName.toLowerCase().trim().replace(/\s+/g, "-") : profile?.id || "profile";
+              const shareUrl = `${window.location.origin}/${slug}`;
+              navigator.clipboard.writeText(shareUrl);
+              setFeedbackBanner({ type: "success", msg: `Public profile link saved: ${shareUrl}` });
+            }}
+            className="flex-1 sm:flex-none px-3.5 py-2 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md text-center"
+          >
+            🔗 Copy Shareable Profile Link
+          </button>
+
           <button
             type="button"
             onClick={() => router.push("/settings")}
