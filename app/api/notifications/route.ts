@@ -12,42 +12,8 @@ export interface NotificationRecord {
   readBy: string[]; // List of user IDs who marked read
 }
 
-// In-memory store for broadcast notifications with initial pre-seeded updates
-const notificationsStore: NotificationRecord[] = [
-  {
-    id: "notif_1",
-    title: "🎨 3D Wall Splitter Feature Live!",
-    body: "You can now split walls horizontally, vertically, or diagonally inside the 3D Studio to paint multi-color designs.",
-    category: "NEW_FEATURE",
-    targetRole: "ALL",
-    priority: "high",
-    actionUrl: "/search/designs",
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    readBy: [],
-  },
-  {
-    id: "notif_2",
-    title: "🛠️ Fixed Canvas Lighting Toggle Issue",
-    body: "Resolved the issue where turning off ambient bulbs would auto-reset. Realistic lighting now persists accurately.",
-    category: "FIXED_ISSUE",
-    targetRole: "ALL",
-    priority: "normal",
-    actionUrl: "/search/designs",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    readBy: [],
-  },
-  {
-    id: "notif_3",
-    title: "🚀 Contractor Job Leads Dashboard Updated",
-    body: "Painters can now view client project inquiries directly in the Leads & Inbox section with instant estimate calculator.",
-    category: "NEW_DEVELOPMENT",
-    targetRole: "PAINTER",
-    priority: "high",
-    actionUrl: "/gigs",
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    readBy: [],
-  },
-];
+// In-memory store for broadcast notifications (starts empty per user request - no dummy notifications)
+const notificationsStore: NotificationRecord[] = [];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -128,5 +94,30 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: "Failed to update notification" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const notificationId = searchParams.get("notificationId");
+    const clearAll = searchParams.get("clearAll") === "true";
+
+    if (clearAll) {
+      notificationsStore.length = 0;
+      return NextResponse.json({ success: true, message: "All notifications cleared" });
+    }
+
+    if (notificationId) {
+      const idx = notificationsStore.findIndex((n) => n.id === notificationId);
+      if (idx !== -1) {
+        notificationsStore.splice(idx, 1);
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: "notificationId or clearAll required" }, { status: 400 });
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to delete notification" }, { status: 500 });
   }
 }

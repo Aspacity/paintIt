@@ -59,15 +59,15 @@ export const BottomNav: React.FC<NavigationProps> = () => {
         </svg>
       ),
     },
-    {
-      label: "Analytics",
-      href: "/insights",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-    },
+    // {
+    //   label: "Analytics",
+    //   href: "/insights",
+    //   icon: (
+    //     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //       <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    //     </svg>
+    //   ),
+    // },
     {
       label: "Portfolio",
       href: "/portfolio",
@@ -151,7 +151,7 @@ export const BottomNav: React.FC<NavigationProps> = () => {
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF8C38]">Toggle</span>
           </button>
 
-          {/* Feedback Button */}
+          {/* Feedback Button
           <button
             type="button"
             onClick={triggerGlobalFeedbackModal}
@@ -162,7 +162,7 @@ export const BottomNav: React.FC<NavigationProps> = () => {
             }`}
           >
             <span>💬 Drop Feedback</span>
-          </button>
+          </button> */}
 
           {/* Profile Card */}
           <Link

@@ -24,7 +24,6 @@ export default function NotificationBellDrawer() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -101,7 +100,7 @@ export default function NotificationBellDrawer() {
         )}
       </button>
 
-      {/* Dropdown Drawer */}
+      {/* Dropdown Drawer (Positioned to open into viewport without off-screen clipping) */}
       {isOpen && (
         <>
           <div
@@ -110,7 +109,7 @@ export default function NotificationBellDrawer() {
           />
 
           <div
-            className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-3xl border shadow-2xl z-[130] overflow-hidden p-4 space-y-3 animate-fade-in ${
+            className={`absolute right-0 md:left-0 md:right-auto mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] rounded-3xl border shadow-2xl z-[130] overflow-hidden p-4 space-y-3 animate-fade-in ${
               isDark ? "bg-neutral-950 border-neutral-800 text-white" : "bg-white border-stone-200 text-stone-900"
             }`}
           >
@@ -133,7 +132,10 @@ export default function NotificationBellDrawer() {
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-xs text-neutral-500 font-mono space-y-1">
                 <span className="text-2xl block">🔕</span>
-                <p>No notifications at this time.</p>
+                <p className="font-bold uppercase text-neutral-400">No Notifications</p>
+                <p className="text-[10px] text-neutral-500">
+                  New announcements, feature releases, and system updates will appear here!
+                </p>
               </div>
             ) : (
               <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1 no-scrollbar">

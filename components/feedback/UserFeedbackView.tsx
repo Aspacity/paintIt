@@ -26,7 +26,7 @@ const CATEGORIES_BY_ROLE: Record<string, { id: string; label: string }[]> = {
     { id: "FEATURE_REQUEST", label: "Feature Request" },
     { id: "VISUALIZER", label: "3D Visualizer & Wall Splitter" },
     { id: "LEADS_BOOKING", label: "Customer Leads & Booking Profile" },
-    { id: "APP_EXPERIENCE", label: "Platform Navigation & PWA" },
+    { id: "APP_EXPERIENCE", label: "Platform Navigation & APP" },
   ],
   CLIENT: [
     { id: "GENERAL", label: "General Feedback" },
