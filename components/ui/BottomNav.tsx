@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { triggerGlobalFeedbackModal } from "@/components/ui/FeedbackModalPopup";
 import Logo from "@/components/common/Logo";
+import NotificationBellDrawer from "@/components/ui/NotificationBellDrawer";
 
 export interface NavItem {
   label: string;
@@ -76,6 +77,15 @@ export const BottomNav: React.FC<NavigationProps> = () => {
         </svg>
       ),
     },
+    {
+      label: "Feedback & Polls",
+      href: "/feedback",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -87,8 +97,9 @@ export const BottomNav: React.FC<NavigationProps> = () => {
         isDark ? "bg-neutral-950 border-neutral-900" : "bg-white border-stone-200"
       }`}>
         <div className="w-full">
-          <div className="mb-6 px-1 pt-1">
+          <div className="mb-6 px-1 pt-1 flex items-center justify-between">
             <Logo size="sm" subtitle="Contractor OS" textColor={isDark ? "text-white" : "text-stone-900"} />
+            <NotificationBellDrawer />
           </div>
 
           <nav className="space-y-1">
@@ -220,6 +231,8 @@ export const BottomNav: React.FC<NavigationProps> = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <NotificationBellDrawer />
+
           <button
             onClick={toggleTheme}
             className={`p-1.5 rounded-lg border text-xs font-bold ${

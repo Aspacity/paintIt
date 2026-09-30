@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { PainterVideoWalkthroughPlayer } from "@/components/dashboard/PainterVideoWalkthroughPlayer";
+import { paintitApi } from "@/lib/apiClient";
+import FeatureVotingPollCard, { FeaturePollData } from "@/components/ui/FeatureVotingPollCard";
 
 interface SessionLog {
   id: string;
@@ -42,6 +44,16 @@ interface UserFeedbackEntry {
   created_at: string;
 }
 
+interface InstalledUserRecord {
+  userId: string | number;
+  userName: string;
+  userEmail: string;
+  userRole: string;
+  platform: string;
+  installedAt: string;
+  lastActive: string;
+}
+
 interface AnalyticsData {
   summary: {
     totalVisits: number;
@@ -54,38 +66,75 @@ interface AnalyticsData {
   interactions: InteractionLog[];
 }
 
-import { paintitApi } from "@/lib/apiClient";
-
 export default function AdminAnalyticsDashboard() {
   const { accessToken } = useAuth();
   const { showToast } = useAlert();
 
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [feedbacks, setFeedbacks] = useState<UserFeedbackEntry[]>([]);
+  const [installedUsers, setInstalledUsers] = useState<InstalledUserRecord[]>([]);
+  const [polls, setPolls] = useState<FeaturePollData[]>([]);
+  const [pwaSummary, setPwaSummary] = useState({ totalPrompts: 0, totalAccepted: 0, conversionRate: "0%" });
   const [loading, setLoading] = useState<boolean>(true);
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  const fetchAdminData = async () => {
-    try {
-      const json = await paintitApi.get<AnalyticsData>("/api/admin/analytics");
-      setData(json);
+  // Broadcast Notification Form State
+  const [notifTitle, setNotifTitle] = useState("");
+  const [notifBody, setNotifBody] = useState("");
+  const [notifCategory, setNotifCategory] = useState<"ANNOUNCEMENT" | "NEW_FEATURE" | "FIXED_ISSUE" | "NEW_DEVELOPMENT">("ANNOUNCEMENT");
+  const [notifTargetRole, setNotifTargetRole] = useState<"ALL" | "PAINTER" | "CLIENT">("ALL");
+  const [notifActionUrl, setNotifActionUrl] = useState("");
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
 
-      const fbJson = await paintitApi.get<{ feedbacks: UserFeedbackEntry[] }>("/api/feedback/admin/all");
+  // Poll Creation Form State
+  const [pollTitle, setPollTitle] = useState("");
+  const [pollDesc, setPollDesc] = useState("");
+  const [pollTargetRole, setPollTargetRole] = useState<"ALL" | "PAINTER" | "CLIENT">("ALL");
+  const [pollDurationDays, setPollDurationDays] = useState(7);
+  const [pollOption1, setPollOption1] = useState("");
+  const [pollOption2, setPollOption2] = useState("");
+  const [pollOption3, setPollOption3] = useState("");
+  const [pollOption4, setPollOption4] = useState("");
+  const [isCreatingPoll, setIsCreatingPoll] = useState(false);
+
+  const fetchAdminData = useCallback(async () => {
+    try {
+      const json = await paintitApi.get<AnalyticsData>("/api/admin/analytics").catch(() => null);
+      if (json) setData(json);
+
+      const fbJson = await paintitApi.get<{ feedbacks: UserFeedbackEntry[] }>("/api/feedback/admin/all").catch(() => ({ feedbacks: [] }));
       setFeedbacks(fbJson.feedbacks || []);
+
+      // Fetch PWA installed users directory
+      const pwaRes = await fetch("/api/analytics/pwa-install").then((r) => r.json()).catch(() => null);
+      if (pwaRes) {
+        setInstalledUsers(pwaRes.installedUsers || []);
+        setPwaSummary({
+          totalPrompts: pwaRes.totalPrompts || 0,
+          totalAccepted: pwaRes.totalAccepted || 0,
+          conversionRate: pwaRes.conversionRate || "0%",
+        });
+      }
+
+      // Fetch polls
+      const pollsRes = await fetch("/api/polls?role=ALL").then((r) => r.json()).catch(() => null);
+      if (pollsRes) {
+        setPolls(pollsRes.polls || []);
+      }
     } catch (err) {
       console.error(err);
       showToast({ message: "⚠️ Could not sync admin metrics directory.", severity: "error" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     queueMicrotask(() => {
       fetchAdminData();
     });
-  }, [accessToken]);
+  }, [accessToken, fetchAdminData]);
 
   const handleMarkResolved = async (id: number) => {
     try {
@@ -99,6 +148,86 @@ export default function AdminAnalyticsDashboard() {
       setFeedbacks((prev) =>
         prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" } : f))
       );
+    }
+  };
+
+  const handleBroadcastNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifTitle.trim() || !notifBody.trim()) {
+      showToast({ message: "Please provide a title and message body for broadcast.", severity: "info" });
+      return;
+    }
+
+    setIsBroadcasting(true);
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: notifTitle,
+          body: notifBody,
+          category: notifCategory,
+          targetRole: notifTargetRole,
+          actionUrl: notifActionUrl,
+          priority: "high",
+        }),
+      });
+
+      if (res.ok) {
+        showToast({ message: "Notification broadcast sent successfully to target users!", severity: "success" });
+        setNotifTitle("");
+        setNotifBody("");
+        setNotifActionUrl("");
+      } else {
+        showToast({ message: "Could not send notification broadcast.", severity: "error" });
+      }
+    } catch (err) {
+      showToast({ message: "Error sending notification broadcast.", severity: "error" });
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
+  const handleCreatePoll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const options = [pollOption1, pollOption2, pollOption3, pollOption4].filter((o) => o.trim().length > 0);
+
+    if (!pollTitle.trim() || options.length < 2) {
+      showToast({ message: "Please enter a poll title and at least 2 feature options.", severity: "info" });
+      return;
+    }
+
+    setIsCreatingPoll(true);
+    try {
+      const res = await fetch("/api/polls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "CREATE_POLL",
+          title: pollTitle,
+          description: pollDesc,
+          targetRole: pollTargetRole,
+          durationDays: pollDurationDays,
+          options,
+        }),
+      });
+
+      if (res.ok) {
+        showToast({ message: "Feature Roadmap Poll created successfully!", severity: "success" });
+        setPollTitle("");
+        setPollDesc("");
+        setPollOption1("");
+        setPollOption2("");
+        setPollOption3("");
+        setPollOption4("");
+        fetchAdminData();
+      } else {
+        showToast({ message: "Failed to create feature poll.", severity: "error" });
+      }
+    } catch (err) {
+      showToast({ message: "Network error creating poll.", severity: "error" });
+    } finally {
+      setIsCreatingPoll(false);
     }
   };
 
@@ -130,7 +259,7 @@ export default function AdminAnalyticsDashboard() {
             <span>👑 Master Admin Control Center</span>
           </h1>
           <p className="text-xs text-neutral-500 font-medium mt-1">
-            Monitor site analytics, platform metrics, and role-tailored user feedback submissions.
+            Monitor site analytics, PWA installs, send broadcast notifications, and configure feature roadmap polls.
           </p>
         </div>
         <button
@@ -142,11 +271,17 @@ export default function AdminAnalyticsDashboard() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Total Site Visits</span>
           <span className="text-3xl font-black text-neutral-100 mt-2">{summary.totalVisits}</span>
           <span className="text-[9px] text-[#FF8C38] mt-1 font-mono">⚡ Running sessions</span>
+        </div>
+
+        <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Installed PWA Users</span>
+          <span className="text-3xl font-black text-emerald-400 mt-2">{installedUsers.length}</span>
+          <span className="text-[9px] text-emerald-300 mt-1 font-mono">📲 Standalone app users ({pwaSummary.conversionRate} conv)</span>
         </div>
 
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
@@ -162,14 +297,300 @@ export default function AdminAnalyticsDashboard() {
         </div>
 
         <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Early Access Waitlist</span>
-          <span className="text-3xl font-black text-neutral-100 mt-2">{summary.waitlistCount}</span>
-          <span className="text-[9px] text-amber-500 mt-1 font-mono">⏳ Private beta signups</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Feature Polls</span>
+          <span className="text-3xl font-black text-amber-400 mt-2">{polls.length}</span>
+          <span className="text-[9px] text-amber-300 mt-1 font-mono">🗳️ Active roadmap polls</span>
         </div>
       </div>
 
       {/* 🎬 PAINTER PRO VIDEO WALKTHROUGH MODULE */}
       <PainterVideoWalkthroughPlayer />
+
+      {/* ========================================================== */}
+      {/* 📱 INSTALLED PWA USERS TELEMETRY DIRECTORY                 */}
+      {/* ========================================================== */}
+      <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-neutral-850 pb-3">
+          <div>
+            <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider flex items-center gap-2">
+              <span>📱 Installed PaintIT App Users Directory ({installedUsers.length})</span>
+            </h3>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              Identified painters & clients who have installed PaintIT on their mobile or desktop devices.
+            </p>
+          </div>
+          <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+            {pwaSummary.totalAccepted} Total Prompts Accepted
+          </span>
+        </div>
+
+        {installedUsers.length === 0 ? (
+          <div className="py-8 text-center text-neutral-500 text-xs font-mono">
+            No logged-in users registered as installed yet. Users who trigger & accept PWA prompts will appear here automatically!
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-neutral-800 text-[10px] uppercase font-mono tracking-wider text-neutral-400">
+                  <th className="pb-2">User / Contact</th>
+                  <th className="pb-2">Role</th>
+                  <th className="pb-2">Platform / Device</th>
+                  <th className="pb-2">Installed Date</th>
+                  <th className="pb-2 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-850 text-xs font-mono">
+                {installedUsers.map((u, idx) => (
+                  <tr key={idx} className="hover:bg-neutral-950/60">
+                    <td className="py-3 font-bold text-neutral-100">
+                      <div>{u.userName}</div>
+                      <span className="text-[10px] text-neutral-500 font-normal">{u.userEmail}</span>
+                    </td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                        u.userRole === "PAINTER" ? "bg-[#FF8C38]/20 text-[#FF8C38]" : "bg-amber-500/20 text-amber-300"
+                      }`}>
+                        {u.userRole}
+                      </span>
+                    </td>
+                    <td className="py-3 text-neutral-300 uppercase font-bold">{u.platform}</td>
+                    <td className="py-3 text-neutral-400">{new Date(u.installedAt).toLocaleDateString()}</td>
+                    <td className="py-3 text-right text-emerald-400 font-bold">✓ Installed</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================== */}
+      {/* 📢 ADMIN BROADCAST & POLL CONFIGURATION GRID                */}
+      {/* ========================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Broadcast Notification Form */}
+        <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-xl">
+          <div className="border-b border-neutral-850 pb-3">
+            <h3 className="text-sm font-black uppercase text-[#FF8C38] tracking-wider flex items-center gap-2">
+              <span>📢 Broadcast Notification to Users</span>
+            </h3>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              Send site-wide notifications about new features, fixed issues, or announcements to painters or clients.
+            </p>
+          </div>
+
+          <form onSubmit={handleBroadcastNotification} className="space-y-3.5">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                Notification Category
+              </label>
+              <select
+                value={notifCategory}
+                onChange={(e) => setNotifCategory(e.target.value as any)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-[#FF8C38] focus:outline-none"
+              >
+                <option value="ANNOUNCEMENT">📢 Announcement</option>
+                <option value="NEW_FEATURE">✨ New Feature Release</option>
+                <option value="FIXED_ISSUE">🛠️ Fixed Issue / Bug Fix</option>
+                <option value="NEW_DEVELOPMENT">🚀 Platform Development</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                  Target Audience
+                </label>
+                <select
+                  value={notifTargetRole}
+                  onChange={(e) => setNotifTargetRole(e.target.value as any)}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-neutral-200 focus:outline-none"
+                >
+                  <option value="ALL">🌐 All Users (Painters & Clients)</option>
+                  <option value="PAINTER">🎨 Painters Only</option>
+                  <option value="CLIENT">🏡 Clients / Homeowners Only</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                  CTA Action URL (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="/search/designs"
+                  value={notifActionUrl}
+                  onChange={(e) => setNotifActionUrl(e.target.value)}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                Notification Title
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 🎨 Wall Splitter Feature is Now Live!"
+                value={notifTitle}
+                onChange={(e) => setNotifTitle(e.target.value)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                Message Body
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Explain the update, fixed bug, or announcement..."
+                value={notifBody}
+                onChange={(e) => setNotifBody(e.target.value)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs text-neutral-200 focus:outline-none resize-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isBroadcasting}
+              className="w-full py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isBroadcasting ? "Sending Broadcast..." : "🚀 Broadcast Notification Now"}
+            </button>
+          </form>
+        </div>
+
+        {/* Feature Poll Configurator Form */}
+        <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-xl">
+          <div className="border-b border-neutral-850 pb-3">
+            <h3 className="text-sm font-black uppercase text-amber-400 tracking-wider flex items-center gap-2">
+              <span>🗳️ Configure Feature Roadmap Poll</span>
+            </h3>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              List upcoming feature options, set expiration countdown timers, and collect votes from users.
+            </p>
+          </div>
+
+          <form onSubmit={handleCreatePoll} className="space-y-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                Poll Title
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Which feature should we build next month?"
+                value={pollTitle}
+                onChange={(e) => setPollTitle(e.target.value)}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2.5 text-xs font-bold text-white focus:outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                  Target Audience
+                </label>
+                <select
+                  value={pollTargetRole}
+                  onChange={(e) => setPollTargetRole(e.target.value as any)}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs font-bold text-neutral-200 focus:outline-none"
+                >
+                  <option value="ALL">🌐 All Users</option>
+                  <option value="PAINTER">🎨 Painters Only</option>
+                  <option value="CLIENT">🏡 Clients Only</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                  Expiration Timer Duration
+                </label>
+                <select
+                  value={pollDurationDays}
+                  onChange={(e) => setPollDurationDays(Number(e.target.value))}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs font-bold text-amber-300 focus:outline-none"
+                >
+                  <option value={3}>⏳ Expires in 3 Days</option>
+                  <option value={7}>⏳ Expires in 7 Days (1 Week)</option>
+                  <option value={14}>⏳ Expires in 14 Days (2 Weeks)</option>
+                  <option value={30}>⏳ Expires in 30 Days (1 Month)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                Feature Candidates (Minimum 2)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  placeholder="Option 1 (e.g. AR Live Camera Paint)"
+                  value={pollOption1}
+                  onChange={(e) => setPollOption1(e.target.value)}
+                  className="bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs text-white focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Option 2 (e.g. AI Color Recommender)"
+                  value={pollOption2}
+                  onChange={(e) => setPollOption2(e.target.value)}
+                  className="bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs text-white focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Option 3 (e.g. Instant Invoice Generator)"
+                  value={pollOption3}
+                  onChange={(e) => setPollOption3(e.target.value)}
+                  className="bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs text-white focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Option 4 (e.g. In-App Chat)"
+                  value={pollOption4}
+                  onChange={(e) => setPollOption4(e.target.value)}
+                  className="bg-neutral-950 border border-neutral-800 rounded-xl p-2 text-xs text-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isCreatingPoll}
+              className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isCreatingPoll ? "Publishing Poll..." : "🗳️ Publish Feature Poll"}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* ========================================================== */}
+      {/* 📊 ACTIVE FEATURE POLL VOTE RANKINGS                       */}
+      {/* ========================================================== */}
+      {polls.length > 0 && (
+        <div className="p-6 bg-neutral-900 border border-neutral-800 rounded-3xl space-y-4 shadow-2xl">
+          <div className="border-b border-neutral-850 pb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-black uppercase text-amber-400 tracking-wider flex items-center gap-2">
+                <span>📊 Live Feature Roadmap Rankings ({polls.length} Polls)</span>
+              </h3>
+              <p className="text-[11px] text-neutral-500 mt-0.5">
+                Features sorted by total votes so you can decide what to build next based on highest community demand!
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {polls.map((poll) => (
+              <FeatureVotingPollCard key={poll.id} poll={poll} onVoteSuccess={fetchAdminData} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ========================================================== */}
       {/* 💬 MASTER ADMIN USER FEEDBACK MANAGEMENT HUB MODULE         */}

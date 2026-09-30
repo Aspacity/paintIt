@@ -6,6 +6,7 @@ import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/common/Logo";
+import NotificationBellDrawer from "@/components/ui/NotificationBellDrawer";
 
 export default function ClientGroupDashboardLayout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
@@ -21,6 +22,7 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
     { name: "Homeowner Hub", shortName: "Hub", path: "/hub", icon: "🏠" },
     { name: "Explore Painters", shortName: "Painters", path: "/search/painters", icon: "🔍" },
     { name: "3D Room Designs", shortName: "3D Designs", path: "/search/designs", icon: "🎨" },
+    { name: "Feedback & Polls", shortName: "Feedback", path: "/feedback", icon: "💬" },
     { name: "My Profile", shortName: "Profile", path: "/profile-page", icon: "👤" },
   ];
 
@@ -40,6 +42,8 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
         <Logo size="sm" subtitle="Client" textColor={isDark ? "text-white" : "text-stone-900"} />
 
         <div className="flex items-center gap-2">
+          <NotificationBellDrawer />
+
           <button
             onClick={toggleTheme}
             className={`p-1.5 rounded-lg border text-xs font-bold ${
@@ -88,15 +92,18 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
             ) : (
               <span className="text-sm font-bold text-[#FF8C38] mx-auto">PI</span>
             )}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`hidden md:flex w-7 h-7 rounded-lg items-center justify-center text-xs font-bold transition-all border ${
-                isDark ? "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white" : "bg-stone-100 border-stone-300 text-stone-600 hover:text-stone-900"
-              }`}
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isCollapsed ? "▶" : "◀"}
-            </button>
+            <div className="flex items-center gap-1.5">
+              {!isCollapsed && <NotificationBellDrawer />}
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className={`hidden md:flex w-7 h-7 rounded-lg items-center justify-center text-xs font-bold transition-all border ${
+                  isDark ? "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white" : "bg-stone-100 border-stone-300 text-stone-600 hover:text-stone-900"
+                }`}
+                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              >
+                {isCollapsed ? "▶" : "◀"}
+              </button>
+            </div>
             {isMobileOpen && (
               <button
                 onClick={() => setIsMobileOpen(false)}

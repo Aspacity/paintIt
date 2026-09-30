@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
+import FeatureVotingPollCard, { FeaturePollData } from "@/components/ui/FeatureVotingPollCard";
 
 interface PastFeedback {
   id: number;
@@ -21,6 +22,7 @@ export default function UserFeedbackHubPage() {
   const [category, setCategory] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [pastFeedbacks, setPastFeedbacks] = useState<PastFeedback[]>([]);
+  const [polls, setPolls] = useState<FeaturePollData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -95,11 +97,24 @@ export default function UserFeedbackHubPage() {
     }
   }, [user, BACKEND_API_URL]);
 
+  const fetchPolls = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/polls?role=${userRole}&userId=${user?.id || ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPolls(data.polls || []);
+      }
+    } catch (err) {
+      console.error("Error fetching feature polls:", err);
+    }
+  }, [userRole, user]);
+
   useEffect(() => {
     queueMicrotask(() => {
       fetchPastFeedbacks();
+      fetchPolls();
     });
-  }, [fetchPastFeedbacks]);
+  }, [fetchPastFeedbacks, fetchPolls]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +167,24 @@ export default function UserFeedbackHubPage() {
           Help us craft the ultimate architectural visualization & painter platform. Your feedback directly shapes our feature updates!
         </p>
       </div>
+
+      {/* Feature Roadmap Voting Polls Section */}
+      {polls.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-900 pb-2">
+            <h2 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-2">
+              <span>🗳️ Active Community Roadmap Polls ({polls.length})</span>
+            </h2>
+            <span className="text-[10px] text-neutral-400 font-mono">Vote on upcoming feature updates</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {polls.map((poll) => (
+              <FeatureVotingPollCard key={poll.id} poll={poll} onVoteSuccess={fetchPolls} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column: Role-Tailored Feedback Form */}

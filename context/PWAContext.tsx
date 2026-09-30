@@ -100,6 +100,22 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const trackInstallAnalytics = async (action: string, extraData: Record<string, any> = {}) => {
     try {
+      let userInfo: Record<string, any> = {};
+      try {
+        const storedUser = localStorage.getItem("paintit_user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          userInfo = {
+            userId: parsed.id || parsed.user_id,
+            userName: parsed.fullName || parsed.full_name || parsed.name,
+            userEmail: parsed.email,
+            userRole: parsed.role || "CONSUMER",
+          };
+        }
+      } catch (e) {
+        // Silent catch
+      }
+
       await fetch("/api/analytics/pwa-install", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,6 +124,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           timestamp: new Date().toISOString(),
           platform: getPlatformName(),
           userAgent: window.navigator.userAgent,
+          ...userInfo,
           ...extraData,
         }),
       });
