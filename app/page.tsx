@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { StudioProvider } from "@/context/StudioContext";
 import { AlertProvider } from "@/context/AlertContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
@@ -21,7 +23,41 @@ import FooterSection from "@/components/landing/FooterSection";
 
 function LandingPageContent() {
   const { theme } = useTheme();
+  const { isAuthenticated, loading, getDashboardPath } = useAuth();
+  const router = useRouter();
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    if (loading) return;
+
+    // Check if app is launched in PWA Standalone Mode
+    const isStandalone = typeof window !== "undefined" && (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true ||
+      localStorage.getItem("paintit_pwa_installed") === "true"
+    );
+
+    // 1. If user has live active session, redirect straight to their role dashboard
+    if (isAuthenticated) {
+      const targetDashboard = getDashboardPath();
+      router.replace(targetDashboard);
+      return;
+    }
+
+    // 2. If app is launched as installed PWA, bypass marketing landing page & show Registration first
+    if (isStandalone && !isAuthenticated) {
+      router.replace("/register");
+      return;
+    }
+  }, [isAuthenticated, loading, getDashboardPath, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-xs font-mono text-neutral-400">
+        ⚡ Loading PaintIT...
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen relative font-sans selection:bg-[#FF8C38] selection:text-black transition-colors duration-300 ${
