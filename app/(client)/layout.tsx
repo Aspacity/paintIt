@@ -22,7 +22,7 @@ export default function ClientGroupDashboardLayout({ children }: { children: Rea
     { name: "Homeowner Hub", shortName: "Hub", path: "/hub", icon: "🏠" },
     { name: "Explore Painters", shortName: "Painters", path: "/search/painters", icon: "🔍" },
     { name: "3D Room Designs", shortName: "3D Designs", path: "/search/designs", icon: "🎨" },
-    { name: "Feedback & Polls", shortName: "Feedback", path: "/feedback", icon: "💬" },
+    { name: "Feedback", shortName: "Feedback", path: "/feedback", icon: "💬" },
     { name: "My Profile", shortName: "Profile", path: "/profile-page", icon: "👤" },
   ];
 

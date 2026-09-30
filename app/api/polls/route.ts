@@ -13,56 +13,31 @@ export interface FeaturePoll {
   description: string;
   targetRole: "ALL" | "PAINTER" | "CLIENT" | "CONSUMER";
   expiresAt: string; // ISO date timestamp
+  isLive: boolean; // Admin live status toggle
   options: PollOption[];
   createdBy: string;
   createdAt: string;
 }
 
-// In-memory poll store pre-populated with active community feature polls
-const pollsStore: FeaturePoll[] = [
-  {
-    id: "poll_1",
-    title: "🚀 Which next feature should we prioritize building?",
-    description: "Vote on the official PaintIT roadmap! Features with the highest votes will be developed first by our team.",
-    targetRole: "ALL",
-    expiresAt: new Date(Date.now() + 86400000 * 7).toISOString(), // 7 days from now
-    options: [
-      { id: "opt_1", label: "📱 AR Live Camera Room Paint Visualizer", votes: 18, voters: [] },
-      { id: "opt_2", label: "🤖 AI Room Paint & Texture Color Recommender", votes: 24, voters: [] },
-      { id: "opt_3", label: "📄 Instant Painter Invoice & PDF Quote Generator", votes: 15, voters: [] },
-      { id: "opt_4", label: "💬 Real-time Painter & Client In-App Chat", votes: 9, voters: [] },
-    ],
-    createdBy: "Admin Team",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: "poll_2",
-    title: "🎨 Painter Workspace Experience Enhancement",
-    description: "Help us improve Contractor OS for professional painters.",
-    targetRole: "PAINTER",
-    expiresAt: new Date(Date.now() + 86400000 * 5).toISOString(), // 5 days from now
-    options: [
-      { id: "opt_p1", label: "📊 Detailed Lead Analytics & Conversion Metrics", votes: 12, voters: [] },
-      { id: "opt_p2", label: "🏷️ Custom Paint Brand Swatch Importer", votes: 19, voters: [] },
-      { id: "opt_p3", label: "📅 Automated Client Booking Calendar Sync", votes: 8, voters: [] },
-    ],
-    createdBy: "Admin Team",
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-];
+// In-memory poll store (starts empty per user request - no dummy polls)
+const pollsStore: FeaturePoll[] = [];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const userRole = (searchParams.get("role") || "ALL").toUpperCase();
   const userId = searchParams.get("userId");
+  const isAdmin = searchParams.get("admin") === "true";
 
   const now = new Date();
 
-  // Filter polls by role
+  // Filter polls by role & live state
   const relevant = pollsStore.filter((p) => {
+    // If not admin, only show LIVE polls
+    if (!isAdmin && !p.isLive) return false;
+
     if (p.targetRole === "ALL") return true;
     if (userRole === "PAINTER" && p.targetRole === "PAINTER") return true;
-    if ((userRole === "CLIENT" || userRole === "CONSUMER" || userRole === "HOMEOWNER") && (userRole === "CLIENT" || userRole === "CONSUMER")) return true;
+    if ((userRole === "CLIENT" || userRole === "CONSUMER" || userRole === "HOMEOWNER") && (p.targetRole === "CLIENT" || p.targetRole === "CONSUMER")) return true;
     return false;
   });
 
@@ -98,6 +73,8 @@ export async function GET(req: Request) {
   return NextResponse.json({
     success: true,
     polls: formatted,
+    totalPolls: pollsStore.length,
+    livePollsCount: pollsStore.filter((p) => p.isLive).length,
   });
 }
 
@@ -108,7 +85,7 @@ export async function POST(req: Request) {
 
     // 1. Admin creates a new poll
     if (action === "CREATE_POLL") {
-      const { title, description, targetRole, durationDays, options } = body;
+      const { title, description, targetRole, durationDays, isLive, options } = body;
 
       if (!title || !options || !Array.isArray(options) || options.length < 2) {
         return NextResponse.json({ error: "Title and at least 2 options are required" }, { status: 400 });
@@ -123,13 +100,14 @@ export async function POST(req: Request) {
         description: description || "",
         targetRole: (targetRole || "ALL").toUpperCase(),
         expiresAt,
+        isLive: isLive ?? true,
         options: options.map((optLabel: string, idx: number) => ({
           id: `opt_${Date.now()}_${idx}`,
-          label: optLabel,
+          label: typeof optLabel === "string" ? optLabel : (optLabel as any).label || `Option ${idx + 1}`,
           votes: 0,
           voters: [],
         })),
-        createdBy: "Admin Team",
+        createdBy: "Master Admin",
         createdAt: new Date().toISOString(),
       };
 
@@ -138,7 +116,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, poll: newPoll });
     }
 
-    // 2. User casts a vote
+    // 2. Admin toggles Poll Live Status
+    if (action === "TOGGLE_LIVE") {
+      const { pollId, isLive } = body;
+      const targetPoll = pollsStore.find((p) => p.id === pollId);
+      if (!targetPoll) {
+        return NextResponse.json({ error: "Poll not found" }, { status: 404 });
+      }
+
+      targetPoll.isLive = typeof isLive === "boolean" ? isLive : !targetPoll.isLive;
+      return NextResponse.json({ success: true, poll: targetPoll });
+    }
+
+    // 3. Admin updates an existing poll
+    if (action === "UPDATE_POLL") {
+      const { pollId, title, description, targetRole, isLive, options } = body;
+      const targetPoll = pollsStore.find((p) => p.id === pollId);
+      if (!targetPoll) {
+        return NextResponse.json({ error: "Poll not found" }, { status: 404 });
+      }
+
+      if (title) targetPoll.title = title;
+      if (description !== undefined) targetPoll.description = description;
+      if (targetRole) targetPoll.targetRole = targetRole.toUpperCase();
+      if (typeof isLive === "boolean") targetPoll.isLive = isLive;
+
+      if (Array.isArray(options) && options.length >= 2) {
+        targetPoll.options = options.map((opt: any, idx: number) => ({
+          id: opt.id || `opt_${Date.now()}_${idx}`,
+          label: typeof opt === "string" ? opt : opt.label || `Option ${idx + 1}`,
+          votes: opt.votes || 0,
+          voters: opt.voters || [],
+        }));
+      }
+
+      return NextResponse.json({ success: true, poll: targetPoll });
+    }
+
+    // 4. User casts a vote
     if (action === "CAST_VOTE") {
       const { pollId, optionId, userId } = body;
 
@@ -151,6 +166,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Poll not found" }, { status: 404 });
       }
 
+      if (!poll.isLive) {
+        return NextResponse.json({ error: "This poll is currently not live." }, { status: 400 });
+      }
+
       if (new Date(poll.expiresAt) <= new Date()) {
         return NextResponse.json({ error: "This feature poll has expired and is closed for voting." }, { status: 400 });
       }
@@ -158,16 +177,13 @@ export async function POST(req: Request) {
       // Check if user already voted in this poll
       const existingVoteOpt = poll.options.find((opt) => opt.voters.includes(String(userId)));
       if (existingVoteOpt) {
-        // Switch vote or reject duplicate
         if (existingVoteOpt.id === optionId) {
           return NextResponse.json({ message: "You already voted for this option!" }, { status: 200 });
         }
-        // Remove vote from previous option
         existingVoteOpt.votes = Math.max(0, existingVoteOpt.votes - 1);
         existingVoteOpt.voters = existingVoteOpt.voters.filter((v) => v !== String(userId));
       }
 
-      // Add vote to target option
       const targetOpt = poll.options.find((opt) => opt.id === optionId);
       if (targetOpt) {
         targetOpt.votes += 1;

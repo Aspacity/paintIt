@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
-import FeatureVotingPollCard, { FeaturePollData } from "@/components/ui/FeatureVotingPollCard";
+import { useTheme } from "@/context/ThemeContext";
 
 interface PastFeedback {
   id: number;
@@ -14,15 +14,16 @@ interface PastFeedback {
   created_at: string;
 }
 
-export default function UserFeedbackHubPage() {
+export default function UserFeedbackView() {
   const { user } = useAuth();
   const { showToast } = useAlert();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [rating, setRating] = useState<number>(5);
   const [category, setCategory] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [pastFeedbacks, setPastFeedbacks] = useState<PastFeedback[]>([]);
-  const [polls, setPolls] = useState<FeaturePollData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -54,19 +55,6 @@ export default function UserFeedbackHubPage() {
       "General Feedback",
       "Bug Report",
     ],
-    DESIGNER: [
-      "3D Room Assembling Studio",
-      "Paint Brand & Deck Accuracy",
-      "Exporting Client Visuals",
-      "Palette Tools",
-      "Feature Request",
-    ],
-    ADMIN: [
-      "Platform Speed & Load Time",
-      "Lead Quality & Distribution",
-      "System Performance",
-      "General Admin Feedback",
-    ],
     GUEST: [
       "Website Experience",
       "Color Visualizer",
@@ -97,24 +85,9 @@ export default function UserFeedbackHubPage() {
     }
   }, [user, BACKEND_API_URL]);
 
-  const fetchPolls = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/polls?role=${userRole}&userId=${user?.id || ""}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPolls(data.polls || []);
-      }
-    } catch (err) {
-      console.error("Error fetching feature polls:", err);
-    }
-  }, [userRole, user]);
-
   useEffect(() => {
-    queueMicrotask(() => {
-      fetchPastFeedbacks();
-      fetchPolls();
-    });
-  }, [fetchPastFeedbacks, fetchPolls]);
+    fetchPastFeedbacks();
+  }, [fetchPastFeedbacks]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,43 +130,35 @@ export default function UserFeedbackHubPage() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8 space-y-8 text-white animate-fade-in font-sans">
+    <div className={`w-full max-w-4xl mx-auto py-4 space-y-6 animate-fade-in font-sans transition-colors ${
+      isDark ? "text-white" : "text-stone-900"
+    }`}>
       {/* Header */}
-      <div className="border-b border-neutral-900 pb-5">
-        <h1 className="text-xl font-black uppercase tracking-wider text-neutral-100 flex items-center gap-2">
-          <span>💬 User Feedback & Feature Requests</span>
+      <div className={`border-b pb-4 ${isDark ? "border-neutral-900" : "border-stone-200"}`}>
+        <h1 className={`text-xl font-black uppercase tracking-wider flex items-center gap-2 ${
+          isDark ? "text-neutral-100" : "text-stone-900"
+        }`}>
+          <span>💬 User Feedback & Suggestions</span>
         </h1>
-        <p className="text-xs text-neutral-500 mt-1">
-          Help us craft the ultimate architectural visualization & painter platform. Your feedback directly shapes our feature updates!
+        <p className={`text-xs mt-1 ${isDark ? "text-neutral-400" : "text-stone-600"}`}>
+          Help us craft the ultimate architectural visualization & painter platform. Your feedback directly shapes our development!
         </p>
       </div>
 
-      {/* Feature Roadmap Voting Polls Section */}
-      {polls.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-900 pb-2">
-            <h2 className="text-xs font-black uppercase tracking-wider text-[#FF8C38] flex items-center gap-2">
-              <span>🗳️ Active Community Roadmap Polls ({polls.length})</span>
-            </h2>
-            <span className="text-[10px] text-neutral-400 font-mono">Vote on upcoming feature updates</span>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {polls.map((poll) => (
-              <FeatureVotingPollCard key={poll.id} poll={poll} onVoteSuccess={fetchPolls} />
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column: Role-Tailored Feedback Form */}
-        <div className="bg-neutral-950 border border-neutral-850 rounded-3xl p-6 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
+        <div className={`border rounded-3xl p-6 space-y-4 shadow-xl ${
+          isDark ? "bg-neutral-950 border-neutral-850" : "bg-white border-stone-200"
+        }`}>
+          <div className={`flex items-center justify-between border-b pb-3 ${
+            isDark ? "border-neutral-900" : "border-stone-200"
+          }`}>
             <h3 className="text-xs font-black uppercase tracking-wider text-[#FF8C38]">
               Submit Feedback ({userRole})
             </h3>
-            <span className="text-[9px] font-mono uppercase bg-neutral-900 text-neutral-400 px-2 py-0.5 rounded border border-neutral-800">
+            <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border ${
+              isDark ? "bg-neutral-900 text-neutral-400 border-neutral-800" : "bg-stone-100 text-stone-600 border-stone-300"
+            }`}>
               {userRole} User
             </span>
           </div>
@@ -201,7 +166,9 @@ export default function UserFeedbackHubPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Rating */}
             <div>
-              <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider block mb-1">
+              <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${
+                isDark ? "text-neutral-400" : "text-stone-600"
+              }`}>
                 Satisfaction Rating
               </label>
               <div className="flex items-center gap-2">
@@ -225,13 +192,17 @@ export default function UserFeedbackHubPage() {
 
             {/* Category */}
             <div>
-              <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider block mb-1">
+              <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${
+                isDark ? "text-neutral-400" : "text-stone-600"
+              }`}>
                 Feedback Topic
               </label>
               <select
                 value={activeCategory}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-[#FF8C38] focus:outline-none focus:border-[#FF8C38]"
+                className={`w-full border rounded-xl px-3 py-2 text-xs font-bold text-[#FF8C38] focus:outline-none focus:border-[#FF8C38] ${
+                  isDark ? "bg-neutral-900 border-neutral-800" : "bg-stone-100 border-stone-300"
+                }`}
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -243,7 +214,9 @@ export default function UserFeedbackHubPage() {
 
             {/* Textarea */}
             <div>
-              <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider block mb-1">
+              <label className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${
+                isDark ? "text-neutral-400" : "text-stone-600"
+              }`}>
                 Your Feedback & Suggestions
               </label>
               <textarea
@@ -251,14 +224,16 @@ export default function UserFeedbackHubPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={`Share your experience or feature suggestions as a ${userRole.toLowerCase()}...`}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[#FF8C38] font-medium"
+                className={`w-full border rounded-2xl p-3 text-xs focus:outline-none focus:border-[#FF8C38] font-medium resize-none ${
+                  isDark ? "bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600" : "bg-[#FAF8F5] border-stone-300 text-stone-900 placeholder-stone-400"
+                }`}
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-[#FF8C38] hover:bg-[#FF8C38] text-neutral-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-98 disabled:opacity-50"
+              className="w-full py-3 bg-[#FF8C38] hover:bg-[#ff9e54] text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-98 disabled:opacity-50"
             >
               {isSubmitting ? "Submitting Feedback..." : "Submit Feedback 🚀"}
             </button>
@@ -266,31 +241,39 @@ export default function UserFeedbackHubPage() {
         </div>
 
         {/* Right Column: User Past Submissions History */}
-        <div className="bg-neutral-950 border border-neutral-850 rounded-3xl p-6 space-y-4 shadow-xl">
-          <div className="border-b border-neutral-900 pb-3 flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-100">
+        <div className={`border rounded-3xl p-6 space-y-4 shadow-xl ${
+          isDark ? "bg-neutral-950 border-neutral-850" : "bg-white border-stone-200"
+        }`}>
+          <div className={`border-b pb-3 flex items-center justify-between ${
+            isDark ? "border-neutral-900" : "border-stone-200"
+          }`}>
+            <h3 className={`text-xs font-black uppercase tracking-wider ${
+              isDark ? "text-neutral-100" : "text-stone-900"
+            }`}>
               📋 My Feedback Submissions ({pastFeedbacks.length})
             </h3>
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-xs text-neutral-500">
+            <div className="py-12 text-center text-xs text-neutral-500 font-mono">
               Loading your feedback history...
             </div>
           ) : pastFeedbacks.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <span className="text-3xl block">💬</span>
-              <p className="text-xs text-neutral-400 font-bold uppercase">No Past Submissions</p>
+              <p className={`text-xs font-bold uppercase ${isDark ? "text-neutral-400" : "text-stone-600"}`}>No Past Submissions</p>
               <p className="text-[10px] text-neutral-500">
                 Your submitted feedback and feature suggestions will appear here with resolution updates!
               </p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-[450px] overflow-y-auto pr-1 no-scrollbar">
+            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 no-scrollbar">
               {pastFeedbacks.map((fb) => (
                 <div
                   key={fb.id}
-                  className="p-3.5 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-2"
+                  className={`p-3.5 border rounded-2xl space-y-2 ${
+                    isDark ? "bg-neutral-900 border-neutral-800" : "bg-stone-100 border-stone-300"
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#FF8C38]">{fb.category}</span>
@@ -305,9 +288,13 @@ export default function UserFeedbackHubPage() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-neutral-300 font-medium leading-relaxed">{fb.message}</p>
+                  <p className={`text-xs font-medium leading-relaxed ${
+                    isDark ? "text-neutral-300" : "text-stone-700"
+                  }`}>{fb.message}</p>
 
-                  <div className="flex items-center justify-between text-[9px] font-mono text-neutral-500 pt-1 border-t border-neutral-850">
+                  <div className={`flex items-center justify-between text-[9px] font-mono text-neutral-500 pt-1 border-t ${
+                    isDark ? "border-neutral-850" : "border-stone-200"
+                  }`}>
                     <span className="text-amber-400 font-bold">{"★".repeat(fb.rating)}</span>
                     <span>{new Date(fb.created_at).toLocaleDateString()}</span>
                   </div>

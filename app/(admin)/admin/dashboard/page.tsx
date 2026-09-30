@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useAlert } from "@/context/AlertContext";
 import { PainterVideoWalkthroughPlayer } from "@/components/dashboard/PainterVideoWalkthroughPlayer";
@@ -296,15 +297,14 @@ export default function AdminAnalyticsDashboard() {
           <span className="text-[9px] text-cyan-400 mt-1 font-mono">👥 Accounts linked</span>
         </div>
 
-        <div className="p-5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Feature Polls</span>
+        <Link href="/admin/polls" className="p-5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 rounded-2xl shadow-xl flex flex-col justify-between transition-all group">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 group-hover:text-[#FF8C38]">Feature Polls Control</span>
           <span className="text-3xl font-black text-amber-400 mt-2">{polls.length}</span>
-          <span className="text-[9px] text-amber-300 mt-1 font-mono">🗳️ Active roadmap polls</span>
-        </div>
+          <span className="text-[9px] text-amber-300 mt-1 font-mono">🗳️ Manage Polls Hub ➔</span>
+        </Link>
       </div>
 
-      {/* 🎬 PAINTER PRO VIDEO WALKTHROUGH MODULE */}
-      <PainterVideoWalkthroughPlayer />
+      
 
       {/* ========================================================== */}
       {/* 📱 INSTALLED PWA USERS TELEMETRY DIRECTORY                 */}
